@@ -8,6 +8,13 @@ public class HomeController {
 
     @GetMapping("/")
     public String homePage() {
-        return "index"; // This looks for a file named index.html in templates/
+        return "index"; // templates/index.html
     }
+
+    @GetMapping("/login")
+    public String userLogin() {
+        return "userLogin"; // templates/userLogin.html
+    }
+
+
 }
