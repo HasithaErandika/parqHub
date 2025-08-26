@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ParQHub - Automated Vehicle Parking</title>
+    <meta name="description" content="ParQHub - Smart Automated Vehicle Parking System. Reserve, manage, and pay for parking anytime, anywhere.">
+    <meta name="keywords" content="parking, smart parking, vehicle parking, automated parking, ParQHub">
+    <title>ParQHub - Smart Automated Parking</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- AOS (Animate On Scroll) -->
+    <!-- AOS Animation -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 
@@ -40,72 +40,108 @@
         }
     </style>
 </head>
-<body class="text-white">
+<body class="text-white overflow-x-hidden">
 
 <!-- Navbar -->
-<header>
-    <nav class="fixed w-full z-50 glass px-8 py-4 flex justify-between items-center">
-        <!-- Logo -->
-        <div class="flex items-center gap-3">
-            <img src="/images/logo.png" alt="ParQHub Logo" class="h-10">
-            <span class="text-2xl font-extrabold glow-text">ParQHub</span>
-        </div>
-        <!-- Links -->
-        <div class="hidden md:flex gap-4">
-            <a th:href="@{/login}" class="px-5 py-2 border border-yellow-400 rounded-full hover:bg-yellow-400 hover:text-black transition">Login</a>
-            <a th:href="@{/signup}" class="px-5 py-2 neon-btn">Sign Up</a>
-        </div>
-    </nav>
-</header>
+<nav class="fixed w-full z-50 glass px-8 py-4 flex justify-between items-center">
+    <div class="flex items-center gap-3">
+        <img src="/images/logo.png" alt="ParQHub Logo" class="h-10">
+        <span class="text-2xl font-extrabold glow-text">ParQHub</span>
+    </div>
+    <div class="flex gap-4">
+        <a th:href="@{/login}" class="px-5 py-2 border border-yellow-400 rounded-full hover:bg-yellow-400 hover:text-black transition">Login</a>
+        <a th:href="@{/signup}" class="px-5 py-2 neon-btn">Sign Up</a>
+    </div>
+</nav>
 
 <!-- Hero Section -->
-<section class="min-h-screen flex flex-col justify-center items-center text-center px-4 relative overflow-hidden">
-    <h1 data-aos="fade-up" class="text-4xl md:text-6xl font-extrabold mb-4 glow-text">
-        Smart Parking Made Simple
-    </h1>
-    <p data-aos="fade-up" data-aos-delay="200" class="text-lg md:text-xl text-gray-300 max-w-2xl">
-        Reserve, manage, and pay for your parking spot with ParQHub — anytime, anywhere.
-    </p>
-    <div class="mt-8 flex flex-col sm:flex-row gap-4" data-aos="fade-up" data-aos-delay="400">
-        <a th:href="@{/reservation}" class="px-6 py-3 neon-btn">Reserve Now</a>
-        <a th:href="@{/about}" class="px-6 py-3 border border-yellow-400 rounded-full hover:bg-yellow-400 hover:text-black transition">Learn More</a>
+<section class="h-screen flex flex-col justify-center items-center text-center px-4 relative bg-cover bg-center" style="background-image:url('/images/parking-bg.jpg');">
+    <div class="absolute inset-0 bg-black/70"></div>
+    <div class="relative z-10">
+        <h1 data-aos="fade-up" class="text-5xl md:text-6xl font-extrabold mb-6 glow-text">
+            Smart Parking Made Simple
+        </h1>
+        <p data-aos="fade-up" data-aos-delay="200" class="text-lg text-gray-300 max-w-2xl mx-auto">
+            Reserve, manage, and pay for your parking spot with <span class="text-yellow-400 font-semibold">ParQHub</span> — anytime, anywhere.
+        </p>
+        <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center" data-aos="fade-up" data-aos-delay="400">
+            <a th:href="@{/reservation}" class="px-6 py-3 neon-btn text-center">Reserve Now</a>
+            <a th:href="@{/about}" class="px-6 py-3 border border-yellow-400 rounded-full hover:bg-yellow-400 hover:text-black transition text-center">Learn More</a>
+        </div>
     </div>
 </section>
 
-<!-- Features -->
+<!-- Features Section -->
 <section class="py-20 px-6 md:px-20 bg-gradient-to-b from-[#0a0f1c] to-[#131b2e]">
     <h2 class="text-3xl md:text-4xl font-bold text-center mb-16 glow-text" data-aos="fade-up">
         Why Choose ParQHub?
     </h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
 
-        <div class="glass p-6 text-center rounded-2xl transition transform hover:-translate-y-2 hover:shadow-lg" data-aos="zoom-in" data-aos-delay="100">
+        <div class="glass p-8 text-center rounded-2xl hover:-translate-y-2 hover:shadow-xl transition" data-aos="zoom-in" data-aos-delay="100">
             <img src="/images/fast-booking.svg" alt="Fast Booking" class="mx-auto h-16 mb-4">
-            <h3 class="text-xl font-semibold mb-2">Fast Booking</h3>
+            <h3 class="text-xl font-semibold mb-3">Fast Booking</h3>
             <p class="text-gray-300">Secure your parking space in seconds with our streamlined booking process.</p>
         </div>
 
-        <div class="glass p-6 text-center rounded-2xl transition transform hover:-translate-y-2 hover:shadow-lg" data-aos="zoom-in" data-aos-delay="200">
+        <div class="glass p-8 text-center rounded-2xl hover:-translate-y-2 hover:shadow-xl transition" data-aos="zoom-in" data-aos-delay="200">
             <img src="/images/realtime.svg" alt="Real-Time Data" class="mx-auto h-16 mb-4">
-            <h3 class="text-xl font-semibold mb-2">Real-Time Availability</h3>
+            <h3 class="text-xl font-semibold mb-3">Real-Time Availability</h3>
             <p class="text-gray-300">See live updates of available parking spaces across all connected locations.</p>
         </div>
 
-        <div class="glass p-6 text-center rounded-2xl transition transform hover:-translate-y-2 hover:shadow-lg" data-aos="zoom-in" data-aos-delay="300">
+        <div class="glass p-8 text-center rounded-2xl hover:-translate-y-2 hover:shadow-xl transition" data-aos="zoom-in" data-aos-delay="300">
             <img src="/images/security.svg" alt="Security" class="mx-auto h-16 mb-4">
-            <h3 class="text-xl font-semibold mb-2">Secure & Reliable</h3>
+            <h3 class="text-xl font-semibold mb-3">Secure & Reliable</h3>
             <p class="text-gray-300">Advanced encryption and secure payment methods keep your data safe.</p>
         </div>
 
     </div>
 </section>
 
+<!-- Testimonials -->
+<section class="py-20 px-6 md:px-20 bg-[#0a0f1c]">
+    <h2 class="text-3xl md:text-4xl font-bold text-center mb-16 glow-text" data-aos="fade-up">
+        What Our Users Say
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+        <div class="glass p-6 rounded-xl text-center" data-aos="fade-up" data-aos-delay="100">
+            <p class="text-gray-300 italic">"ParQHub makes finding parking so easy! I never worry about being late anymore."</p>
+            <h4 class="mt-4 font-semibold text-yellow-400">— Sarah J.</h4>
+        </div>
+        <div class="glass p-6 rounded-xl text-center" data-aos="fade-up" data-aos-delay="200">
+            <p class="text-gray-300 italic">"The real-time availability feature is a game changer. Highly recommended!"</p>
+            <h4 class="mt-4 font-semibold text-yellow-400">— Mark R.</h4>
+        </div>
+        <div class="glass p-6 rounded-xl text-center" data-aos="fade-up" data-aos-delay="300">
+            <p class="text-gray-300 italic">"Secure payments and reliable service. Exactly what I needed for my daily commute."</p>
+            <h4 class="mt-4 font-semibold text-yellow-400">— Emily K.</h4>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-20 bg-gradient-to-r from-yellow-500 to-orange-600 text-center text-black">
+    <h2 class="text-3xl md:text-4xl font-bold mb-6">Ready to Simplify Parking?</h2>
+    <p class="mb-8 text-lg">Join thousands of users enjoying smart parking with ParQHub today.</p>
+    <a th:href="@{/signup}" class="px-8 py-3 bg-black text-yellow-400 font-bold rounded-full hover:bg-gray-800 transition">Get Started</a>
+</section>
+
 <!-- Footer -->
-<footer class="bg-[#0a0f1c] py-6 text-center text-gray-500 text-sm glass">
-    &copy; <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}"></span> ParQHub. All Rights Reserved.
+<footer class="bg-[#0a0f1c] py-8 glass text-center text-gray-400 text-sm">
+    <div class="flex flex-col md:flex-row justify-between items-center max-w-6xl mx-auto px-6 gap-4">
+        <p>&copy; <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}"></span> ParQHub. All Rights Reserved.</p>
+        <div class="flex gap-6 text-lg">
+            <a href="#" class="hover:text-yellow-400"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="hover:text-yellow-400"><i class="fab fa-twitter"></i></a>
+            <a href="#" class="hover:text-yellow-400"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+    </div>
 </footer>
 
-<!-- Scripts -->
+<!-- FontAwesome for Icons -->
+<script src="https://kit.fontawesome.com/4ad8d5ae3f.js" crossorigin="anonymous"></script>
+<!-- AOS Animation Script -->
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
     AOS.init({
