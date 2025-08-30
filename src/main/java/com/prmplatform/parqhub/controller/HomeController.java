@@ -13,7 +13,7 @@ public class HomeController {
 
     @GetMapping("/login")
     public String userLogin() {
-        return "userLogin"; // templates/userLogin.html
+        return "user-login"; // templates/user-login.html
     }
 
 
