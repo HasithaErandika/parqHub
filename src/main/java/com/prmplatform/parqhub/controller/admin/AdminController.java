@@ -1,9 +1,11 @@
 package com.prmplatform.parqhub.controller.admin;
 
+import com.prmplatform.parqhub.model.Admin;
 import com.prmplatform.parqhub.repository.AdminRepository;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("/admin")
@@ -23,17 +25,36 @@ public class AdminController {
     @PostMapping("/login")
     public String login(@RequestParam String email,
                         @RequestParam String password,
-                        Model model) {
+                        Model model,
+                        HttpSession session) {
+
         return adminRepository.findByEmailAndPassword(email, password)
-                .map(admin -> "redirect:/admin/dashboard") // success
+                .map(admin -> {
+                    session.setAttribute("loggedInAdmin", admin);
+                    return "redirect:/admin/dashboard";
+                })
                 .orElseGet(() -> {
                     model.addAttribute("error", "Invalid email or password");
-                    return "admin-login"; // back to login page with error
+                    return "admin-login";
                 });
     }
 
     @GetMapping("/dashboard")
-    public String dashboard() {
-        return "admin/dashboard"; // Looks for admin-dashboard.html
+    public String dashboard(HttpSession session, Model model) {
+        Admin admin = (Admin) session.getAttribute("loggedInAdmin");
+        if (admin == null) {
+            return "redirect:/admin/login";
+        }
+
+        model.addAttribute("adminName", admin.getName());
+        model.addAttribute("adminRole", admin.getRole());
+
+        return "admin/dashboard";
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "redirect:/admin/login";
     }
 }
