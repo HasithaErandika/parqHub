@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParQHub - Notifications</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <script src="https://kit.fontawesome.com/4ad8d5ae3f.js" crossorigin="anonymous"></script>
+
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #0a0f1c; }
+        .glass {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .active {
+            background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+            color: #ffffff !important;
+            font-weight: bold;
+        }
+        .notification-card {
+            transition: all 0.3s ease;
+        }
+        .notification-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+        .notification-card.unread {
+            border-left: 4px solid #3b82f6;
+            background: rgba(59, 130, 246, 0.05);
+        }
+        .type-full-slot { color: #f59e0b; }
+        .type-overstay { color: #ef4444; }
+        .type-security { color: #8b5cf6; }
+        .notification-actions {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .notification-card:hover .notification-actions {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="text-white flex">
+
+<!-- Sidebar -->
+<aside class="w-72 h-screen glass flex flex-col fixed">
+    <div class="p-6 flex items-center gap-3 border-b border-gray-700">
+        <img src="/images/logo.png" alt="ParQHub" class="h-10">
+        <span class="text-2xl font-bold">ParQHub</span>
+    </div>
+    <nav class="flex-1 p-4 space-y-2">
+        <!-- User Navigation Links -->
+        <a href="/user/dashboard" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-400/30 transition">
+            <i class="fas fa-home"></i> Dashboard
+        </a>
+        <a href="/user/findparking" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-400/30 transition">
+            <i class="fas fa-parking"></i> Find Parking
+        </a>
+        <a href="/user/bookings" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-400/30 transition">
+            <i class="fas fa-calendar-check"></i> My Bookings
+        </a>
+        <a href="/user/vehicles" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-400/30 transition">
+            <i class="fas fa-car"></i> My Vehicles
+        </a>
+        <a href="/user/payments" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-400/30 transition">
+            <i class="fas fa-credit-card"></i> Payment History
+        </a>
+        <a href="/user/notifications" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-400/30 transition active">
+            <i class="fas fa-bell"></i> Notifications
+        </a>
+        <a href="/user/settings" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-400/30 transition">
+            <i class="fas fa-cog"></i> Settings
+        </a>
+    </nav>
+    <div class="p-4 border-t border-gray-700">
+        <a th:href="@{/user/logout}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-red-500/30 text-red-400">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </div>
+</aside>
+
+<!-- Main Content -->
+<main class="ml-72 w-full p-6">
+    <!-- Top bar -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">Notifications</h1>
+        <div class="flex items-center gap-4">
+            <button id="markAllRead" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+                <i class="fas fa-check-double mr-2"></i> Mark All Read
+            </button>
+            <span class="text-gray-300">Welcome, <span th:text="${userName}">User</span></span>
+            <img src="/images/user-avatar.png" alt="User" class="h-10 w-10 rounded-full border-2 border-blue-400">
+        </div>
+    </div>
+
+    <!-- Notification Statistics -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="glass p-6 rounded-2xl text-center">
+            <i class="fas fa-bell text-blue-400 text-3xl mb-2"></i>
+            <h3 class="text-lg font-semibold">Total Notifications</h3>
+            <p class="text-2xl font-bold" th:text="${#lists.size(notifications)}">0</p>
+        </div>
+        <div class="glass p-6 rounded-2xl text-center">
+            <i class="fas fa-envelope text-yellow-400 text-3xl mb-2"></i>
+            <h3 class="text-lg font-semibold">Unread</h3>
+            <p class="text-2xl font-bold" th:text="${#lists.size(notifications.?[#strings.equals(description, 'unread')])}">0</p>
+        </div>
+        <div class="glass p-6 rounded-2xl text-center">
+            <i class="fas fa-exclamation-triangle text-orange-400 text-3xl mb-2"></i>
+            <h3 class="text-lg font-semibold">Important</h3>
+            <p class="text-2xl font-bold" th:text="${#lists.size(notifications.?[type.name() == 'Security_Incident'])}">0</p>
+        </div>
+        <div class="glass p-6 rounded-2xl text-center">
+            <i class="fas fa-clock text-gray-400 text-3xl mb-2"></i>
+            <h3 class="text-lg font-semibold">Today</h3>
+            <p class="text-2xl font-bold" th:text="${#lists.size(notifications.?[#temporals.format(timestamp, 'yyyy-MM-dd') == #temporals.format(#temporals.createNow(), 'yyyy-MM-dd')])}">0</p>
+        </div>
+    </div>
+
+    <!-- Filter and Search -->
+    <div class="glass p-6 rounded-2xl mb-6">
+        <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div class="flex gap-4">
+                <select id="typeFilter" class="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white">
+                    <option value="">All Types</option>
+                    <option value="Full_Slot">Full Slot</option>
+                    <option value="Overstay">Overstay</option>
+                    <option value="Security_Incident">Security Incident</option>
+                </select>
+                <select id="statusFilter" class="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white">
+                    <option value="">All Status</option>
+                    <option value="unread">Unread</option>
+                    <option value="read">Read</option>
+                </select>
+                <input type="date" id="dateFilter" class="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white">
+            </div>
+            <div class="flex gap-2">
+                <input type="text" id="searchInput" placeholder="Search notifications..." 
+                       class="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white">
+                <button id="searchBtn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications List -->
+    <div class="glass p-6 rounded-2xl">
+        <h2 class="text-xl font-bold mb-6 text-blue-400">Recent Notifications</h2>
+        
+        <div th:if="${#lists.isEmpty(notifications)}" class="text-center py-8">
+            <i class="fas fa-bell-slash text-gray-500 text-6xl mb-4"></i>
+            <p class="text-gray-400 text-lg">No notifications found</p>
+            <p class="text-gray-500">You're all caught up!</p>
+        </div>
+        
+        <div th:if="${!#lists.isEmpty(notifications)}" class="space-y-4">
+            <!-- Notification Card -->
+            <div th:each="notification : ${notifications}" 
+                 th:data-notification-id="${notification.id}"
+                 th:data-type="${notification.type.name()}"
+                 th:data-status="${#strings.equals(notification.description, 'unread') ? 'unread' : 'read'}"
+                 th:data-date="${#temporals.format(notification.timestamp, 'yyyy-MM-dd')}"
+                 th:class="'notification-card glass p-6 rounded-2xl border border-gray-600 ' + (${#strings.equals(notification.description, 'unread')} ? 'unread' : '')">
+                
+                <div class="flex justify-between items-start gap-4">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-3">
+                            <i th:if="${notification.type.name() == 'Full_Slot'}" 
+                               class="fas fa-parking type-full-slot text-xl"></i>
+                            <i th:if="${notification.type.name() == 'Overstay'}" 
+                               class="fas fa-clock type-overstay text-xl"></i>
+                            <i th:if="${notification.type.name() == 'Security_Incident'}" 
+                               class="fas fa-shield-alt type-security text-xl"></i>
+                            
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-lg" th:text="${notification.type.name().replace('_', ' ')}">Type</h3>
+                                <p class="text-sm text-gray-400" th:text="${#temporals.format(notification.timestamp, 'dd MMM yyyy, HH:mm')}">Timestamp</p>
+                            </div>
+                            
+                            <span th:if="${#strings.equals(notification.description, 'unread')}" 
+                                  class="bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium">New</span>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <p class="text-gray-300" th:text="${notification.description}">Description</p>
+                        </div>
+                        
+                        <div class="flex items-center gap-4 text-sm text-gray-400">
+                            <span th:if="${notification.admin != null}">
+                                <i class="fas fa-user-shield mr-1"></i>
+                                Admin: <span th:text="${notification.admin.name}">Admin</span>
+                            </span>
+                            <span>
+                                <i class="fas fa-calendar mr-1"></i>
+                                <span th:text="${#temporals.format(notification.timestamp, 'dd/MM/yyyy')}">Date</span>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="notification-actions flex flex-col gap-2">
+                        <button th:if="${#strings.equals(notification.description, 'unread')}" 
+                                class="mark-read px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs transition">
+                            <i class="fas fa-check mr-1"></i> Mark Read
+                        </button>
+                        <button class="delete-notification px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-xs transition">
+                            <i class="fas fa-trash mr-1"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    // Filter functionality
+    const typeFilter = document.getElementById('typeFilter');
+    const statusFilter = document.getElementById('statusFilter');
+    const dateFilter = document.getElementById('dateFilter');
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const notificationCards = document.querySelectorAll('.notification-card');
+
+    function filterNotifications() {
+        const typeValue = typeFilter.value;
+        const statusValue = statusFilter.value;
+        const dateValue = dateFilter.value;
+        const searchValue = searchInput.value.toLowerCase();
+
+        notificationCards.forEach(card => {
+            const type = card.dataset.type;
+            const status = card.dataset.status;
+            const date = card.dataset.date;
+            const text = card.textContent.toLowerCase();
+
+            const typeMatch = !typeValue || type === typeValue;
+            const statusMatch = !statusValue || status === statusValue;
+            const dateMatch = !dateValue || date === dateValue;
+            const searchMatch = !searchValue || text.includes(searchValue);
+
+            if (typeMatch && statusMatch && dateMatch && searchMatch) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    // Event listeners
+    typeFilter.addEventListener('change', filterNotifications);
+    statusFilter.addEventListener('change', filterNotifications);
+    dateFilter.addEventListener('change', filterNotifications);
+    searchBtn.addEventListener('click', filterNotifications);
+    searchInput.addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') {
+            filterNotifications();
+        }
+    });
+
+    // Mark all as read functionality
+    document.getElementById('markAllRead').addEventListener('click', function() {
+        const unreadCards = document.querySelectorAll('.notification-card.unread');
+        unreadCards.forEach(card => {
+            card.classList.remove('unread');
+            const newBadge = card.querySelector('.bg-blue-500');
+            if (newBadge) {
+                newBadge.remove();
+            }
+            const markReadBtn = card.querySelector('.mark-read');
+            if (markReadBtn) {
+                markReadBtn.remove();
+            }
+        });
+        alert('All notifications marked as read!');
+    });
+
+    // Mark individual notification as read
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('mark-read') || e.target.closest('.mark-read')) {
+            const card = e.target.closest('.notification-card');
+            const notificationId = card.dataset.notificationId;
+            
+            card.classList.remove('unread');
+            const newBadge = card.querySelector('.bg-blue-500');
+            if (newBadge) {
+                newBadge.remove();
+            }
+            e.target.remove();
+            
+            alert(`Notification ${notificationId} marked as read!`);
+        }
+    });
+
+    // Delete notification functionality
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('delete-notification') || e.target.closest('.delete-notification')) {
+            const card = e.target.closest('.notification-card');
+            const notificationId = card.dataset.notificationId;
+            
+            if (confirm(`Are you sure you want to delete this notification?`)) {
+                card.remove();
+                alert(`Notification ${notificationId} deleted!`);
+            }
+        }
+    });
+</script>
+</body>
+</html>

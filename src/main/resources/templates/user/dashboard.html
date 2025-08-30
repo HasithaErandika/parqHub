@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParQHub - User Dashboard</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <script src="https://kit.fontawesome.com/4ad8d5ae3f.js" crossorigin="anonymous"></script>
+
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #0a0f1c; }
+        .glass {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .active {
+            background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+            color: #ffffff !important;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="text-white flex">
+
+<!-- Sidebar -->
+<aside class="w-72 h-screen glass flex flex-col fixed">
+    <div class="p-6 flex items-center gap-3 border-b border-gray-700">
+        <img src="/images/logo.png" alt="ParQHub" class="h-10">
+        <span class="text-2xl font-bold">ParQHub</span>
+    </div>
+    <nav class="flex-1 p-4 space-y-2">
+        <!-- User Navigation Links -->
+        <a href="/user/dashboard" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-400/30 transition active">
+            <i class="fas fa-home"></i> Dashboard
+        </a>
+        <a href="/user/findparking" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-400/30 transition">
+            <i class="fas fa-parking"></i> Find Parking
+        </a>
+        <a href="/user/bookings" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-400/30 transition">
+            <i class="fas fa-calendar-check"></i> My Bookings
+        </a>
+        <a href="/user/vehicles" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-400/30 transition">
+            <i class="fas fa-car"></i> My Vehicles
+        </a>
+        <a href="/user/payments" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-400/30 transition">
+            <i class="fas fa-credit-card"></i> Payment History
+        </a>
+        <a href="/user/notifications" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-400/30 transition">
+            <i class="fas fa-bell"></i> Notifications
+        </a>
+        <a href="/user/settings" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-400/30 transition">
+            <i class="fas fa-cog"></i> Settings
+        </a>
+    </nav>
+    <div class="p-4 border-t border-gray-700">
+        <a th:href="@{/user/logout}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-red-500/30 text-red-400">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </div>
+</aside>
+
+<!-- Main Content -->
+<main class="ml-72 w-full p-6">
+    <!-- Top bar -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">Welcome to Your Dashboard</h1>
+        <div class="flex items-center gap-4">
+            <span class="text-gray-300">Welcome, <span th:text="${userName}">User</span></span>
+            <img src="/images/user-avatar.png" alt="User" class="h-10 w-10 rounded-full border-2 border-blue-400">
+        </div>
+    </div>
+
+    <!-- User Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="glass p-6 rounded-2xl text-center">
+            <i class="fas fa-parking text-blue-400 text-3xl mb-2"></i>
+            <h3 class="text-lg font-semibold">Active Bookings</h3>
+            <p class="text-2xl font-bold">2</p>
+        </div>
+        <div class="glass p-6 rounded-2xl text-center">
+            <i class="fas fa-car text-green-400 text-3xl mb-2"></i>
+            <h3 class="text-lg font-semibold">Registered Vehicles</h3>
+            <p class="text-2xl font-bold">3</p>
+        </div>
+        <div class="glass p-6 rounded-2xl text-center">
+            <i class="fas fa-clock text-yellow-400 text-3xl mb-2"></i>
+            <h3 class="text-lg font-semibold">Total Hours</h3>
+            <p class="text-2xl font-bold">24.5</p>
+        </div>
+        <div class="glass p-6 rounded-2xl text-center">
+            <i class="fas fa-dollar-sign text-purple-400 text-3xl mb-2"></i>
+            <h3 class="text-lg font-semibold">Total Spent</h3>
+            <p class="text-2xl font-bold">LKR 2,450</p>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="glass p-6 rounded-2xl">
+            <h3 class="text-xl font-bold mb-4 text-blue-400">Quick Actions</h3>
+            <div class="space-y-3">
+                <button class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition">
+                    <i class="fas fa-parking mr-2"></i> Find Parking Spot
+                </button>
+                <button class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition">
+                    <i class="fas fa-car mr-2"></i> Add New Vehicle
+                </button>
+                <button class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg transition">
+                    <i class="fas fa-credit-card mr-2"></i> Add Payment Method
+                </button>
+            </div>
+        </div>
+        
+        <div class="glass p-6 rounded-2xl">
+            <h3 class="text-xl font-bold mb-4 text-green-400">Recent Activity</h3>
+            <div class="space-y-3">
+                <div class="flex items-center justify-between p-3 bg-gray-700/30 rounded-lg">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-parking text-blue-400"></i>
+                        <span>Booked slot at Colombo Mall</span>
+                    </div>
+                    <span class="text-sm text-gray-400">2 hours ago</span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-gray-700/30 rounded-lg">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-car text-green-400"></i>
+                        <span>Added new vehicle</span>
+                    </div>
+                    <span class="text-sm text-gray-400">1 day ago</span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-gray-700/30 rounded-lg">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-credit-card text-purple-400"></i>
+                        <span>Payment completed</span>
+                    </div>
+                    <span class="text-sm text-gray-400">3 days ago</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Bookings -->
+    <section class="glass p-6 rounded-2xl">
+        <h2 class="text-xl font-bold mb-4 text-blue-400">Current Bookings</h2>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-gray-700">
+                        <th class="text-left py-3 px-4">Location</th>
+                        <th class="text-left py-3 px-4">Slot</th>
+                        <th class="text-left py-3 px-4">Start Time</th>
+                        <th class="text-left py-3 px-4">Duration</th>
+                        <th class="text-left py-3 px-4">Status</th>
+                        <th class="text-left py-3 px-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b border-gray-700/30">
+                        <td class="py-3 px-4">Colombo Mall</td>
+                        <td class="py-3 px-4">A-15</td>
+                        <td class="py-3 px-4">Today, 10:00 AM</td>
+                        <td class="py-3 px-4">2 hours</td>
+                        <td class="py-3 px-4"><span class="bg-green-500/20 text-green-400 px-2 py-1 rounded-full text-xs">Active</span></td>
+                        <td class="py-3 px-4">
+                            <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs">Extend</button>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-700/30">
+                        <td class="py-3 px-4">Kandy City Center</td>
+                        <td class="py-3 px-4">B-08</td>
+                        <td class="py-3 px-4">Tomorrow, 2:00 PM</td>
+                        <td class="py-3 px-4">3 hours</td>
+                        <td class="py-3 px-4"><span class="bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-full text-xs">Upcoming</span></td>
+                        <td class="py-3 px-4">
+                            <button class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs">Cancel</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+</body>
+</html>
