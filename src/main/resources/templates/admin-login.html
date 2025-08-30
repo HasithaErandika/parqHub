@@ -7,8 +7,6 @@
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- AOS Animation -->
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 
@@ -46,7 +44,7 @@
 </head>
 <body class="flex items-center justify-center min-h-screen text-white">
 
-<div class="glass p-8 rounded-2xl w-full max-w-md shadow-lg" data-aos="zoom-in">
+<div class="glass p-8 rounded-2xl w-full max-w-md shadow-lg">
     <div class="text-center mb-6">
         <div class="mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-red-500/20 border border-red-400">
             <i class="fas fa-shield-alt text-3xl text-red-400"></i>
@@ -55,7 +53,7 @@
         <p class="text-gray-400 text-sm">Restricted area – authorized users only</p>
     </div>
 
-    <!-- Show error message if login fails -->
+    <!-- Error Message -->
     <div th:if="${error}" class="bg-red-500/20 text-red-300 text-sm p-3 rounded mb-4 text-center">
         <span th:text="${error}"></span>
     </div>
@@ -81,8 +79,5 @@
 
 <!-- Font Awesome for icons -->
 <script src="https://kit.fontawesome.com/4ad8d5ae3f.js" crossorigin="anonymous"></script>
-<!-- AOS Init -->
-<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-<script>AOS.init({ duration: 800, once: true });</script>
 </body>
 </html>
