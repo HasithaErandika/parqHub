@@ -13,10 +13,7 @@
     <script src="https://kit.fontawesome.com/4ad8d5ae3f.js" crossorigin="anonymous"></script>
 
     <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #0a0f1c;
-        }
+        body { font-family: 'Poppins', sans-serif; background-color: #0a0f1c; }
         .glass {
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(12px);
@@ -38,16 +35,47 @@
         <span class="text-2xl font-bold">ParQHub</span>
     </div>
     <nav class="flex-1 p-4 space-y-2">
-        <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30 transition active"><i class="fas fa-car-side"></i> Real-Time Slot Booking</a>
-        <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-warehouse"></i> Parking Lot Management</a>
-        <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-users-cog"></i> User Role-based Login</a>
-        <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-sign-in-alt"></i> Vehicle Entry & Exit</a>
-        <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-chart-line"></i> Performance Reports</a>
-        <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-bell"></i> Alerts & Incidents</a>
-        <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-cogs"></i> Minor Functions</a>
+        <!-- Common Links for All Roles -->
+        <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30 transition active"><i class="fas fa-table"></i> Table View</a>
+        <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-chart-bar"></i> Report View</a>
+
+        <!-- Role-based Links -->
+        <div th:if="${adminRole.name() == 'OPERATIONS_MANAGER'}">
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-parking"></i> Slot Availability</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-user-cog"></i> Staff Assignment</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-chart-line"></i> Performance Summaries</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-tachometer-alt"></i> Live Slot Usage</a>
+        </div>
+        <div th:if="${adminRole.name() == 'CUSTOMER_SERVICE_OFFICER'}">
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-ticket-alt"></i> Booking Details</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-exclamation-triangle"></i> Incident Logging</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-bell"></i> System Alerts</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-history"></i> Complaint History</a>
+        </div>
+        <div th:if="${adminRole.name() == 'IT_SUPPORT'}">
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-cogs"></i> Backend Configurations</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-server"></i> System Uptime</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-key"></i> Password Reset</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-bug"></i> Error Logs</a>
+        </div>
+        <div th:if="${adminRole.name() == 'FINANCE_OFFICER'}">
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-file-invoice-dollar"></i> Financial Reports</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-history"></i> Transaction History</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-chart-pie"></i> Revenue Breakdown</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-file-export"></i> Export Reports</a>
+        </div>
+        <div th:if="${adminRole.name() == 'SECURITY_SUPERVISOR'}">
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-car"></i> Vehicle Registration</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-bell"></i> Overstay Alerts</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-flag"></i> Unauthorized Vehicles</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-clipboard-list"></i> Vehicle Movement Logs</a>
+        </div>
+        <div th:if="${adminRole.name() == 'SUPER_ADMIN'}">
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30 font-bold"><i class="fas fa-crown"></i> Super Admin Panel</a>
+        </div>
     </nav>
     <div class="p-4 border-t border-gray-700">
-        <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-red-500/30 text-red-400"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        <a th:href="@{/admin/logout}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-red-500/30 text-red-400"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
 </aside>
 
@@ -57,55 +85,88 @@
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold">Dashboard Overview</h1>
         <div class="flex items-center gap-4">
-            <span class="text-gray-300">Welcome, Admin</span>
+            <span class="text-gray-300">Welcome, <span th:text="${adminName}">Admin</span></span>
             <img src="/images/admin-avatar.png" alt="Admin" class="h-10 w-10 rounded-full border-2 border-yellow-400">
         </div>
     </div>
 
-    <!-- Stats -->
+    <!-- Role-based Stats -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="glass p-6 rounded-2xl text-center">
-            <i class="fas fa-car text-yellow-400 text-3xl mb-2"></i>
-            <h3 class="text-lg font-semibold">Active Slots</h3>
-            <p class="text-2xl font-bold">124</p>
+        <div th:if="${adminRole.name() == 'OPERATIONS_MANAGER' || adminRole.name() == 'SUPER_ADMIN'}">
+            <div class="glass p-6 rounded-2xl text-center">
+                <i class="fas fa-parking text-yellow-400 text-3xl mb-2"></i>
+                <h3 class="text-lg font-semibold">Active Slots</h3>
+                <p class="text-2xl font-bold">124</p>
+            </div>
         </div>
-        <div class="glass p-6 rounded-2xl text-center">
-            <i class="fas fa-dollar-sign text-green-400 text-3xl mb-2"></i>
-            <h3 class="text-lg font-semibold">Today’s Revenue</h3>
-            <p class="text-2xl font-bold">LKR 85,000</p>
+        <div th:if="${adminRole.name() == 'FINANCE_OFFICER' || adminRole.name() == 'SUPER_ADMIN'}">
+            <div class="glass p-6 rounded-2xl text-center">
+                <i class="fas fa-dollar-sign text-green-400 text-3xl mb-2"></i>
+                <h3 class="text-lg font-semibold">Today’s Revenue</h3>
+                <p class="text-2xl font-bold">LKR 85,000</p>
+            </div>
         </div>
-        <div class="glass p-6 rounded-2xl text-center">
-            <i class="fas fa-users text-blue-400 text-3xl mb-2"></i>
-            <h3 class="text-lg font-semibold">Registered Users</h3>
-            <p class="text-2xl font-bold">1,240</p>
+        <div th:if="${adminRole.name() == 'CUSTOMER_SERVICE_OFFICER' || adminRole.name() == 'SUPER_ADMIN'}">
+            <div class="glass p-6 rounded-2xl text-center">
+                <i class="fas fa-users text-blue-400 text-3xl mb-2"></i>
+                <h3 class="text-lg font-semibold">Registered Users</h3>
+                <p class="text-2xl font-bold">1,240</p>
+            </div>
         </div>
-        <div class="glass p-6 rounded-2xl text-center">
-            <i class="fas fa-exclamation-circle text-red-400 text-3xl mb-2"></i>
-            <h3 class="text-lg font-semibold">Incidents</h3>
-            <p class="text-2xl font-bold">3</p>
+        <div th:if="${adminRole.name() == 'SECURITY_SUPERVISOR' || adminRole.name() == 'CUSTOMER_SERVICE_OFFICER' || adminRole.name() == 'SUPER_ADMIN'}">
+            <div class="glass p-6 rounded-2xl text-center">
+                <i class="fas fa-exclamation-circle text-red-400 text-3xl mb-2"></i>
+                <h3 class="text-lg font-semibold">Incidents</h3>
+                <p class="text-2xl font-bold">3</p>
+            </div>
+        </div>
+        <div th:if="${adminRole.name() == 'IT_SUPPORT' || adminRole.name() == 'SUPER_ADMIN'}">
+            <div class="glass p-6 rounded-2xl text-center">
+                <i class="fas fa-server text-purple-400 text-3xl mb-2"></i>
+                <h3 class="text-lg font-semibold">System Uptime</h3>
+                <p class="text-2xl font-bold">99.9%</p>
+            </div>
         </div>
     </div>
 
     <!-- Placeholder for Dynamic Pages -->
     <section class="glass p-8 rounded-2xl">
-        <h2 class="text-xl font-bold mb-4">📊 Real-Time Slot Booking</h2>
-        <p class="text-gray-300">Here the admin can manage bookings, view slots in Colombo, Kandy, Galle, filter by time/price/location, simulate payments, and check booking history.</p>
-        <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="glass p-4 rounded-lg">
-                <h3 class="font-semibold mb-2">Colombo Slots</h3>
-                <p class="text-gray-400">Available: <span class="text-green-400 font-bold">56</span></p>
+        <h2 class="text-xl font-bold mb-4">📊 Dashboard Content</h2>
+        <div th:switch="${adminRole.name()}">
+            <div th:case="'OPERATIONS_MANAGER'">
+                <p class="text-gray-300">Monitor slot availability, assign staff, view performance summaries, and track live slot usage.</p>
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="glass p-4 rounded-lg">
+                        <h3 class="font-semibold mb-2">Colombo Slots</h3>
+                        <p class="text-gray-400">Available: <span class="text-green-400 font-bold">56</span></p>
+                    </div>
+                    <div class="glass p-4 rounded-lg">
+                        <h3 class="font-semibold mb-2">Kandy Slots</h3>
+                        <p class="text-gray-400">Available: <span class="text-green-400 font-bold">30</span></p>
+                    </div>
+                    <div class="glass p-4 rounded-lg">
+                        <h3 class="font-semibold mb-2">Galle Slots</h3>
+                        <p class="text-gray-400">Available: <span class="text-green-400 font-bold">38</span></p>
+                    </div>
+                </div>
             </div>
-            <div class="glass p-4 rounded-lg">
-                <h3 class="font-semibold mb-2">Kandy Slots</h3>
-                <p class="text-gray-400">Available: <span class="text-green-400 font-bold">30</span></p>
+            <div th:case="'CUSTOMER_SERVICE_OFFICER'">
+                <p class="text-gray-300">View customer bookings, log incidents, receive alerts, and check complaint history.</p>
             </div>
-            <div class="glass p-4 rounded-lg">
-                <h3 class="font-semibold mb-2">Galle Slots</h3>
-                <p class="text-gray-400">Available: <span class="text-green-400 font-bold">38</span></p>
+            <div th:case="'IT_SUPPORT'">
+                <p class="text-gray-300">Manage backend configurations, monitor system uptime, reset passwords, and review error logs.</p>
+            </div>
+            <div th:case="'FINANCE_OFFICER'">
+                <p class="text-gray-300">Generate financial reports, view transaction histories, check revenue breakdowns, and export reports.</p>
+            </div>
+            <div th:case="'SECURITY_SUPERVISOR'">
+                <p class="text-gray-300">Register vehicles, receive overstay alerts, flag unauthorized vehicles, and view movement logs.</p>
+            </div>
+            <div th:case="'SUPER_ADMIN'">
+                <p class="text-gray-300">Access all features: manage slots, staff, bookings, finances, security, and system configurations.</p>
             </div>
         </div>
     </section>
 </main>
-
 </body>
 </html>
