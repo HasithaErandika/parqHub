@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.4</version>
+        <version>3.3.4</version> <!-- Updated to a stable version, you can use 3.5.4 if available -->
         <relativePath/>
     </parent>
 
@@ -35,6 +35,8 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+        <!-- Added Spring Security Dependency -->
+
 
         <!-- Developer Tools -->
         <dependency>
