@@ -4,7 +4,7 @@ CREATE TABLE Admins (
                         name VARCHAR(100) NOT NULL,
                         email VARCHAR(100) UNIQUE NOT NULL,
                         password VARCHAR(255) NOT NULL,
-                        role ENUM('Operations Manager', 'Finance Officer', 'Security Supervisor', 'IT Support', 'Customer Service Officer', 'Super Admin') NOT NULL
+                        role ENUM('Operations Manager', 'Finance Officer', 'Security Supervisor', 'IT Support', 'Customer Service Officer', 'Super Admin') Default 'Super Admin';
 );
 
 -- User (Customer) Table
@@ -63,7 +63,7 @@ CREATE TABLE Payment (
                          payment_id INT PRIMARY KEY AUTO_INCREMENT,
                          booking_id INT NOT NULL,
                          amount DECIMAL(10,2) NOT NULL,
-                         method ENUM('Credit Card', 'Debit Card', 'Online Wallet', 'Cash') NOT NULL,
+                         method ENUM('Credit Card', 'Debit Card', 'Online Wallet', 'Cash') DEFAULT 'Arrival',
                          status ENUM('Pending', 'Completed', 'Failed') DEFAULT 'Pending',
                          timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                          FOREIGN KEY (booking_id) REFERENCES Booking(booking_id)
@@ -83,7 +83,7 @@ CREATE TABLE VehicleLog (
 -- Report Table
 CREATE TABLE Report (
                         report_id INT PRIMARY KEY AUTO_INCREMENT,
-                        type ENUM('Financial', 'Occupancy', 'Performance') NOT NULL,
+                        type ENUM('Financial', 'Occupancy', 'Performance') DEFAULT 'Performance',
                         generated_date DATETIME DEFAULT CURRENT_TIMESTAMP,
                         admin_id INT NOT NULL,
                         FOREIGN KEY (admin_id) REFERENCES Admins(admin_id)
@@ -92,7 +92,7 @@ CREATE TABLE Report (
 -- Notification / Incident Table
 CREATE TABLE Notification (
                               notification_id INT PRIMARY KEY AUTO_INCREMENT,
-                              type ENUM('Full Slot', 'Overstay', 'Security Incident') NOT NULL,
+                              type ENUM('Full Slot', 'Overstay', 'Security Incident') Default 'None',
                               description TEXT,
                               timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                               user_id INT,
