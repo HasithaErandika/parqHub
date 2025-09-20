@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "Payment")
+@Table(name = "payment")
 public class Payment {
 
     @Id
@@ -33,7 +33,9 @@ public class Payment {
 
     // Enum for payment methods
     public enum PaymentMethod {
-        Credit_Card, Debit_Card, Online_Wallet, Cash
+        Card,
+        Cash,
+        Arrival
     }
 
     // Enum for payment status

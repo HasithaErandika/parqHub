@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
-@Table(name = "ParkingLot")
+@Table(name = "parkinglot")
 public class ParkingLot {
 
     @Id
@@ -21,8 +21,11 @@ public class ParkingLot {
     @Column(name = "total_slots", nullable = false)
     private Integer totalSlots;
 
-    @OneToMany(mappedBy = "parkingLot", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "parkingLot", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ParkingSlot> parkingSlots;
+
+    // No-arg constructor
+    public ParkingLot() {}
 
     // Getters and Setters
     public Long getId() { return id; }

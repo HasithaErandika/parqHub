@@ -1,6 +1,8 @@
 package com.prmplatform.parqhub.controller.admin;
 
 import com.prmplatform.parqhub.model.Admin;
+import com.prmplatform.parqhub.model.Booking;
+import com.prmplatform.parqhub.model.ParkingSlot;
 import com.prmplatform.parqhub.model.Report;
 import com.prmplatform.parqhub.repository.ReportRepository;
 import com.prmplatform.parqhub.repository.PaymentRepository;
@@ -164,13 +166,13 @@ public class ReportController {
             // Calculate occupancy metrics
             long totalSlots = parkingSlotRepository.count();
             long availableSlots = parkingSlotRepository.findAll().stream()
-                    .filter(slot -> slot.getStatus() == com.prmplatform.parqhub.model.ParkingSlot.SlotStatus.Available)
+                    .filter(slot -> slot.getStatus() == ParkingSlot.SlotStatus.AVAILABLE)
                     .count();
             long bookedSlots = parkingSlotRepository.findAll().stream()
-                    .filter(slot -> slot.getStatus() == com.prmplatform.parqhub.model.ParkingSlot.SlotStatus.Booked)
+                    .filter(slot -> slot.getStatus() == ParkingSlot.SlotStatus.BOOKED)
                     .count();
             long occupiedSlots = parkingSlotRepository.findAll().stream()
-                    .filter(slot -> slot.getStatus() == com.prmplatform.parqhub.model.ParkingSlot.SlotStatus.Occupied)
+                    .filter(slot -> slot.getStatus() == ParkingSlot.SlotStatus.OCCUPIED)
                     .count();
             
             double avgOccupancy = totalSlots > 0 ? (double) (bookedSlots + occupiedSlots) / totalSlots * 100 : 0;
@@ -210,7 +212,7 @@ public class ReportController {
             
             // Calculate success rates
             long successfulBookings = bookingRepository.findAll().stream()
-                    .filter(booking -> booking.getPaymentStatus() == com.prmplatform.parqhub.model.Booking.PaymentStatus.Completed)
+                    .filter(booking -> booking.getPaymentStatus() == Booking.PaymentStatus.Completed)
                     .count();
             long successfulPayments = paymentRepository.findAll().stream()
                     .filter(payment -> payment.getStatus() == com.prmplatform.parqhub.model.Payment.PaymentStatus.Completed)

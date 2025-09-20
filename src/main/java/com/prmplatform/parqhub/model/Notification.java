@@ -32,7 +32,10 @@ public class Notification {
 
     // Enum for notification types
     public enum NotificationType {
-        Full_Slot, Overstay, Security_Incident
+        FULL_SLOT,
+        OVERSTAY,
+        SECURITY_INCIDENT,
+        NONE
     }
 
     // Getters and Setters

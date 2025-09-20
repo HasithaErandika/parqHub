@@ -193,7 +193,7 @@ public class UserController {
             ParkingSlot slot = slotOpt.get();
 
             // Check if slot is available
-            if (slot.getStatus() != ParkingSlot.SlotStatus.Available) {
+            if (slot.getStatus() != ParkingSlot.SlotStatus.AVAILABLE) {
                 return "error:Slot is not available";
             }
 
@@ -207,7 +207,7 @@ public class UserController {
             booking.setPaymentStatus(Booking.PaymentStatus.Pending);
 
             // Update slot status
-            slot.setStatus(ParkingSlot.SlotStatus.Booked);
+            slot.setStatus(ParkingSlot.SlotStatus.BOOKED);
 
             // Save both
             bookingRepository.save(booking);

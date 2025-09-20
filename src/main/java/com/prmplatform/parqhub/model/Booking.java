@@ -36,7 +36,9 @@ public class Booking {
 
     // Enum for payment status
     public enum PaymentStatus {
-        Pending, Completed, Failed
+        Pending,
+        Completed,
+        Failed
     }
 
     // Getters and Setters

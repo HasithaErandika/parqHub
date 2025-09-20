@@ -24,28 +24,28 @@ public class ManageTablesController {
     private final AdminRepository adminRepository;
     private final UserRepository userRepository;
     private final VehicleRepository vehicleRepository;
-    private final ParkingLotRepository parkingLotRepository;
-    private final ParkingSlotRepository parkingSlotRepository;
+    private final ParkingLotRepository parkinglotRepository;
+    private final ParkingSlotRepository parkingslotRepository;
     private final BookingRepository bookingRepository;
     private final PaymentRepository paymentRepository;
     private final NotificationRepository notificationRepository;
-    private final VehicleLogRepository vehicleLogRepository;
+    private final VehicleLogRepository vehiclelogRepository;
     private final ReportRepository reportRepository;
 
     public ManageTablesController(AdminRepository adminRepository, UserRepository userRepository,
-                                  VehicleRepository vehicleRepository, ParkingLotRepository parkingLotRepository,
-                                  ParkingSlotRepository parkingSlotRepository, BookingRepository bookingRepository,
+                                  VehicleRepository vehicleRepository, ParkingLotRepository parkinglotRepository,
+                                  ParkingSlotRepository parkingslotRepository, BookingRepository bookingRepository,
                                   PaymentRepository paymentRepository, NotificationRepository notificationRepository,
-                                  VehicleLogRepository vehicleLogRepository, ReportRepository reportRepository) {
+                                  VehicleLogRepository vehiclelogRepository, ReportRepository reportRepository) {
         this.adminRepository = adminRepository;
         this.userRepository = userRepository;
         this.vehicleRepository = vehicleRepository;
-        this.parkingLotRepository = parkingLotRepository;
-        this.parkingSlotRepository = parkingSlotRepository;
+        this.parkinglotRepository = parkinglotRepository;
+        this.parkingslotRepository = parkingslotRepository;
         this.bookingRepository = bookingRepository;
         this.paymentRepository = paymentRepository;
         this.notificationRepository = notificationRepository;
-        this.vehicleLogRepository = vehicleLogRepository;
+        this.vehiclelogRepository = vehiclelogRepository;
         this.reportRepository = reportRepository;
     }
 
@@ -58,125 +58,18 @@ public class ManageTablesController {
 
         model.addAttribute("adminName", admin.getName());
         model.addAttribute("adminRole", admin.getRole());
-        initializeSampleData();
 
         return "admin/tables";
     }
 
-    private void initializeSampleData() {
-        if (adminRepository.count() == 0) {
-            Admin sampleAdmin = new Admin();
-            sampleAdmin.setName("Super Admin");
-            sampleAdmin.setEmail("admin@parqhub.com");
-            sampleAdmin.setPassword("admin123");
-            sampleAdmin.setRole(Admin.Role.SUPER_ADMIN);
-            adminRepository.save(sampleAdmin);
-        }
-
-        if (userRepository.count() == 0) {
-            User sampleUser = new User();
-            sampleUser.setName("John Doe");
-            sampleUser.setEmail("john@example.com");
-            sampleUser.setPassword("user123");
-            sampleUser.setContactNo("+1234567890");
-            userRepository.save(sampleUser);
-        }
-
-        if (parkingLotRepository.count() == 0) {
-            ParkingLot sampleLot = new ParkingLot();
-            sampleLot.setCity("Colombo");
-            sampleLot.setLocation("City Center");
-            sampleLot.setTotalSlots(50);
-            parkingLotRepository.save(sampleLot);
-        }
-
-        if (vehicleRepository.count() == 0) {
-            Vehicle sampleVehicle = new Vehicle();
-            sampleVehicle.setVehicleNo("ABC-1234");
-            sampleVehicle.setVehicleType(Vehicle.VehicleType.Car);
-            sampleVehicle.setBrand("Toyota");
-            sampleVehicle.setModel("Camry");
-            sampleVehicle.setColor("Blue");
-            userRepository.findById(1L).ifPresent(sampleVehicle::setUser);
-            vehicleRepository.save(sampleVehicle);
-        }
-
-        if (parkingSlotRepository.count() == 0) {
-            Optional<ParkingLot> firstLot = parkingLotRepository.findById(1L);
-            if (firstLot.isPresent()) {
-                ParkingLot lot = firstLot.get();
-                for (int i = 1; i <= lot.getTotalSlots(); i++) {
-                    ParkingSlot slot = new ParkingSlot();
-                    slot.setParkingLot(lot);
-                    if (i <= lot.getTotalSlots() * 0.6) {
-                        slot.setStatus(ParkingSlot.SlotStatus.Available);
-                    } else if (i <= lot.getTotalSlots() * 0.8) {
-                        slot.setStatus(ParkingSlot.SlotStatus.Booked);
-                    } else {
-                        slot.setStatus(ParkingSlot.SlotStatus.Occupied);
-                    }
-                    parkingSlotRepository.save(slot);
-                }
-            }
-        }
-
-        if (bookingRepository.count() == 0) {
-            Booking sampleBooking = new Booking();
-            sampleBooking.setStartTime(LocalDateTime.now());
-            sampleBooking.setEndTime(LocalDateTime.now().plusHours(2));
-            sampleBooking.setPaymentStatus(Booking.PaymentStatus.Pending);
-            userRepository.findById(1L).ifPresent(sampleBooking::setUser);
-            vehicleRepository.findById(1L).ifPresent(sampleBooking::setVehicle);
-            parkingSlotRepository.findById(1L).ifPresent(sampleBooking::setParkingSlot);
-            bookingRepository.save(sampleBooking);
-        }
-
-        if (paymentRepository.count() == 0) {
-            Payment samplePayment = new Payment();
-            samplePayment.setAmount(new BigDecimal("100.00"));
-            samplePayment.setMethod(Payment.PaymentMethod.Credit_Card);
-            samplePayment.setStatus(Payment.PaymentStatus.Completed);
-            samplePayment.setTimestamp(LocalDateTime.now());
-            bookingRepository.findById(1L).ifPresent(samplePayment::setBooking);
-            paymentRepository.save(samplePayment);
-        }
-
-        if (notificationRepository.count() == 0) {
-            Notification sampleNotification = new Notification();
-            sampleNotification.setType(Notification.NotificationType.Full_Slot);
-            sampleNotification.setDescription("Parking lot is full");
-            sampleNotification.setTimestamp(LocalDateTime.now());
-            userRepository.findById(1L).ifPresent(sampleNotification::setUser);
-            adminRepository.findById(1L).ifPresent(sampleNotification::setAdmin);
-            notificationRepository.save(sampleNotification);
-        }
-
-        if (vehicleLogRepository.count() == 0) {
-            VehicleLog sampleLog = new VehicleLog();
-            sampleLog.setEntryTime(LocalDateTime.now().minusHours(1));
-            sampleLog.setExitTime(LocalDateTime.now());
-            vehicleRepository.findById(1L).ifPresent(sampleLog::setVehicle);
-            parkingLotRepository.findById(1L).ifPresent(sampleLog::setParkingLot);
-            vehicleLogRepository.save(sampleLog);
-        }
-
-        if (reportRepository.count() == 0) {
-            Report sampleReport = new Report();
-            sampleReport.setType(Report.ReportType.Financial);
-            sampleReport.setGeneratedDate(LocalDateTime.now());
-            adminRepository.findById(1L).ifPresent(sampleReport::setAdmin);
-            reportRepository.save(sampleReport);
-        }
-    }
-
     @GetMapping("/{tableName}")
     public String manageTable(@PathVariable String tableName,
-                             @RequestParam(defaultValue = "0") int page,
-                             @RequestParam(defaultValue = "10") int size,
-                             @RequestParam(defaultValue = "id") String sortBy,
-                             @RequestParam(defaultValue = "asc") String sortDir,
-                             @RequestParam(defaultValue = "") String search,
-                             HttpSession session, Model model) {
+                              @RequestParam(defaultValue = "0") int page,
+                              @RequestParam(defaultValue = "10") int size,
+                              @RequestParam(defaultValue = "id") String sortBy,
+                              @RequestParam(defaultValue = "asc") String sortDir,
+                              @RequestParam(defaultValue = "") String search,
+                              HttpSession session, Model model) {
         Admin admin = (Admin) session.getAttribute("loggedInAdmin");
         if (admin == null) {
             return "redirect:/admin/login";
@@ -201,11 +94,11 @@ public class ManageTablesController {
             case "vehicle":
                 pageResult = vehicleRepository.findAll(pageable);
                 break;
-            case "parking_lot":
-                pageResult = parkingLotRepository.findAll(pageable);
+            case "parkinglot":
+                pageResult = parkinglotRepository.findAll(pageable);
                 break;
-            case "parking_slot":
-                pageResult = parkingSlotRepository.findAll(pageable);
+            case "parkingslot":
+                pageResult = parkingslotRepository.findAll(pageable);
                 break;
             case "booking":
                 pageResult = bookingRepository.findAll(pageable);
@@ -216,8 +109,8 @@ public class ManageTablesController {
             case "notification":
                 pageResult = notificationRepository.findAll(pageable);
                 break;
-            case "vehicle_log":
-                pageResult = vehicleLogRepository.findAll(pageable);
+            case "vehiclelog":
+                pageResult = vehiclelogRepository.findAll(pageable);
                 break;
             case "report":
                 pageResult = reportRepository.findAll(pageable);
@@ -254,12 +147,12 @@ public class ManageTablesController {
                     return vehicleRepository.findById(id)
                             .map(ResponseEntity::ok)
                             .orElseGet(() -> ResponseEntity.notFound().build());
-                case "parking_lot":
-                    return parkingLotRepository.findById(id)
+                case "parkinglot":
+                    return parkinglotRepository.findById(id)
                             .map(ResponseEntity::ok)
                             .orElseGet(() -> ResponseEntity.notFound().build());
-                case "parking_slot":
-                    return parkingSlotRepository.findById(id)
+                case "parkingslot":
+                    return parkingslotRepository.findById(id)
                             .map(ResponseEntity::ok)
                             .orElseGet(() -> ResponseEntity.notFound().build());
                 case "booking":
@@ -274,8 +167,8 @@ public class ManageTablesController {
                     return notificationRepository.findById(id)
                             .map(ResponseEntity::ok)
                             .orElseGet(() -> ResponseEntity.notFound().build());
-                case "vehicle_log":
-                    return vehicleLogRepository.findById(id)
+                case "vehiclelog":
+                    return vehiclelogRepository.findById(id)
                             .map(ResponseEntity::ok)
                             .orElseGet(() -> ResponseEntity.notFound().build());
                 case "report":
@@ -303,11 +196,11 @@ public class ManageTablesController {
                 case "vehicle":
                     vehicleRepository.save((Vehicle) item);
                     break;
-                case "parking_lot":
-                    parkingLotRepository.save((ParkingLot) item);
+                case "parkinglot":
+                    parkinglotRepository.save((ParkingLot) item);
                     break;
-                case "parking_slot":
-                    parkingSlotRepository.save((ParkingSlot) item);
+                case "parkingslot":
+                    parkingslotRepository.save((ParkingSlot) item);
                     break;
                 case "booking":
                     Booking booking = (Booking) item;
@@ -323,8 +216,8 @@ public class ManageTablesController {
                     notification.setTimestamp(LocalDateTime.now());
                     notificationRepository.save(notification);
                     break;
-                case "vehicle_log":
-                    vehicleLogRepository.save((VehicleLog) item);
+                case "vehiclelog":
+                    vehiclelogRepository.save((VehicleLog) item);
                     break;
                 case "report":
                     Report report = (Report) item;
@@ -359,13 +252,13 @@ public class ManageTablesController {
                     if (!vehicleRepository.existsById(id)) return "error: Vehicle not found";
                     vehicleRepository.deleteById(id);
                     break;
-                case "parking_lot":
-                    if (!parkingLotRepository.existsById(id)) return "error: Parking lot not found";
-                    parkingLotRepository.deleteById(id);
+                case "parkinglot":
+                    if (!parkinglotRepository.existsById(id)) return "error: Parking lot not found";
+                    parkinglotRepository.deleteById(id);
                     break;
-                case "parking_slot":
-                    if (!parkingSlotRepository.existsById(id)) return "error: Parking slot not found";
-                    parkingSlotRepository.deleteById(id);
+                case "parkingslot":
+                    if (!parkingslotRepository.existsById(id)) return "error: Parking slot not found";
+                    parkingslotRepository.deleteById(id);
                     break;
                 case "booking":
                     if (!bookingRepository.existsById(id)) return "error: Booking not found";
@@ -379,9 +272,9 @@ public class ManageTablesController {
                     if (!notificationRepository.existsById(id)) return "error: Notification not found";
                     notificationRepository.deleteById(id);
                     break;
-                case "vehicle_log":
-                    if (!vehicleLogRepository.existsById(id)) return "error: Vehicle log not found";
-                    vehicleLogRepository.deleteById(id);
+                case "vehiclelog":
+                    if (!vehiclelogRepository.existsById(id)) return "error: Vehicle log not found";
+                    vehiclelogRepository.deleteById(id);
                     break;
                 case "report":
                     if (!reportRepository.existsById(id)) return "error: Report not found";
@@ -401,12 +294,12 @@ public class ManageTablesController {
             case "admins": return new Admin();
             case "users": return new User();
             case "vehicle": return new Vehicle();
-            case "parking_lot": return new ParkingLot();
-            case "parking_slot": return new ParkingSlot();
+            case "parkinglot": return new ParkingLot();
+            case "parkingslot": return new ParkingSlot();
             case "booking": return new Booking();
             case "payment": return new Payment();
             case "notification": return new Notification();
-            case "vehicle_log": return new VehicleLog();
+            case "vehiclelog": return new VehicleLog();
             case "report": return new Report();
             default: return null;
         }

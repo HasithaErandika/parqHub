@@ -16,13 +16,14 @@ public class ParkingSlot {
     private ParkingLot parkingLot;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private SlotStatus status;
+    @Column(name = "status", nullable = false, length = 20)
+    private SlotStatus status = SlotStatus.AVAILABLE;
 
-    // Enum for slot status
     public enum SlotStatus {
-        Available, Booked, Occupied
+        AVAILABLE, BOOKED, OCCUPIED
     }
+
+    public ParkingSlot() {}
 
     // Getters and Setters
     public Long getId() { return id; }
