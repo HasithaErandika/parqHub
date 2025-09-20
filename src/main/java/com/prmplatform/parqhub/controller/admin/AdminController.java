@@ -5,7 +5,12 @@ import com.prmplatform.parqhub.repository.AdminRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/admin")
@@ -27,7 +32,6 @@ public class AdminController {
                         @RequestParam String password,
                         Model model,
                         HttpSession session) {
-
         return adminRepository.findByEmailAndPassword(email, password)
                 .map(admin -> {
                     session.setAttribute("loggedInAdmin", admin);
