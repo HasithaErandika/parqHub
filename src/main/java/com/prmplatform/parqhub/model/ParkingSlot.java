@@ -3,7 +3,7 @@ package com.prmplatform.parqhub.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "ParkingSlot")
+@Table(name = "parkingslot")
 public class ParkingSlot {
 
     @Id

@@ -193,13 +193,13 @@
     <div th:if="${selectedLot}" class="glass p-6 rounded-lg mb-6">
         <div class="flex justify-between items-start mb-4">
             <div>
-                <h2 class="text-xl font-bold" th:text="${selectedLot.city + ' - ' + selectedLot.location}">Parking Lot</h2>
-                <p class="text-gray-400" th:text="'Total Slots: ' + ${totalSlots}">Total Slots: 0</p>
+                <h2 class="text-xl font-bold" th:text="|${selectedLot.city} - ${selectedLot.location}|">Parking Lot</h2>
+                <p class="text-gray-400" th:text="|Total Slots: ${totalSlots}|">Total Slots: 0</p>
             </div>
-            <div class="text-right">
-                <p class="text-sm text-gray-400">Last Updated</p>
-                <p class="text-sm" id="lastUpdated">Just now</p>
-            </div>
+
+
+
+
         </div>
 
         <!-- Statistics -->
@@ -241,10 +241,10 @@
         <div class="slot-grid" id="slotGrid">
             <div th:each="slot : ${parkingSlots}"
                  th:class="'slot ' + ${slot.status.name().toLowerCase()}"
-                 th:data-slot-id="${slot.slotId}"
+                 th:data-slot-id="${slot.id}"
                  th:data-status="${slot.status}"
-                 th:text="${slot.slotId}"
-                 th:title="'Slot ' + ${slot.slotId} + ' - ' + ${slot.status}">
+                 th:text="${slot.id}"
+                 th:title="'Slot ' + ${slot.id} + ' - ' + ${slot.status}">
             </div>
         </div>
     </div>
@@ -314,10 +314,10 @@
         slots.forEach(slot => {
             const slotElement = document.createElement('div');
             slotElement.className = `slot ${slot.status.toLowerCase()}`;
-            slotElement.setAttribute('data-slot-id', slot.slotId);
+            slotElement.setAttribute('data-slot-id', slot.id);
             slotElement.setAttribute('data-status', slot.status);
-            slotElement.setAttribute('title', `Slot ${slot.slotId} - ${slot.status}`);
-            slotElement.textContent = slot.slotId;
+            slotElement.setAttribute('title', `Slot ${slot.id} - ${slot.status}`);
+            slotElement.textContent = slot.id;
             slotElement.style.visibility = 'visible';
             slotElement.style.opacity = '1';
             slotGrid.appendChild(slotElement);
