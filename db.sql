@@ -33,8 +33,11 @@ CREATE TABLE ParkingLot (
                             lot_id INT PRIMARY KEY AUTO_INCREMENT,
                             city VARCHAR(100) NOT NULL,
                             location VARCHAR(255) NOT NULL,
-                            total_slots INT NOT NULL
+                            total_slots INT NOT NULL,
+                            price_hr DECIMAL(10,2) NOT NULL DEFAULT 0.00
 );
+
+
 
 -- ParkingSlot Table
 CREATE TABLE ParkingSlot (

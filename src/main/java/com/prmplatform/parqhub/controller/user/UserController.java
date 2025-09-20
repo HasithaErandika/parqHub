@@ -136,23 +136,6 @@ public class UserController {
         return "success:Vehicle added successfully";
     }
 
-    @GetMapping("/findparking")
-    public String findParking(HttpSession session, Model model) {
-        User user = (User) session.getAttribute("loggedInUser");
-        if (user == null) {
-            return "redirect:/user/login";
-        }
-
-        List<ParkingLot> parkingLots = parkingLotRepository.findAll();
-        List<Vehicle> userVehicles = vehicleRepository.findByUserId(user.getId());
-
-        model.addAttribute("userName", user.getName());
-        model.addAttribute("parkingLots", parkingLots);
-        model.addAttribute("userVehicles", userVehicles);
-
-        return "user/findparking";
-    }
-
     @GetMapping("/parking-slots/{lotId}")
     @ResponseBody
     public List<ParkingSlot> getParkingSlots(@PathVariable Long lotId) {

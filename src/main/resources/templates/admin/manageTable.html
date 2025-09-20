@@ -227,10 +227,15 @@
                         </button>
                     </td>
                 </tr>
-                <tr th:each="item : ${items}" th:if="${tableName == 'parkingslot'}" class="hover:bg-gray-700/30">
+                <tr th:each="item : ${items}" th:if="${tableName == 'parkinglot'}" class="hover:bg-gray-700/30">
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.id}">1</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.parkingLot.id}">1</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.status}">Available</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.city}">New York</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.location}">5th Avenue</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.totalSlots}">50</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300"
+                        th:text="${#numbers.formatDecimal(item.priceHr, 1, 'COMMA', 2, 'POINT')}">
+                        10.00
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button th:onclick="'editItem(' + ${item.id} + ')'" class="text-yellow-400 hover:text-yellow-300 mr-3">
                             <i class="fas fa-edit"></i>
@@ -429,12 +434,14 @@
         },
         'parkinglot': {
             fields: [
-                {name: 'city', label: 'City', type: 'text', required: true},
-                {name: 'location', label: 'Location', type: 'text', required: true},
-                {name: 'totalSlots', label: 'Total Slots', type: 'number', required: true}
+                { name: 'city', label: 'City', type: 'text', required: true },
+                { name: 'location', label: 'Location', type: 'text', required: true },
+                { name: 'totalSlots', label: 'Total Slots', type: 'number', required: true },
+                { name: 'priceHr', label: 'Price per Hour', type: 'number', step: '0.01', required: true }
             ],
-            headers: ['City', 'Location', 'Total Slots']
+            headers: ['City', 'Location', 'Total Slots', 'Price per Hour']
         },
+
         'parkingslot': {
             fields: [
                 {name: 'parkingLot.id', label: 'Lot ID', type: 'number', required: true},

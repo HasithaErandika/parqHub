@@ -2,6 +2,7 @@ package com.prmplatform.parqhub.model;
 
 import jakarta.persistence.*;
 import java.util.List;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "parkinglot")
@@ -21,6 +22,9 @@ public class ParkingLot {
     @Column(name = "total_slots", nullable = false)
     private Integer totalSlots;
 
+    @Column(name = "price_hr", nullable = false, precision = 10, scale = 2)
+    private BigDecimal priceHr;
+
     @OneToMany(mappedBy = "parkingLot", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ParkingSlot> parkingSlots;
 
@@ -39,6 +43,9 @@ public class ParkingLot {
 
     public Integer getTotalSlots() { return totalSlots; }
     public void setTotalSlots(Integer totalSlots) { this.totalSlots = totalSlots; }
+
+    public BigDecimal getPriceHr() { return priceHr; }
+    public void setPriceHr(BigDecimal priceHr) { this.priceHr = priceHr; }
 
     public List<ParkingSlot> getParkingSlots() { return parkingSlots; }
     public void setParkingSlots(List<ParkingSlot> parkingSlots) { this.parkingSlots = parkingSlots; }
