@@ -98,7 +98,7 @@
 
     <!-- Table Management Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        
+
         <!-- Admins Table -->
         <div class="glass p-6 rounded-2xl hover:bg-yellow-400/10 transition cursor-pointer table-card" onclick="navigateToTable('admins')" role="button" aria-label="Manage Admins">
             <div class="flex items-center justify-between mb-4">
@@ -130,7 +130,7 @@
         </div>
 
         <!-- Parking Lots Table -->
-        <div class="glass p-6 rounded-2xl hover:bg-yellow-400/10 transition cursor-pointer table-card" onclick="navigateToTable('parking_lot')" role="button" aria-label="Manage Parking Lots">
+        <div class="glass p-6 rounded-2xl hover:bg-yellow-400/10 transition cursor-pointer table-card" onclick="navigateToTable('parkinglot')" role="button" aria-label="Manage Parking Lots">
             <div class="flex items-center justify-between mb-4">
                 <i class="fas fa-parking text-green-400 text-3xl"></i>
                 <span class="text-sm text-yellow-400 font-semibold">Manage</span>
@@ -140,7 +140,7 @@
         </div>
 
         <!-- Parking Slots Table -->
-        <div class="glass p-6 rounded-2xl hover:bg-yellow-400/10 transition cursor-pointer table-card" onclick="navigateToTable('parking_slot')" role="button" aria-label="Manage Parking Slots">
+        <div class="glass p-6 rounded-2xl hover:bg-yellow-400/10 transition cursor-pointer table-card" onclick="navigateToTable('parkingslot')" role="button" aria-label="Manage Parking Slots">
             <div class="flex items-center justify-between mb-4">
                 <i class="fas fa-square text-purple-400 text-3xl"></i>
                 <span class="text-sm text-yellow-400 font-semibold">Manage</span>
@@ -180,7 +180,7 @@
         </div>
 
         <!-- Vehicle Logs Table -->
-        <div class="glass p-6 rounded-2xl hover:bg-yellow-400/10 transition cursor-pointer table-card" onclick="navigateToTable('vehicle_log')" role="button" aria-label="Manage Vehicle Logs">
+        <div class="glass p-6 rounded-2xl hover:bg-yellow-400/10 transition cursor-pointer table-card" onclick="navigateToTable('vehiclelog')" role="button" aria-label="Manage Vehicle Logs">
             <div class="flex items-center justify-between mb-4">
                 <i class="fas fa-clipboard-list text-indigo-400 text-3xl"></i>
                 <span class="text-sm text-yellow-400 font-semibold">Manage</span>
@@ -203,9 +203,9 @@
 </main>
 
 <script>
-function navigateToTable(tableName) {
-    window.location.href = `/admin/tables/${tableName}`;
-}
+    function navigateToTable(tableName) {
+        window.location.href = `/admin/tables/${tableName}`;
+    }
 </script>
 
 </body>

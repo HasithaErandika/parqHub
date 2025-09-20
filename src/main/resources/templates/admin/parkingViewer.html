@@ -80,17 +80,16 @@
 </head>
 <body class="text-white flex">
 
-<!-- Sidebar -->
+<!-- Sidebar (unchanged) -->
 <aside class="w-72 h-screen glass flex flex-col fixed">
     <div class="p-6 flex items-center gap-3 border-b border-gray-700">
         <img src="/images/logo.svg" alt="ParQHub" class="h-10">
         <span class="text-2xl font-bold">ParQHub</span>
     </div>
     <nav class="flex-1 p-4 space-y-2">
-        <!-- Common Links for All Roles -->
-        <a href="/admin/dashboard" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30 transition active"><i class="fas fa-home"></i> Dashboard</a>
+        <a href="/admin/dashboard" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30 transition"><i class="fas fa-home"></i> Dashboard</a>
         <a href="/admin/tables" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30 transition"><i class="fas fa-table"></i> Table View</a>
-        <a href="/admin/parking-viewer" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30 transition"><i class="fas fa-parking"></i> Parking Viewer</a>
+        <a href="/admin/parking-viewer" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30 transition active"><i class="fas fa-parking"></i> Parking Viewer</a>
         <a href="/admin/reports" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-chart-bar"></i> Report View</a>
 
         <div th:if="${adminRole.name() == 'OPERATIONS_MANAGER'}">
@@ -157,38 +156,35 @@
         <form method="get" action="/admin/parking-viewer" class="flex flex-col gap-4">
             <div class="flex gap-4 items-end">
                 <div class="flex-1">
-                    <label for="city" class="block text-sm font-medium text-gray-300 mb-2">Search by City</label>
-                    <input type="text" id="city" name="city" placeholder="Enter city name..." 
-                           class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-400">
+                    <label for="city" class="block text-sm font-medium text-gray-300 mb-2">Select City</label>
+                    <select name="city" id="city" onchange="updateLocations()"
+                            class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-400">
+                        <option value="">Select a city...</option>
+                        <option th:each="city : ${cities}"
+                                th:value="${city}"
+                                th:text="${city}"
+                                th:selected="${param.city != null && param.city == city}">
+                            City
+                        </option>
+                    </select>
                 </div>
                 <div class="flex-1">
-                    <label for="location" class="block text-sm font-medium text-gray-300 mb-2">Search by Location</label>
-                    <input type="text" id="location" name="location" placeholder="Enter location..." 
-                           class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-400">
+                    <label for="location" class="block text-sm font-medium text-gray-300 mb-2">Select Location</label>
+                    <select name="location" id="location" onchange="this.form.submit()"
+                            class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-400">
+                        <option value="">Select a location...</option>
+                    </select>
                 </div>
             </div>
             <div class="flex gap-4">
-                <button type="button" onclick="searchParkingLots()" 
+                <button type="submit"
                         class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-400 transition font-semibold">
                     <i class="fas fa-search mr-2"></i>Search
                 </button>
-                <button type="button" onclick="clearSearch()" 
+                <button type="button" onclick="clearSearch()"
                         class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-400 transition font-semibold">
                     <i class="fas fa-times mr-2"></i>Clear
                 </button>
-            </div>
-            <div class="flex-1">
-                <label for="lotId" class="block text-sm font-medium text-gray-300 mb-2">Parking Lot</label>
-                <select name="lotId" id="lotId" onchange="this.form.submit()" 
-                        class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-400">
-                    <option value="">Select a parking lot...</option>
-                    <option th:each="lot : ${parkingLots}" 
-                            th:value="${lot.id}" 
-                            th:text="${lot.city + ' - ' + lot.location}"
-                            th:selected="${selectedLot != null && selectedLot.id == lot.id}">
-                        Parking Lot
-                    </option>
-                </select>
             </div>
         </form>
     </div>
@@ -198,14 +194,14 @@
         <div class="flex justify-between items-start mb-4">
             <div>
                 <h2 class="text-xl font-bold" th:text="${selectedLot.city + ' - ' + selectedLot.location}">Parking Lot</h2>
-                <p class="text-gray-400" th:text="'Total Slots: ' + ${selectedLot.totalSlots}">Total Slots: 50</p>
+                <p class="text-gray-400" th:text="'Total Slots: ' + ${totalSlots}">Total Slots: 0</p>
             </div>
             <div class="text-right">
                 <p class="text-sm text-gray-400">Last Updated</p>
                 <p class="text-sm" id="lastUpdated">Just now</p>
             </div>
         </div>
-        
+
         <!-- Statistics -->
         <div class="grid grid-cols-3 gap-4 mb-6">
             <div class="text-center">
@@ -243,12 +239,12 @@
     <div th:if="${selectedLot}" class="glass p-6 rounded-lg">
         <h3 class="text-lg font-bold mb-4">Parking Slots</h3>
         <div class="slot-grid" id="slotGrid">
-            <div th:each="slot : ${parkingSlots}" 
+            <div th:each="slot : ${parkingSlots}"
                  th:class="'slot ' + ${slot.status.name().toLowerCase()}"
-                 th:data-slot-id="${slot.id}"
+                 th:data-slot-id="${slot.slotId}"
                  th:data-status="${slot.status}"
-                 th:text="${slot.id}"
-                 th:title="'Slot ' + ${slot.id} + ' - ' + ${slot.status}">
+                 th:text="${slot.slotId}"
+                 th:title="'Slot ' + ${slot.slotId} + ' - ' + ${slot.status}">
             </div>
         </div>
     </div>
@@ -257,129 +253,107 @@
     <div th:if="${selectedLot == null}" class="glass p-8 rounded-lg text-center">
         <i class="fas fa-parking text-6xl text-gray-600 mb-4"></i>
         <h3 class="text-xl font-bold mb-2">Select a Parking Lot</h3>
-        <p class="text-gray-400">Choose a parking lot from the dropdown above to view its slots in real-time.</p>
+        <p class="text-gray-400">Choose a city and location from the dropdowns above to view its slots in real-time.</p>
     </div>
 </main>
 
 <script>
-let refreshInterval;
-const selectedLotId = /*[[${selectedLot?.id}]]*/ null;
+    let refreshInterval;
+    const selectedLotId = /*[[${selectedLot?.id}]]*/ null;
 
-function searchParkingLots() {
-    const city = document.getElementById('city').value.trim();
-    const location = document.getElementById('location').value.trim();
-    const queryParams = new URLSearchParams();
-    
-    if (city) queryParams.append('city', city);
-    if (location) queryParams.append('location', location);
-    
-    fetch(`/admin/api/parking-lots/search?${queryParams.toString()}`)
-        .then(response => response.json())
-        .then(lots => {
-            const lotSelect = document.getElementById('lotId');
-            lotSelect.innerHTML = '<option value="">Select a parking lot...</option>';
-            
-            lots.forEach(lot => {
-                const option = document.createElement('option');
-                option.value = lot.id;
-                option.textContent = `${lot.city} - ${lot.location}`;
-                if (selectedLotId && selectedLotId === lot.id) {
-                    option.selected = true;
-                }
-                lotSelect.appendChild(option);
-            });
-        })
-        .catch(error => {
-            console.error('Error searching parking lots:', error);
+    function updateLocations() {
+        const citySelect = document.getElementById('city');
+        const locationSelect = document.getElementById('location');
+        const city = citySelect.value;
+
+        locationSelect.innerHTML = '<option value="">Select a location...</option>';
+
+        if (city) {
+            fetch(`/admin/api/locations?city=${encodeURIComponent(city)}`)
+                .then(response => response.json())
+                .then(locations => {
+                    locations.forEach(location => {
+                        const option = document.createElement('option');
+                        option.value = location;
+                        option.textContent = location;
+                        locationSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching locations:', error);
+                });
+        }
+    }
+
+    function clearSearch() {
+        document.getElementById('city').value = '';
+        document.getElementById('location').value = '';
+        document.getElementById('location').innerHTML = '<option value="">Select a location...</option>';
+        document.forms[0].submit();
+    }
+
+    function refreshSlots() {
+        if (selectedLotId) {
+            fetch(`/admin/api/parking-slots/${selectedLotId}`)
+                .then(response => response.json())
+                .then(slots => {
+                    updateSlotGrid(slots);
+                    updateStatistics(slots);
+                    updateLastUpdated();
+                })
+                .catch(error => {
+                    console.error('Error refreshing slots:', error);
+                });
+        }
+    }
+
+    function updateSlotGrid(slots) {
+        const slotGrid = document.getElementById('slotGrid');
+        slotGrid.innerHTML = '';
+
+        slots.forEach(slot => {
+            const slotElement = document.createElement('div');
+            slotElement.className = `slot ${slot.status.toLowerCase()}`;
+            slotElement.setAttribute('data-slot-id', slot.slotId);
+            slotElement.setAttribute('data-status', slot.status);
+            slotElement.setAttribute('title', `Slot ${slot.slotId} - ${slot.status}`);
+            slotElement.textContent = slot.slotId;
+            slotElement.style.visibility = 'visible';
+            slotElement.style.opacity = '1';
+            slotGrid.appendChild(slotElement);
         });
-}
+    }
 
-function clearSearch() {
-    document.getElementById('city').value = '';
-    document.getElementById('location').value = '';
-    fetch('/admin/api/parking-lots')
-        .then(response => response.json())
-        .then(lots => {
-            const lotSelect = document.getElementById('lotId');
-            lotSelect.innerHTML = '<option value="">Select a parking lot...</option>';
-            
-            lots.forEach(lot => {
-                const option = document.createElement('option');
-                option.value = lot.id;
-                option.textContent = `${lot.city} - ${lot.location}`;
-                if (selectedLotId && selectedLotId === lot.id) {
-                    option.selected = true;
-                }
-                lotSelect.appendChild(option);
-            });
-        })
-        .catch(error => {
-            console.error('Error fetching all parking lots:', error);
-        });
-}
+    function updateStatistics(slots) {
+        const availableCount = slots.filter(s => s.status === 'Available').length;
+        const bookedCount = slots.filter(s => s.status === 'Booked').length;
+        const occupiedCount = slots.filter(s => s.status === 'Occupied').length;
 
-function refreshSlots() {
+        const statsElements = document.querySelectorAll('.text-2xl.font-bold');
+        if (statsElements.length >= 3) {
+            statsElements[0].textContent = availableCount;
+            statsElements[1].textContent = bookedCount;
+            statsElements[2].textContent = occupiedCount;
+        }
+    }
+
+    function updateLastUpdated() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString();
+        document.getElementById('lastUpdated').textContent = timeString;
+    }
+
     if (selectedLotId) {
-        fetch(`/admin/api/parking-slots/${selectedLotId}`)
-            .then(response => response.json())
-            .then(slots => {
-                updateSlotGrid(slots);
-                updateStatistics(slots);
-                updateLastUpdated();
-            })
-            .catch(error => {
-                console.error('Error refreshing slots:', error);
-            });
+        refreshInterval = setInterval(refreshSlots, 30000);
     }
-}
 
-function updateSlotGrid(slots) {
-    const slotGrid = document.getElementById('slotGrid');
-    slotGrid.innerHTML = '';
-    
-    slots.forEach(slot => {
-        const slotElement = document.createElement('div');
-        slotElement.className = `slot ${slot.status.toLowerCase()}`;
-        slotElement.setAttribute('data-slot-id', slot.id);
-        slotElement.setAttribute('data-status', slot.status);
-        slotElement.setAttribute('title', `Slot ${slot.id} - ${slot.status}`);
-        slotElement.textContent = slot.id;
-        slotElement.style.visibility = 'visible';
-        slotElement.style.opacity = '1';
-        slotGrid.appendChild(slotElement);
+    window.addEventListener('beforeunload', function() {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+        }
     });
-}
 
-function updateStatistics(slots) {
-    const availableCount = slots.filter(s => s.status === 'Available').length;
-    const bookedCount = slots.filter(s => s.status === 'Booked').length;
-    const occupiedCount = slots.filter(s => s.status === 'Occupied').length;
-    
-    const statsElements = document.querySelectorAll('.text-2xl.font-bold');
-    if (statsElements.length >= 3) {
-        statsElements[0].textContent = availableCount;
-        statsElements[1].textContent = bookedCount;
-        statsElements[2].textContent = occupiedCount;
-    }
-}
-
-function updateLastUpdated() {
-    const now = new Date();
-    const timeString = now.toLocaleTimeString();
-    document.getElementById('lastUpdated').textContent = timeString;
-}
-
-if (selectedLotId) {
-    refreshInterval = setInterval(refreshSlots, 30000);
-}
-
-window.addEventListener('beforeunload', function() {
-    if (refreshInterval) {
-        clearInterval(refreshInterval);
-    }
-});
-
-updateLastUpdated();
+    updateLastUpdated();
 </script>
 
 </body>
