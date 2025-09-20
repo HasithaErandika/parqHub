@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParQHub - Manage <span th:text="${tableName}">Table</span></title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <script src="https://kit.fontawesome.com/4ad8d5ae3f.js" crossorigin="anonymous"></script>
+
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #0a0f1c; }
+        .glass {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .active {
+            background: linear-gradient(90deg, #ffb703, #ff6600);
+            color: #0a0f1c !important;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="text-white flex">
+
+<!-- Sidebar -->
+<aside class="w-72 h-screen glass flex flex-col fixed">
+    <div class="p-6 flex items-center gap-3 border-b border-gray-700">
+        <img src="/images/logo.svg" alt="ParQHub" class="h-10">
+        <span class="text-2xl font-bold">ParQHub</span>
+    </div>
+    <nav class="flex-1 p-4 space-y-2">
+        <a href="/admin/dashboard" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30 transition active"><i class="fas fa-home"></i> Dashboard</a>
+        <a href="/admin/tables" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30 transition"><i class="fas fa-table"></i> Table View</a>
+        <a href="/admin/parking-viewer" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30 transition"><i class="fas fa-parking"></i> Parking Viewer</a>
+        <a href="/admin/reports" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-chart-bar"></i> Report View</a>
+        <div th:if="${adminRole.name() == 'OPERATIONS_MANAGER'}">
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-parking"></i> Slot Availability</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-user-cog"></i> Staff Assignment</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-chart-line"></i> Performance Summaries</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-tachometer-alt"></i> Live Slot Usage</a>
+        </div>
+        <div th:if="${adminRole.name() == 'CUSTOMER_SERVICE_OFFICER'}">
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-ticket-alt"></i> Booking Details</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-exclamation-triangle"></i> Incident Logging</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-bell"></i> System Alerts</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-history"></i> Complaint History</a>
+        </div>
+        <div th:if="${adminRole.name() == 'IT_SUPPORT'}">
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-cogs"></i> Backend Configurations</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-server"></i> System Uptime</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-key"></i> Password Reset</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-bug"></i> Error Logs</a>
+        </div>
+        <div th:if="${adminRole.name() == 'FINANCE_OFFICER'}">
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-file-invoice-dollar"></i> Financial Reports</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-history"></i> Transaction History</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-chart-pie"></i> Revenue Breakdown</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-file-export"></i> Export Reports</a>
+        </div>
+        <div th:if="${adminRole.name() == 'SECURITY_SUPERVISOR'}">
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-car"></i> Vehicle Registration</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-bell"></i> Overstay Alerts</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-flag"></i> Unauthorized Vehicles</a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30"><i class="fas fa-clipboard-list"></i> Vehicle Movement Logs</a>
+        </div>
+        <div th:if="${adminRole.name() == 'SUPER_ADMIN'}">
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-400/30 font-bold"><i class="fas fa-crown"></i> Super Admin Panel</a>
+        </div>
+    </nav>
+    <div class="p-4 border-t border-gray-700">
+        <a th:href="@{/admin/logout}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-red-500/30 text-red-400"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </div>
+</aside>
+
+<!-- Main Content -->
+<main class="ml-72 w-full p-6">
+    <!-- Top bar -->
+    <div class="flex justify-between items-center mb-6">
+        <div class="flex items-center gap-4">
+            <a href="/admin/tables" class="bg-gray-700 text-yellow-400 px-3 py-2 rounded-lg hover:bg-gray-600 hover:text-yellow-300 transition font-semibold" title="Back to Tables">
+                <i class="fas fa-arrow-left mr-2"></i>Back to Tables
+            </a>
+            <h1 class="text-2xl font-bold">Manage <span th:text="${tableName}">Table</span></h1>
+        </div>
+        <div class="flex items-center gap-4">
+            <button onclick="openAddModal()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-400 transition font-semibold">
+                <i class="fas fa-plus mr-2"></i>Add New
+            </button>
+            <button onclick="refreshTable()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-400 transition font-semibold">
+                <i class="fas fa-sync-alt mr-2"></i>Refresh
+            </button>
+            <span class="text-gray-300">Welcome, <span th:text="${adminName}">Admin</span></span>
+            <img src="/images/admin-avatar.png" alt="Admin" class="h-10 w-10 rounded-full border-2 border-yellow-400">
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <div th:if="${success}" class="bg-green-500/20 border border-green-500 text-green-300 px-4 py-3 rounded-lg mb-6">
+        <i class="fas fa-check-circle mr-2"></i><span th:text="${success}">Success message</span>
+    </div>
+    <div th:if="${error}" class="bg-red-500/20 border border-red-500 text-red-300 px-4 py-3 rounded-lg mb-6">
+        <i class="fas fa-exclamation-circle mr-2"></i><span th:text="${error}">Error message</span>
+    </div>
+
+    <!-- Search and Filter Bar -->
+    <div class="glass p-4 rounded-lg mb-6">
+        <div class="flex flex-wrap gap-4 items-center">
+            <div class="flex-1 min-w-64">
+                <input type="text" id="searchInput" placeholder="Search..." th:value="${searchTerm}"
+                       class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-400">
+            </div>
+            <button onclick="searchTable()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-400 transition">
+                <i class="fas fa-search mr-2"></i>Search
+            </button>
+            <button onclick="clearSearch()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-400 transition">
+                <i class="fas fa-times mr-2"></i>Clear
+            </button>
+        </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="glass rounded-lg overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-800/50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">ID</th>
+                        <!-- Dynamic headers based on table type -->
+                        <th th:if="${tableName == 'admins'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Name</th>
+                        <th th:if="${tableName == 'admins'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Email</th>
+                        <th th:if="${tableName == 'admins'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Role</th>
+                        <th th:if="${tableName == 'users'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Name</th>
+                        <th th:if="${tableName == 'users'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Email</th>
+                        <th th:if="${tableName == 'users'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Contact</th>
+                        <th th:if="${tableName == 'vehicle'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Vehicle No</th>
+                        <th th:if="${tableName == 'vehicle'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Type</th>
+                        <th th:if="${tableName == 'vehicle'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Brand</th>
+                        <th th:if="${tableName == 'vehicle'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Model</th>
+                        <th th:if="${tableName == 'parking_lot'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">City</th>
+                        <th th:if="${tableName == 'parking_lot'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Location</th>
+                        <th th:if="${tableName == 'parking_lot'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Total Slots</th>
+                        <th th:if="${tableName == 'parking_slot'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Lot ID</th>
+                        <th th:if="${tableName == 'parking_slot'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+                        <th th:if="${tableName == 'booking'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">User ID</th>
+                        <th th:if="${tableName == 'booking'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Vehicle ID</th>
+                        <th th:if="${tableName == 'booking'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Slot ID</th>
+                        <th th:if="${tableName == 'booking'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Start Time</th>
+                        <th th:if="${tableName == 'booking'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Payment Status</th>
+                        <th th:if="${tableName == 'payment'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Booking ID</th>
+                        <th th:if="${tableName == 'payment'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Amount</th>
+                        <th th:if="${tableName == 'payment'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Method</th>
+                        <th th:if="${tableName == 'payment'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+                        <th th:if="${tableName == 'notification'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Type</th>
+                        <th th:if="${tableName == 'notification'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Description</th>
+                        <th th:if="${tableName == 'notification'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Timestamp</th>
+                        <th th:if="${tableName == 'vehicle_log'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Vehicle ID</th>
+                        <th th:if="${tableName == 'vehicle_log'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Lot ID</th>
+                        <th th:if="${tableName == 'vehicle_log'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Entry Time</th>
+                        <th th:if="${tableName == 'vehicle_log'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Exit Time</th>
+                        <th th:if="${tableName == 'report'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Type</th>
+                        <th th:if="${tableName == 'report'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Generated Date</th>
+                        <th th:if="${tableName == 'report'}" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Admin</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-700">
+                    <tr th:each="item : ${items}" th:if="${tableName == 'admins'}" class="hover:bg-gray-700/30">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.id}">1</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.name}">Admin Name</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.email}">admin@example.com</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.role}">SUPER_ADMIN</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button th:onclick="'editItem(' + ${item.id} + ')'" class="text-yellow-400 hover:text-yellow-300 mr-3">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button th:onclick="'deleteItem(' + ${item.id} + ')'" class="text-red-400 hover:text-red-300">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr th:each="item : ${items}" th:if="${tableName == 'users'}" class="hover:bg-gray-700/30">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.id}">1</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.name}">User Name</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.email}">user@example.com</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.contactNo}">+1234567890</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button th:onclick="'editItem(' + ${item.id} + ')'" class="text-yellow-400 hover:text-yellow-300 mr-3">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button th:onclick="'deleteItem(' + ${item.id} + ')'" class="text-red-400 hover:text-red-300">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr th:each="item : ${items}" th:if="${tableName == 'vehicle'}" class="hover:bg-gray-700/30">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.id}">1</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.vehicleNo}">ABC-1234</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.vehicleType}">Car</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.brand}">Toyota</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.model}">Camry</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button th:onclick="'editItem(' + ${item.id} + ')'" class="text-yellow-400 hover:text-yellow-300 mr-3">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button th:onclick="'deleteItem(' + ${item.id} + ')'" class="text-red-400 hover:text-red-300">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr th:each="item : ${items}" th:if="${tableName == 'parking_lot'}" class="hover:bg-gray-700/30">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.id}">1</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.city}">Colombo</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.location}">City Center</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.totalSlots}">50</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button th:onclick="'editItem(' + ${item.id} + ')'" class="text-yellow-400 hover:text-yellow-300 mr-3">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button th:onclick="'deleteItem(' + ${item.id} + ')'" class="text-red-400 hover:text-red-300">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr th:each="item : ${items}" th:if="${tableName == 'parking_slot'}" class="hover:bg-gray-700/30">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.id}">1</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.parkingLot.id}">1</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.status}">Available</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button th:onclick="'editItem(' + ${item.id} + ')'" class="text-yellow-400 hover:text-yellow-300 mr-3">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button th:onclick="'deleteItem(' + ${item.id} + ')'" class="text-red-400 hover:text-red-300">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr th:each="item : ${items}" th:if="${tableName == 'booking'}" class="hover:bg-gray-700/30">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.id}">1</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.user.id}">1</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.vehicle.id}">1</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.parkingSlot.id}">1</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${#temporals.format(item.startTime, 'yyyy-MM-dd HH:mm')}">2024-01-01 10:00</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.paymentStatus}">Pending</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button th:onclick="'editItem(' + ${item.id} + ')'" class="text-yellow-400 hover:text-yellow-300 mr-3">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button th:onclick="'deleteItem(' + ${item.id} + ')'" class="text-red-400 hover:text-red-300">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr th:each="item : ${items}" th:if="${tableName == 'payment'}" class="hover:bg-gray-700/30">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.id}">1</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.booking.id}">1</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.amount}">100.00</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.method}">Credit Card</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.status}">Completed</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button th:onclick="'editItem(' + ${item.id} + ')'" class="text-yellow-400 hover:text-yellow-300 mr-3">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button th:onclick="'deleteItem(' + ${item.id} + ')'" class="text-red-400 hover:text-red-300">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr th:each="item : ${items}" th:if="${tableName == 'notification'}" class="hover:bg-gray-700/30">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.id}">1</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.type}">Full Slot</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.description}">Parking lot is full</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${#temporals.format(item.timestamp, 'yyyy-MM-dd HH:mm')}">2024-01-01 10:00</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button th:onclick="'editItem(' + ${item.id} + ')'" class="text-yellow-400 hover:text-yellow-300 mr-3">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button th:onclick="'deleteItem(' + ${item.id} + ')'" class="text-red-400 hover:text-red-300">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr th:each="item : ${items}" th:if="${tableName == 'vehicle_log'}" class="hover:bg-gray-700/30">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.id}">1</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.vehicle.id}">1</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.parkingLot.id}">1</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${#temporals.format(item.entryTime, 'yyyy-MM-dd HH:mm')}">2024-01-01 10:00</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.exitTime != null ? #temporals.format(item.exitTime, 'yyyy-MM-dd HH:mm') : 'N/A'}">N/A</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button th:onclick="'editItem(' + ${item.id} + ')'" class="text-yellow-400 hover:text-yellow-300 mr-3">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button th:onclick="'deleteItem(' + ${item.id} + ')'" class="text-red-400 hover:text-red-300">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr th:each="item : ${items}" th:if="${tableName == 'report'}" class="hover:bg-gray-700/30">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.id}">1</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.type}">Financial</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${#temporals.format(item.generatedDate, 'yyyy-MM-dd HH:mm')}">2024-01-01 10:00</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" th:text="${item.admin.name}">Super Admin</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button th:onclick="'editItem(' + ${item.id} + ')'" class="text-yellow-400 hover:text-yellow-300 mr-3">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button th:onclick="'deleteItem(' + ${item.id} + ')'" class="text-red-400 hover:text-red-300">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex justify-between items-center mt-6">
+        <div class="text-sm text-gray-400">
+            Showing <span th:text="${startItem}">1</span> to <span th:text="${endItem}">10</span> of <span th:text="${totalItems}">100</span> entries
+        </div>
+        <div class="flex gap-2">
+            <button onclick="previousPage()" class="bg-gray-700 text-white px-3 py-2 rounded-lg hover:bg-gray-600 transition">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button onclick="nextPage()" class="bg-gray-700 text-white px-3 py-2 rounded-lg hover:bg-gray-600 transition">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+</main>
+
+<!-- Add/Edit Modal -->
+<div id="addEditModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="glass p-6 rounded-lg w-full max-w-2xl mx-4 max-h-96 overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold" id="modalTitle">Add New Item</h3>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-white">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <form id="addEditForm" th:action="@{/admin/tables/{tableName}/save}" th:object="${newItem}" method="post">
+            <input type="hidden" name="id" id="itemId">
+            <div id="formFields" class="space-y-4"></div>
+            <div class="flex justify-end gap-4 mt-6">
+                <button type="button" onclick="closeModal()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-400 transition">
+                    Cancel
+                </button>
+                <button type="submit" class="bg-yellow-400 text-black px-4 py-2 rounded-lg hover:bg-yellow-300 transition font-semibold">
+                    Save
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="glass p-6 rounded-lg w-full max-w-md mx-4">
+        <div class="text-center">
+            <i class="fas fa-exclamation-triangle text-red-400 text-4xl mb-4"></i>
+            <h3 class="text-xl font-bold mb-2">Confirm Delete</h3>
+            <p class="text-gray-300 mb-6">Are you sure you want to delete this item? This action cannot be undone.</p>
+            <div class="flex justify-center gap-4">
+                <button onclick="closeDeleteModal()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-400 transition">
+                    Cancel
+                </button>
+                <button onclick="confirmDelete()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-400 transition">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentPage = 1;
+let itemsPerPage = 10;
+let currentSearchTerm = '';
+let itemToDelete = null;
+
+// Table-specific configurations
+const tableConfigs = {
+    'admins': {
+        fields: [
+            {name: 'name', label: 'Name', type: 'text', required: true},
+            {name: 'email', label: 'Email', type: 'email', required: true},
+            {name: 'password', label: 'Password', type: 'password', required: true},
+            {name: 'role', label: 'Role', type: 'select', required: true, options: ['OPERATIONS_MANAGER', 'FINANCE_OFFICER', 'SECURITY_SUPERVISOR', 'IT_SUPPORT', 'CUSTOMER_SERVICE_OFFICER', 'SUPER_ADMIN']}
+        ],
+        headers: ['Name', 'Email', 'Role']
+    },
+    'bookings': {
+        fields: [
+            {name: 'userId', label: 'User ID', type: 'number', required: true},
+            {name: 'vehicleId', label: 'Vehicle ID', type: 'number', required: true},
+            {name: 'slotId', label: 'Slot ID', type: 'number', required: true},
+            {name: 'startTime', label: 'Start Time', type: 'datetime-local', required: true},
+            {name: 'endTime', label: 'End Time', type: 'datetime-local', required: false},
+            {name: 'paymentStatus', label: 'Payment Status', type: 'select', required: true, options: ['Pending', 'Completed', 'Failed']}
+        ],
+        headers: ['User', 'Vehicle', 'Slot', 'Start Time', 'End Time', 'Payment Status']
+    },
+    'users': {
+        fields: [
+            {name: 'name', label: 'Name', type: 'text', required: true},
+            {name: 'email', label: 'Email', type: 'email', required: true},
+            {name: 'password', label: 'Password', type: 'password', required: true},
+            {name: 'contactNo', label: 'Contact No', type: 'text', required: false}
+        ],
+        headers: ['Name', 'Email', 'Contact No']
+    },
+    'vehicles': {
+        fields: [
+            {name: 'userId', label: 'User ID', type: 'number', required: true},
+            {name: 'vehicleNo', label: 'Vehicle Number', type: 'text', required: true},
+            {name: 'vehicleType', label: 'Vehicle Type', type: 'select', required: true, options: ['Car', 'Bike', 'Van', 'Truck']},
+            {name: 'brand', label: 'Brand', type: 'text', required: false},
+            {name: 'model', label: 'Model', type: 'text', required: false},
+            {name: 'color', label: 'Color', type: 'text', required: false}
+        ],
+        headers: ['User', 'Vehicle No', 'Type', 'Brand', 'Model', 'Color']
+    },
+    'parking_lots': {
+        fields: [
+            {name: 'city', label: 'City', type: 'text', required: true},
+            {name: 'location', label: 'Location', type: 'text', required: true},
+            {name: 'totalSlots', label: 'Total Slots', type: 'number', required: true}
+        ],
+        headers: ['City', 'Location', 'Total Slots']
+    },
+    'parking_slots': {
+        fields: [
+            {name: 'lotId', label: 'Lot ID', type: 'number', required: true},
+            {name: 'status', label: 'Status', type: 'select', required: true, options: ['Available', 'Booked', 'Occupied']}
+        ],
+        headers: ['Lot', 'Status']
+    },
+    'payments': {
+        fields: [
+            {name: 'bookingId', label: 'Booking ID', type: 'number', required: true},
+            {name: 'amount', label: 'Amount', type: 'number', step: '0.01', required: true},
+            {name: 'method', label: 'Payment Method', type: 'select', required: true, options: ['Credit_Card', 'Debit_Card', 'Online_Wallet', 'Cash']},
+            {name: 'status', label: 'Status', type: 'select', required: true, options: ['Pending', 'Completed', 'Failed']}
+        ],
+        headers: ['Booking', 'Amount', 'Method', 'Status', 'Timestamp']
+    },
+    'notifications': {
+        fields: [
+            {name: 'type', label: 'Type', type: 'select', required: true, options: ['Full_Slot', 'Overstay', 'Security_Incident']},
+            {name: 'description', label: 'Description', type: 'textarea', required: false},
+            {name: 'userId', label: 'User ID', type: 'number', required: false},
+            {name: 'adminId', label: 'Admin ID', type: 'number', required: false}
+        ],
+        headers: ['Type', 'Description', 'User', 'Admin', 'Timestamp']
+    },
+    'vehicle_logs': {
+        fields: [
+            {name: 'vehicleId', label: 'Vehicle ID', type: 'number', required: true},
+            {name: 'lotId', label: 'Lot ID', type: 'number', required: true},
+            {name: 'entryTime', label: 'Entry Time', type: 'datetime-local', required: true},
+            {name: 'exitTime', label: 'Exit Time', type: 'datetime-local', required: false}
+        ],
+        headers: ['Vehicle', 'Lot', 'Entry Time', 'Exit Time']
+    },
+    'reports': {
+        fields: [
+            {name: 'type', label: 'Report Type', type: 'select', required: true, options: ['Financial', 'Occupancy', 'Performance']},
+            {name: 'adminId', label: 'Admin ID', type: 'number', required: true}
+        ],
+        headers: ['Type', 'Generated Date', 'Admin']
+    }
+};
+
+function openAddModal() {
+    document.getElementById('modalTitle').textContent = 'Add New Item';
+    document.getElementById('addEditForm').reset();
+    document.getElementById('itemId').value = '';
+    generateFormFields();
+    document.getElementById('addEditModal').classList.remove('hidden');
+}
+
+function editItem(id) {
+    document.getElementById('modalTitle').textContent = 'Edit Item';
+    document.getElementById('itemId').value = id;
+    generateFormFields();
+    document.getElementById('addEditModal').classList.remove('hidden');
+}
+
+function generateFormFields() {
+    const tableName = /*[[${tableName}]]*/ 'admins';
+    const config = tableConfigs[tableName];
+    const formFields = document.getElementById('formFields');
+    const form = document.getElementById('addEditForm');
+    
+    if (config) {
+        form.action = `/admin/tables/${tableName}/save`;
+        formFields.innerHTML = config.fields.map(field => {
+            let input = '';
+            if (field.type === 'select') {
+                input = `
+                    <select name="${field.name}" id="${field.name}" ${field.required ? 'required' : ''} 
+                            class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-400">
+                        <option value="">Select ${field.label}</option>
+                        ${field.options.map(option => `<option value="${option}">${option}</option>`).join('')}
+                    </select>
+                `;
+            } else if (field.type === 'textarea') {
+                input = `
+                    <textarea name="${field.name}" id="${field.name}" ${field.required ? 'required' : ''} 
+                              class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-400" 
+                              rows="3"></textarea>
+                `;
+            } else {
+                input = `
+                    <input type="${field.type}" name="${field.name}" id="${field.name}" ${field.required ? 'required' : ''} 
+                           ${field.step ? `step="${field.step}"` : ''}
+                           class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-400">
+                `;
+            }
+            return `
+                <div>
+                    <label for="${field.name}" class="block text-sm font-medium text-gray-300 mb-2">${field.label}</label>
+                    ${input}
+                </div>
+            `;
+        }).join('');
+    }
+}
+
+function deleteItem(id) {
+    itemToDelete = id;
+    document.getElementById('deleteModal').classList.remove('hidden');
+}
+
+function confirmDelete() {
+    if (itemToDelete) {
+        fetch(`/admin/tables/${/*[[${tableName}]]*/ 'admins'}/${itemToDelete}`, {
+            method: 'DELETE'
+        }).then(() => {
+            location.reload();
+        });
+    }
+    closeDeleteModal();
+}
+
+function closeModal() {
+    document.getElementById('addEditModal').classList.add('hidden');
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.add('hidden');
+    itemToDelete = null;
+}
+
+function searchTable() {
+    const searchTerm = document.getElementById('searchInput').value;
+    const tableName = /*[[${tableName}]]*/ 'admins';
+    const url = `/admin/tables/${tableName}?search=${encodeURIComponent(searchTerm)}`;
+    window.location.href = url;
+}
+
+function clearSearch() {
+    const tableName = /*[[${tableName}]]*/ 'admins';
+    window.location.href = `/admin/tables/${tableName}`;
+}
+
+function refreshTable() {
+    const tableName = /*[[${tableName}]]*/ 'admins';
+    const searchTerm = document.getElementById('searchInput').value;
+    let url = `/admin/tables/${tableName}`;
+    if (searchTerm) {
+        url += `?search=${encodeURIComponent(searchTerm)}`;
+    }
+    window.location.href = url;
+}
+
+function previousPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        loadTableData();
+    }
+}
+
+function nextPage() {
+    currentPage++;
+    loadTableData();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    generateFormFields();
+});
+</script>
+
+</body>
+</html>
