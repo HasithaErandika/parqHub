@@ -26,13 +26,13 @@ public class UserController {
     private final NotificationRepository notificationRepository;
 
     @Autowired
-    public UserController(UserRepository userRepository, 
-                        VehicleRepository vehicleRepository,
-                        ParkingLotRepository parkingLotRepository,
-                        ParkingSlotRepository parkingSlotRepository,
-                        BookingRepository bookingRepository,
-                        PaymentRepository paymentRepository,
-                        NotificationRepository notificationRepository) {
+    public UserController(UserRepository userRepository,
+                          VehicleRepository vehicleRepository,
+                          ParkingLotRepository parkingLotRepository,
+                          ParkingSlotRepository parkingSlotRepository,
+                          BookingRepository bookingRepository,
+                          PaymentRepository paymentRepository,
+                          NotificationRepository notificationRepository) {
         this.userRepository = userRepository;
         this.vehicleRepository = vehicleRepository;
         this.parkingLotRepository = parkingLotRepository;
@@ -52,7 +52,6 @@ public class UserController {
                         @RequestParam String password,
                         Model model,
                         HttpSession session) {
-
         return userRepository.findByEmailAndPassword(email, password)
                 .map(user -> {
                     session.setAttribute("loggedInUser", user);
@@ -71,16 +70,14 @@ public class UserController {
             return "redirect:/user/login";
         }
 
-        // Get user statistics
         List<Vehicle> userVehicles = vehicleRepository.findByUserId(user.getId());
         List<Booking> userBookings = bookingRepository.findByUserIdOrderByStartTimeDesc(user.getId());
-        
-        // Calculate statistics
+
         long totalVehicles = userVehicles.size();
         long activeBookings = userBookings.stream()
                 .filter(booking -> booking.getPaymentStatus() == Booking.PaymentStatus.Completed)
                 .count();
-        
+
         model.addAttribute("userName", user.getName());
         model.addAttribute("userEmail", user.getEmail());
         model.addAttribute("userContactNo", user.getContactNo());
@@ -100,7 +97,7 @@ public class UserController {
 
         List<Vehicle> userVehicles = vehicleRepository.findByUserId(user.getId());
         List<Booking> vehicleActivity = bookingRepository.findByUserIdOrderByStartTimeDesc(user.getId());
-        
+
         model.addAttribute("userName", user.getName());
         model.addAttribute("vehicles", userVehicles);
         model.addAttribute("vehicleActivity", vehicleActivity);
@@ -112,18 +109,17 @@ public class UserController {
     @PostMapping("/vehicles/add")
     @ResponseBody
     public String addVehicle(@RequestParam String brand,
-                           @RequestParam String model,
-                           @RequestParam String vehicleNo,
-                           @RequestParam String color,
-                           @RequestParam int year,
-                           @RequestParam String vehicleType,
-                           HttpSession session) {
+                             @RequestParam String model,
+                             @RequestParam String vehicleNo,
+                             @RequestParam String color,
+                             @RequestParam int year,
+                             @RequestParam String vehicleType,
+                             HttpSession session) {
         User user = (User) session.getAttribute("loggedInUser");
         if (user == null) {
             return "error:User not logged in";
         }
 
-        // Check if vehicle number already exists
         if (vehicleRepository.existsByVehicleNo(vehicleNo)) {
             return "error:Vehicle number already exists";
         }
@@ -149,7 +145,7 @@ public class UserController {
 
         List<ParkingLot> parkingLots = parkingLotRepository.findAll();
         List<Vehicle> userVehicles = vehicleRepository.findByUserId(user.getId());
-        
+
         model.addAttribute("userName", user.getName());
         model.addAttribute("parkingLots", parkingLots);
         model.addAttribute("userVehicles", userVehicles);
@@ -166,22 +162,20 @@ public class UserController {
     @PostMapping("/book-parking")
     @ResponseBody
     public String bookParking(@RequestParam Long slotId,
-                             @RequestParam Long vehicleId,
-                             @RequestParam String startTime,
-                             @RequestParam int duration,
-                             HttpSession session) {
+                              @RequestParam Long vehicleId,
+                              @RequestParam String startTime,
+                              @RequestParam int duration,
+                              HttpSession session) {
         User user = (User) session.getAttribute("loggedInUser");
         if (user == null) {
             return "error:User not logged in";
         }
 
         try {
-            // Parse start time
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
             LocalDateTime startDateTime = LocalDateTime.parse(startTime, formatter);
             LocalDateTime endDateTime = startDateTime.plusHours(duration);
 
-            // Get vehicle and slot
             Optional<Vehicle> vehicleOpt = vehicleRepository.findById(vehicleId);
             Optional<ParkingSlot> slotOpt = parkingSlotRepository.findById(slotId);
 
@@ -192,12 +186,10 @@ public class UserController {
             Vehicle vehicle = vehicleOpt.get();
             ParkingSlot slot = slotOpt.get();
 
-            // Check if slot is available
             if (slot.getStatus() != ParkingSlot.SlotStatus.AVAILABLE) {
                 return "error:Slot is not available";
             }
 
-            // Create booking
             Booking booking = new Booking();
             booking.setUser(user);
             booking.setVehicle(vehicle);
@@ -206,15 +198,12 @@ public class UserController {
             booking.setEndTime(endDateTime);
             booking.setPaymentStatus(Booking.PaymentStatus.Pending);
 
-            // Update slot status
             slot.setStatus(ParkingSlot.SlotStatus.BOOKED);
 
-            // Save both
             bookingRepository.save(booking);
             parkingSlotRepository.save(slot);
 
             return "success:Booking created successfully. Booking ID: " + booking.getId();
-
         } catch (Exception e) {
             return "error:Failed to create booking: " + e.getMessage();
         }
@@ -228,7 +217,7 @@ public class UserController {
         }
 
         List<Booking> userBookings = bookingRepository.findByUserIdOrderByStartTimeDesc(user.getId());
-        
+
         model.addAttribute("userName", user.getName());
         model.addAttribute("bookings", userBookings);
 
@@ -242,9 +231,8 @@ public class UserController {
             return "redirect:/user/login";
         }
 
-        // Get payments through bookings
         List<Booking> userBookings = bookingRepository.findByUserId(user.getId());
-        
+
         model.addAttribute("userName", user.getName());
         model.addAttribute("bookings", userBookings);
 
@@ -259,7 +247,7 @@ public class UserController {
         }
 
         List<Notification> userNotifications = notificationRepository.findByUserIdOrderByTimestampDesc(user.getId());
-        
+
         model.addAttribute("userName", user.getName());
         model.addAttribute("notifications", userNotifications);
 
@@ -282,8 +270,8 @@ public class UserController {
     @PostMapping("/settings/update")
     @ResponseBody
     public String updateSettings(@RequestParam String name,
-                               @RequestParam String contactNo,
-                               HttpSession session) {
+                                 @RequestParam String contactNo,
+                                 HttpSession session) {
         User user = (User) session.getAttribute("loggedInUser");
         if (user == null) {
             return "error:User not logged in";
@@ -293,10 +281,9 @@ public class UserController {
             user.setName(name);
             user.setContactNo(contactNo);
             userRepository.save(user);
-            
-            // Update session
+
             session.setAttribute("loggedInUser", user);
-            
+
             return "success:Settings updated successfully";
         } catch (Exception e) {
             return "error:Failed to update settings: " + e.getMessage();

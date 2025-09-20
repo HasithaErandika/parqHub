@@ -19,7 +19,7 @@ public class Vehicle {
     private String vehicleNo;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "vehicle_type", nullable = false, length = 10)
+    @Column(name = "vehicle_type", nullable = false, length = 20)
     private VehicleType vehicleType;
 
     @Column(length = 50)
@@ -31,30 +31,24 @@ public class Vehicle {
     @Column(length = 30)
     private String color;
 
-    // Enum for vehicle types
     public enum VehicleType {
         Car, Bike, Van, Truck
     }
 
-    // Getters and Setters
+    public Vehicle() {}
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
-
     public String getVehicleNo() { return vehicleNo; }
     public void setVehicleNo(String vehicleNo) { this.vehicleNo = vehicleNo; }
-
     public VehicleType getVehicleType() { return vehicleType; }
     public void setVehicleType(VehicleType vehicleType) { this.vehicleType = vehicleType; }
-
     public String getBrand() { return brand; }
     public void setBrand(String brand) { this.brand = brand; }
-
     public String getModel() { return model; }
     public void setModel(String model) { this.model = model; }
-
     public String getColor() { return color; }
     public void setColor(String color) { this.color = color; }
 }

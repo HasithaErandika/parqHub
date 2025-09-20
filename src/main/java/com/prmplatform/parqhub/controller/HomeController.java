@@ -15,6 +15,4 @@ public class HomeController {
     public String userLogin() {
         return "user-login"; // templates/user-login.html
     }
-
-
 }

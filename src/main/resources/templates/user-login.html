@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Login - ParQ Hub</title>
+    <title>User Login - ParQHub</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -21,14 +21,14 @@
             border: 1px solid rgba(255, 255, 255, 0.15);
         }
         .neon-btn {
-            background: linear-gradient(90deg, #3b82f6, #1d4ed8);
-            color: white;
+            background: linear-gradient(90deg, #ffb703, #ff6600);
+            color: #0a0f1c;
             font-weight: bold;
             border-radius: 50px;
             transition: all 0.3s ease-in-out;
         }
         .neon-btn:hover {
-            box-shadow: 0 0 15px #3b82f6, 0 0 30px #1d4ed8;
+            box-shadow: 0 0 15px #ffb703, 0 0 30px #ff6600;
             transform: scale(1.05);
         }
         .form-input {
@@ -37,8 +37,8 @@
             transition: border 0.3s, box-shadow 0.3s;
         }
         .form-input:focus {
-            border-color: #60a5fa;
-            box-shadow: 0 0 10px rgba(96, 165, 250, 0.5);
+            border-color: #ffb703;
+            box-shadow: 0 0 10px rgba(255, 183, 3, 0.5);
         }
     </style>
 </head>
@@ -46,10 +46,10 @@
 
 <div class="glass p-8 rounded-2xl w-full max-w-md shadow-lg">
     <div class="text-center mb-6">
-        <div class="mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-blue-500/20 border border-blue-400">
-            <i class="fas fa-user text-3xl text-blue-400"></i>
+        <div class="mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-yellow-500/20 border border-yellow-400">
+            <i class="fas fa-user text-3xl text-yellow-400"></i>
         </div>
-        <h2 class="text-3xl font-extrabold mt-4 text-blue-400">User Login</h2>
+        <h2 class="text-3xl font-extrabold mt-4 text-yellow-400">User Login</h2>
         <p class="text-gray-400 text-sm">Access your parking account</p>
     </div>
 
@@ -73,11 +73,14 @@
     </form>
 
     <div class="text-center mt-6">
-        <a href="/" class="text-blue-400 hover:text-blue-300 text-sm">Back to Home</a>
+        <p class="text-gray-400 text-sm">
+            Don't have an account? <a th:href="@{/register}" class="text-yellow-400 hover:text-yellow-300">Sign Up</a>
+        </p>
+        <a th:href="@{/}" class="text-yellow-400 hover:text-yellow-300 text-sm block mt-2">Back to Home</a>
     </div>
 
     <p class="text-xs text-gray-500 text-center mt-6">
-        &copy; 2025 ParQ Hub | User Access
+        &copy; <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}"></span> ParQHub | User Access
     </p>
 </div>
 

@@ -46,6 +46,11 @@ public class AdminController {
     public String showLoginForm() {
         return "admin-login";
     }
+    @GetMapping("/register")
+    public String showRegisterForm() {
+        return "register";
+    }
+
 
     @PostMapping("/login")
     public String login(@RequestParam String email,
@@ -117,4 +122,6 @@ public class AdminController {
         session.invalidate();
         return "redirect:/admin/login";
     }
+
+
 }
