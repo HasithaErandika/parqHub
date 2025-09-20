@@ -26,6 +26,8 @@ public class VehicleLog {
     @JoinColumn(name = "lot_id", nullable = false)
     private ParkingLot parkingLot;
 
+    public VehicleLog() {}
+
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
