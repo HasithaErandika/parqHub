@@ -22,13 +22,11 @@ public class ParkingViewerController {
         this.parkingViewerService = parkingViewerService;
     }
 
-    /**
-     * Display the parking viewer page
-     */
     @GetMapping("/parking-viewer")
-    public String parkingViewer(@RequestParam(required = false) Long lotId, 
-                               HttpSession session, 
-                               Model model) {
+    public String parkingViewer(@RequestParam(required = false) String city,
+                                @RequestParam(required = false) String location,
+                                HttpSession session,
+                                Model model) {
         Admin admin = (Admin) session.getAttribute("loggedInAdmin");
         if (admin == null) {
             return "redirect:/admin/login";
@@ -36,60 +34,67 @@ public class ParkingViewerController {
 
         model.addAttribute("adminName", admin.getName());
         model.addAttribute("adminRole", admin.getRole());
-        
-        // Get all parking lots for dropdown
-        List<ParkingLot> parkingLots = parkingViewerService.getAllParkingLots();
-        model.addAttribute("parkingLots", parkingLots);
-        
-        if (lotId != null && parkingViewerService.parkingLotExists(lotId)) {
-            ParkingViewerService.ParkingLotView lotView = parkingViewerService.getParkingLotView(lotId);
-            if (lotView != null) {
-                model.addAttribute("selectedLot", lotView.getParkingLot());
-                model.addAttribute("parkingSlots", lotView.getParkingSlots());
-                
-                ParkingViewerService.ParkingSlotStatistics stats = lotView.getStatistics();
-                model.addAttribute("availableCount", stats.getAvailableCount());
-                model.addAttribute("bookedCount", stats.getBookedCount());
-                model.addAttribute("occupiedCount", stats.getOccupiedCount());
-                model.addAttribute("totalCount", stats.getTotalCount());
-                model.addAttribute("statistics", stats);
+
+        List<String> cities = parkingViewerService.getAllCities();
+        model.addAttribute("cities", cities);
+
+        if (city != null && location != null) {
+            ParkingLot lot = parkingViewerService.getParkingLotByCityAndLocation(city, location)
+                    .orElse(null);
+            if (lot != null) {
+                ParkingViewerService.ParkingLotView lotView = parkingViewerService.getParkingLotView(lot.getId());
+                if (lotView != null) {
+                    model.addAttribute("selectedLot", lotView.getParkingLot());
+                    model.addAttribute("parkingSlots", lotView.getParkingSlots());
+                    model.addAttribute("totalSlots", lotView.getParkingLot().getTotalSlots());
+
+                    ParkingViewerService.ParkingSlotStatistics stats = lotView.getStatistics();
+                    model.addAttribute("availableCount", stats.getAvailableCount());
+                    model.addAttribute("bookedCount", stats.getBookedCount());
+                    model.addAttribute("occupiedCount", stats.getOccupiedCount());
+                    model.addAttribute("totalCount", stats.getTotalCount());
+                    model.addAttribute("statistics", stats);
+                }
             }
         }
-        
+
         return "admin/parkingViewer";
     }
 
-    /**
-     * API endpoint to get parking slots for a specific lot
-     */
+    @GetMapping("/api/cities")
+    @ResponseBody
+    public ResponseEntity<List<String>> getAllCities() {
+        return ResponseEntity.ok(parkingViewerService.getAllCities());
+    }
+
+    @GetMapping("/api/locations")
+    @ResponseBody
+    public ResponseEntity<List<String>> getLocationsByCity(@RequestParam String city) {
+        return ResponseEntity.ok(parkingViewerService.getLocationsByCity(city));
+    }
+
     @GetMapping("/api/parking-slots/{lotId}")
     @ResponseBody
     public ResponseEntity<List<ParkingSlot>> getParkingSlots(@PathVariable Long lotId) {
         if (!parkingViewerService.parkingLotExists(lotId)) {
             return ResponseEntity.notFound().build();
         }
-        
+
         List<ParkingSlot> slots = parkingViewerService.getParkingSlotsByLotId(lotId);
         return ResponseEntity.ok(slots);
     }
 
-    /**
-     * API endpoint to get parking lot statistics
-     */
     @GetMapping("/api/parking-statistics/{lotId}")
     @ResponseBody
     public ResponseEntity<ParkingViewerService.ParkingSlotStatistics> getParkingStatistics(@PathVariable Long lotId) {
         if (!parkingViewerService.parkingLotExists(lotId)) {
             return ResponseEntity.notFound().build();
         }
-        
+
         ParkingViewerService.ParkingSlotStatistics stats = parkingViewerService.getParkingSlotStatistics(lotId);
         return ResponseEntity.ok(stats);
     }
 
-    /**
-     * API endpoint to get parking lot details
-     */
     @GetMapping("/api/parking-lot/{lotId}")
     @ResponseBody
     public ResponseEntity<ParkingLot> getParkingLot(@PathVariable Long lotId) {
@@ -98,38 +103,12 @@ public class ParkingViewerController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    /**
-     * API endpoint to get all parking lots
-     */
-    @GetMapping("/api/parking-lots")
+    @GetMapping("/api/parking-lot")
     @ResponseBody
-    public ResponseEntity<List<ParkingLot>> getAllParkingLots() {
-        List<ParkingLot> lots = parkingViewerService.getAllParkingLots();
-        return ResponseEntity.ok(lots);
-    }
-
-    /**
-     * API endpoint to search parking lots by city
-     */
-    @GetMapping("/api/parking-lots/search")
-    @ResponseBody
-    public ResponseEntity<List<ParkingLot>> searchParkingLots(@RequestParam(required = false) String city,
-                                                             @RequestParam(required = false) String location) {
-        List<ParkingLot> lots;
-        
-        if (city != null && location != null) {
-            lots = parkingViewerService.getParkingLotsByCity(city);
-            lots = lots.stream()
-                    .filter(lot -> lot.getLocation().toLowerCase().contains(location.toLowerCase()))
-                    .toList();
-        } else if (city != null) {
-            lots = parkingViewerService.getParkingLotsByCity(city);
-        } else if (location != null) {
-            lots = parkingViewerService.getParkingLotsByLocation(location);
-        } else {
-            lots = parkingViewerService.getAllParkingLots();
-        }
-        
-        return ResponseEntity.ok(lots);
+    public ResponseEntity<ParkingLot> getParkingLotByCityAndLocation(@RequestParam String city,
+                                                                     @RequestParam String location) {
+        return parkingViewerService.getParkingLotByCityAndLocation(city, location)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }
