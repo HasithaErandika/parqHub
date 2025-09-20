@@ -63,7 +63,7 @@ CREATE TABLE Payment (
                          payment_id INT PRIMARY KEY AUTO_INCREMENT,
                          booking_id INT NOT NULL,
                          amount DECIMAL(10,2) NOT NULL,
-                         method ENUM('Credit Card', 'Debit Card', 'Online Wallet', 'Cash') DEFAULT 'Arrival',
+                         method ENUM('Card', 'Cash', 'Arrival') DEFAULT 'Arrival',
                          status ENUM('Pending', 'Completed', 'Failed') DEFAULT 'Pending',
                          timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                          FOREIGN KEY (booking_id) REFERENCES Booking(booking_id)
@@ -92,7 +92,7 @@ CREATE TABLE Report (
 -- Notification / Incident Table
 CREATE TABLE Notification (
                               notification_id INT PRIMARY KEY AUTO_INCREMENT,
-                              type ENUM('Full Slot', 'Overstay', 'Security Incident') Default 'None',
+                              type ENUM('FULL_SLOT', 'OVERSTAY', 'SECURITY_INCIDENT', 'NONE') DEFAULT 'NONE',
                               description TEXT,
                               timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                               user_id INT,
