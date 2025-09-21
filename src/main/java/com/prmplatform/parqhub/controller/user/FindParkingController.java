@@ -7,6 +7,8 @@ import com.prmplatform.parqhub.model.Vehicle;
 import com.prmplatform.parqhub.repository.ParkingLotRepository;
 import com.prmplatform.parqhub.repository.VehicleRepository;
 import jakarta.servlet.http.HttpSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,6 +26,8 @@ import java.util.stream.Collectors;
 @Controller
 @RequestMapping("/user")
 public class FindParkingController {
+
+    private static final Logger logger = LoggerFactory.getLogger(FindParkingController.class);
 
     private final ParkingLotRepository parkingLotRepository;
     private final VehicleRepository vehicleRepository;
@@ -47,13 +51,18 @@ public class FindParkingController {
                 ? parkingLotRepository.findDistinctLocationsByCity((String) model.getAttribute("city"))
                 : List.of();
 
-        List<ParkingLot> parkingLots = parkingLotRepository.findAll();
+        // Fetch parking lots with slots eagerly
+        List<ParkingLot> parkingLots = parkingLotRepository.findAllWithSlots();
         Map<Long, Long> availableSlotsCount = parkingLots.stream()
                 .collect(Collectors.toMap(
                         ParkingLot::getId,
-                        lot -> lot.getParkingSlots().stream()
-                                .filter(slot -> slot.getStatus() == ParkingSlot.SlotStatus.AVAILABLE)
-                                .count()
+                        lot -> {
+                            long count = lot.getParkingSlots().stream()
+                                    .filter(slot -> slot.getStatus() == ParkingSlot.SlotStatus.AVAILABLE)
+                                    .count();
+                            logger.debug("Parking Lot ID {}: {} available slots", lot.getId(), count);
+                            return count;
+                        }
                 ));
 
         model.addAttribute("userName", user.getName());
@@ -86,7 +95,7 @@ public class FindParkingController {
 
         List<ParkingLot> parkingLots;
         if (city == null && location == null && maxPrice == null && !availableOnly) {
-            parkingLots = parkingLotRepository.findAll();
+            parkingLots = parkingLotRepository.findAllWithSlots();
         } else {
             city = city != null ? city.trim() : "";
             location = location != null ? location.trim() : "";
@@ -101,9 +110,13 @@ public class FindParkingController {
         Map<Long, Long> availableSlotsCount = parkingLots.stream()
                 .collect(Collectors.toMap(
                         ParkingLot::getId,
-                        lot -> lot.getParkingSlots().stream()
-                                .filter(slot -> slot.getStatus() == ParkingSlot.SlotStatus.AVAILABLE)
-                                .count()
+                        lot -> {
+                            long count = lot.getParkingSlots().stream()
+                                    .filter(slot -> slot.getStatus() == ParkingSlot.SlotStatus.AVAILABLE)
+                                    .count();
+                            logger.debug("Parking Lot ID {}: {} available slots", lot.getId(), count);
+                            return count;
+                        }
                 ));
 
         model.addAttribute("userName", user.getName());

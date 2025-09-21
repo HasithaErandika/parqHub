@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/user")
@@ -138,8 +139,11 @@ public class UserController {
 
     @GetMapping("/parking-slots/{lotId}")
     @ResponseBody
-    public List<ParkingSlot> getParkingSlots(@PathVariable Long lotId) {
-        return parkingSlotRepository.findByParkingLotId(lotId);
+    public List<ParkingSlotDTO> getParkingSlots(@PathVariable Long lotId) {
+        List<ParkingSlot> slots = parkingSlotRepository.findByParkingLotId(lotId);
+        return slots.stream()
+                .map(slot -> new ParkingSlotDTO(slot.getId(), slot.getStatus().name()))
+                .collect(Collectors.toList());
     }
 
     @PostMapping("/book-parking")

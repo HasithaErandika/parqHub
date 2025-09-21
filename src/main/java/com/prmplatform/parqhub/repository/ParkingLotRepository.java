@@ -33,4 +33,7 @@ public interface ParkingLotRepository extends JpaRepository<ParkingLot, Long> {
                                    @Param("location") String location,
                                    @Param("maxPrice") BigDecimal maxPrice,
                                    @Param("availableOnly") boolean availableOnly);
+
+    @Query("SELECT p FROM ParkingLot p JOIN FETCH p.parkingSlots")
+    List<ParkingLot> findAllWithSlots();
 }

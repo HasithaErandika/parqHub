@@ -47,37 +47,32 @@
             box-shadow: 0 0 15px #3b82f6, 0 0 30px #1d4ed8;
             transform: scale(1.05);
         }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 50;
-            align-items: center;
-            justify-content: center;
-        }
-        .modal-content {
-            background: #0a0f1c;
-            padding: 2rem;
-            border-radius: 1rem;
-            max-width: 90%;
-            max-height: 80%;
-            overflow-y: auto;
-        }
         .slot-box {
-            background: linear-gradient(90deg, #16a34a, #15803d);
-            color: #ffffff;
             padding: 1rem;
             border-radius: 0.5rem;
             text-align: center;
             font-weight: bold;
             transition: transform 0.3s;
+            cursor: pointer;
+        }
+        .slot-box.available {
+            background: linear-gradient(90deg, #16a34a, #15803d);
+            color: #ffffff;
+        }
+        .slot-box.booked {
+            background: linear-gradient(90deg, #f59e0b, #d97706);
+            color: #ffffff;
+        }
+        .slot-box.occupied {
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+            color: #ffffff;
         }
         .slot-box:hover {
             transform: scale(1.1);
+        }
+        .slots-section {
+            display: none;
+            margin-top: 1rem;
         }
     </style>
 </head>
@@ -174,19 +169,10 @@
             <p class="text-gray-300">Total Slots: <span th:text="${lot.totalSlots}"></span></p>
             <p class="text-gray-300">Available Slots: <span th:text="${availableSlotsCount[lot.id]}"></span></p>
             <button class="mt-4 w-full py-2 neon-btn view-slots-btn" th:data-lot-id="${lot.id}" onclick="viewSlots(this)">View Slots</button>
-        </div>
-    </div>
-
-    <!-- Modal for Slot Visualization -->
-    <div id="slotsModal" class="modal">
-        <div class="modal-content glass">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-blue-400">Available Parking Slots</h3>
-                <button onclick="closeModal()" class="text-red-400 hover:text-red-500">
-                    <i class="fas fa-times"></i>
-                </button>
+            <div th:id="'slots-section-' + ${lot.id}" class="slots-section glass p-4 mt-4 rounded-lg">
+                <h4 class="text-lg font-semibold text-blue-400 mb-2">All Slots</h4>
+                <div th:id="'slots-container-' + ${lot.id}" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
             </div>
-            <div id="slotsContainer" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
         </div>
     </div>
 </main>
@@ -195,45 +181,53 @@
 <script>
     async function viewSlots(button) {
         const lotId = button.getAttribute('data-lot-id');
+        const slotsSection = document.getElementById(`slots-section-${lotId}`);
+        const slotsContainer = document.getElementById(`slots-container-${lotId}`);
+
+        // Toggle visibility
+        if (slotsSection.style.display === 'block') {
+            slotsSection.style.display = 'none';
+            return;
+        }
+
         try {
-            const response = await fetch(`/user/parking-slots/${lotId}`);
+            slotsContainer.innerHTML = '<p class="text-gray-300 text-center">Loading...</p>';
+            const response = await fetch(`/user/parking-slots/${lotId}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
             const slots = await response.json();
             console.log('Slots response:', slots); // Debug log
-            const availableSlots = slots.filter(slot => slot.status === 'AVAILABLE');
-            console.log('Available slots:', availableSlots); // Debug log
-            const slotsContainer = document.getElementById('slotsContainer');
             slotsContainer.innerHTML = '';
 
-            if (availableSlots.length === 0) {
-                slotsContainer.innerHTML = '<p class="text-red-300 text-center">No available slots.</p>';
+            if (slots.length === 0) {
+                slotsContainer.innerHTML = '<p class="text-red-300 text-center">No slots found.</p>';
             } else {
-                availableSlots.forEach(slot => {
+                slots.forEach(slot => {
                     const slotDiv = document.createElement('div');
-                    slotDiv.className = 'slot-box';
-                    slotDiv.textContent = `Slot ${slot.id}`;
+                    slotDiv.className = `slot-box ${slot.status.toLowerCase()}`;
+                    slotDiv.textContent = `Slot ${slot.id} (${slot.status})`;
+                    slotDiv.setAttribute('data-slot-id', slot.id);
+                    slotDiv.addEventListener('click', () => {
+                        window.location.href = `/user/paymentGateway?slotId=${slot.id}`;
+                    });
                     slotsContainer.appendChild(slotDiv);
                 });
             }
 
-            document.getElementById('slotsModal').style.display = 'flex';
+            // Show the slots section
+            slotsSection.style.display = 'block';
         } catch (error) {
             console.error('Error fetching slots:', error);
-            alert('Error fetching slots: ' + error.message);
+            slotsContainer.innerHTML = '<p class="text-red-300 text-center">Error fetching slots. Please try again.</p>';
+            slotsSection.style.display = 'block';
         }
     }
-
-    function closeModal() {
-        document.getElementById('slotsModal').style.display = 'none';
-    }
-
-    document.getElementById('slotsModal').addEventListener('click', function(event) {
-        if (event.target === this) {
-            closeModal();
-        }
-    });
 
     document.getElementById('city').addEventListener('change', async function() {
         const city = this.value;
@@ -241,7 +235,15 @@
         locationSelect.innerHTML = '<option value="">Select a location</option>';
         if (city) {
             try {
-                const response = await fetch(`/user/locations?city=${encodeURIComponent(city)}`);
+                const response = await fetch(`/user/locations?city=${encodeURIComponent(city)}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
                 const locations = await response.json();
                 locations.forEach(loc => {
                     const option = document.createElement('option');
