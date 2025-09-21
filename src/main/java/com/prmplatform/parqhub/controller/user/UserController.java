@@ -140,7 +140,6 @@ public class UserController {
                              @RequestParam String model,
                              @RequestParam String vehicleNo,
                              @RequestParam String color,
-                             @RequestParam int year,
                              @RequestParam String vehicleType,
                              HttpSession session) {
         User user = (User) session.getAttribute("loggedInUser");

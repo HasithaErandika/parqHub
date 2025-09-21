@@ -214,7 +214,7 @@
                  th:data-booking-id="${booking.id}"
                  th:data-status="${booking.paymentStatus.name()}"
                  th:data-vehicle="${booking.vehicle.brand + ' ' + booking.vehicle.model + ' (' + booking.vehicle.vehicleNo + ')'}"
-                 th:data-lot-id="${booking.parkingSlot.parkingLot.id}"
+                 th:data-lot-id="${booking.parkingSlot?.parkingLot?.id}"
                  th:data-vehicle-id="${booking.vehicle.id}"
                  th:data-user-id="${userId}"
                  class="booking-card glass p-6 rounded-2xl border border-gray-600">
@@ -242,11 +242,13 @@
                             </div>
                             <div>
                                 <span class="text-gray-400">Location:</span>
-                                <span th:text="${booking.parkingSlot.parkingLot.location + ', ' + booking.parkingSlot.parkingLot.city}">Location</span>
+                                <span class="location" th:if="${booking.parkingSlot != null}" th:text="${booking.parkingSlot.parkingLot.location + ', ' + booking.parkingSlot.parkingLot.city}">Location</span>
+                                <span class="location" th:if="${booking.parkingSlot == null}">N/A</span>
                             </div>
                             <div>
                                 <span class="text-gray-400">Slot ID:</span>
-                                <span th:text="${booking.parkingSlot.id}">Slot</span>
+                                <span class="slot-id" th:if="${booking.parkingSlot != null}" th:text="${booking.parkingSlot.id}">Slot</span>
+                                <span class="slot-id" th:if="${booking.parkingSlot == null}">N/A</span>
                             </div>
                             <div>
                                 <span class="text-gray-400">Start Time:</span>
@@ -258,15 +260,15 @@
                             </div>
                             <div>
                                 <span class="text-gray-400">End Time:</span>
-                                <span th:if="${booking.endTime} != null"
+                                <span th:if="${booking.endTime != null}"
                                       th:text="${#temporals.format(booking.endTime, 'dd/MM/yyyy HH:mm')}">End</span>
-                                <span th:if="${booking.endTime} == null" class="text-yellow-400">Pending</span>
+                                <span th:if="${booking.endTime == null}" class="text-yellow-400">Pending</span>
                             </div>
                             <div>
                                 <span class="text-gray-400">Duration:</span>
-                                <span th:if="${booking.endTime} != null"
+                                <span th:if="${booking.endTime != null}"
                                       th:text="${#temporals.between(booking.startTime, booking.endTime, #temporals.Unit.HOURS) + ' hours'}">Duration</span>
-                                <span th:if="${booking.endTime} == null" class="text-yellow-400">Ongoing</span>
+                                <span th:if="${booking.endTime == null}" class="text-yellow-400">Ongoing</span>
                             </div>
                         </div>
                     </div>
@@ -398,9 +400,9 @@
             const bookingId = card.dataset.bookingId;
             const userName = document.getElementById('user-name').textContent;
             const vehicle = card.dataset.vehicle;
-            const lotId = card.querySelector('[th\\:text*=".parkingLot.id"]').textContent;
-            const location = card.querySelector('[th\\:text*=".parkingLot.location"]').textContent;
-            const slotId = card.querySelector('[th\\:text*=".slotId"]').textContent;
+            const lotId = card.dataset.lotId || 'N/A';
+            const location = card.querySelector('.location').textContent || 'N/A';
+            const slotId = card.querySelector('.slot-id').textContent || 'N/A';
             const startTime = card.querySelector('[th\\:text*=".startTime"]').textContent;
             const inTime = card.querySelector('.entry-time').textContent;
             const endTime = card.querySelector('[th\\:text*=".endTime"]') ?

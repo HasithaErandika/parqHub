@@ -6,10 +6,22 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
-    List<Payment> findByBookingId(Long bookingId);
+
+    // Find payment by booking ID
+    Optional<Payment> findByBookingId(Long bookingId);
+
+    // Find payments by user ID (through booking relationship)
+    @Query("SELECT p FROM Payment p WHERE p.booking.user.id = :userId")
+    List<Payment> findByUserId(Long userId);
+
+    // Sum amount for completed payments for a user after a timestamp
+    @Query("SELECT SUM(p.amount) FROM Payment p WHERE p.status = 'Completed' AND p.booking.user.id = :userId AND p.timestamp >= :timestamp")
+    Double sumAmountByUserIdAndCompletedAndTimestampAfter(Long userId, LocalDateTime timestamp);
+
+    // Original method for total spent today (all users)
     @Query("SELECT SUM(p.amount) FROM Payment p WHERE p.status = 'Completed' AND p.timestamp >= :startOfDay")
     Double sumAmountByCompletedAndTimestampAfter(LocalDateTime startOfDay);
-
 }

@@ -55,6 +55,44 @@
             box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
             outline: none;
         }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: #1c2436;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #fff;
+        }
+        .modal-close:hover {
+            color: #3b82f6;
+        }
     </style>
 </head>
 <body class="text-white flex">
@@ -107,6 +145,34 @@
         </div>
     </div>
 
+    <!-- Filter Section -->
+    <div class="glass p-4 rounded-2xl mb-6">
+        <div class="flex flex-col md:flex-row gap-4">
+            <div class="flex-1">
+                <label for="statusFilter" class="block text-sm font-medium text-gray-400 mb-2">Filter by Status</label>
+                <select id="statusFilter" class="form-select px-4 py-2 rounded-lg w-full">
+                    <option value="">All Statuses</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Failed">Failed</option>
+                </select>
+            </div>
+            <div class="flex-1">
+                <label for="dateFilter" class="block text-sm font-medium text-gray-400 mb-2">Filter by Date</label>
+                <input type="date" id="dateFilter" class="form-input px-4 py-2 rounded-lg w-full">
+            </div>
+            <div class="flex-1">
+                <label for="searchInput" class="block text-sm font-medium text-gray-400 mb-2">Search</label>
+                <div class="flex">
+                    <input type="text" id="searchInput" class="form-input px-4 py-2 rounded-lg flex-1" placeholder="Search payments...">
+                    <button id="searchBtn" class="ml-2 px-4 py-2 neon-btn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Error/Success Message -->
     <div th:if="${error}" class="mb-6 p-4 bg-red-500/20 border border-red-500 rounded-lg text-red-400">
         <i class="fas fa-exclamation-circle mr-2"></i>
@@ -115,40 +181,6 @@
     <div th:if="${success}" class="mb-6 p-4 bg-green-500/20 border border-green-500 rounded-lg text-green-400">
         <i class="fas fa-check-circle mr-2"></i>
         <span th:text="${success}">Success message</span>
-    </div>
-
-    <!-- Payment Form for Selected Booking -->
-    <div th:if="${selectedBooking}" class="glass p-6 rounded-2xl mb-6">
-        <h2 class="text-xl font-bold mb-4 text-blue-400">Process Payment</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <p><strong>Booking ID:</strong> <span th:text="${selectedBooking.id}">ID</span></p>
-                <p><strong>Vehicle:</strong> <span th:text="${selectedBooking.vehicle.brand + ' ' + selectedBooking.vehicle.model + ' (' + selectedBooking.vehicle.vehicleNo + ')'}">Vehicle</span></p>
-                <p><strong>Location:</strong> <span th:text="${selectedBooking.parkingSlot.parkingLot.location + ', ' + selectedBooking.parkingSlot.parkingLot.city}">Location</span></p>
-                <p><strong>Slot ID:</strong> <span th:text="${selectedBooking.parkingSlot.id}">Slot</span></p>
-            </div>
-            <div>
-                <p><strong>Entry Time:</strong> <span th:text="${#temporals.format(vehicleLog.entryTime, 'dd/MM/yyyy HH:mm')}">Entry</span></p>
-                <p><strong>Exit Time:</strong> <span th:text="${#temporals.format(vehicleLog.exitTime, 'dd/MM/yyyy HH:mm')}">Exit</span></p>
-                <p><strong>Duration:</strong> <span th:text="${hours} + ' hours'">Duration</span></p>
-                <p><strong>Price per Hour:</strong> LKR <span th:text="${#numbers.formatDecimal(pricePerHour, 1, 2)}">0.00</span></p>
-                <p><strong>Total Amount:</strong> LKR <span th:text="${#numbers.formatDecimal(amount, 1, 2)}">0.00</span></p>
-            </div>
-        </div>
-        <form th:action="@{/user/processPayment}" method="post" class="mt-4">
-            <input type="hidden" name="bookingId" th:value="${selectedBooking.id}">
-            <div class="mb-4">
-                <label for="paymentMethod" class="block text-sm font-medium text-gray-400">Payment Method</label>
-                <select id="paymentMethod" name="paymentMethod" class="form-select px-4 py-2 rounded-lg w-full">
-                    <option value="Card">Credit/Debit Card</option>
-                    <option value="Cash">Cash</option>
-                    <option value="Arrival">Pay on Arrival</option>
-                </select>
-            </div>
-            <button type="submit" class="px-6 py-3 neon-btn">
-                <i class="fas fa-credit-card mr-2"></i> Pay Now
-            </button>
-        </form>
     </div>
 
     <!-- Payment Statistics -->
@@ -166,12 +198,12 @@
         <div class="glass p-6 rounded-2xl text-center">
             <i class="fas fa-check-circle text-green-400 text-3xl mb-2"></i>
             <h3 class="text-lg font-semibold">Successful</h3>
-            <p class="text-2xl font-bold" th:text="${#lists.size(payments.?[status.name() == 'Completed'])}">0</p>
+            <p class="text-2xl font-bold" th:text="${#lists.size(payments.?[status.toString() == 'Completed'])}">0</p>
         </div>
         <div class="glass p-6 rounded-2xl text-center">
             <i class="fas fa-times-circle text-red-400 text-3xl mb-2"></i>
             <h3 class="text-lg font-semibold">Failed</h3>
-            <p class="text-2xl font-bold" th:text="${#lists.size(payments.?[status.name() == 'Failed'])}">0</p>
+            <p class="text-2xl font-bold" th:text="${#lists.size(payments.?[status.toString() == 'Failed'])}">0</p>
         </div>
     </div>
 
@@ -192,66 +224,119 @@
             <!-- Payment Card -->
             <div th:each="payment : ${payments}"
                  th:data-payment-id="${payment.id}"
-                 th:data-status="${payment.status.name()}"
+                 th:data-status="${payment.status.toString()}"
                  th:data-date="${#temporals.format(payment.timestamp, 'yyyy-MM-dd')}"
+                 th:data-amount="${payment.amount}"
+                 th:data-booking-id="${payment.booking?.id}"
                  class="payment-card glass p-6 rounded-2xl border border-gray-600">
+
                 <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                     <div class="flex-1">
+                        <!-- Vehicle and Status Row -->
                         <div class="flex items-center gap-4 mb-3">
                             <div class="flex items-center gap-2">
                                 <i class="fas fa-car text-blue-400"></i>
-                                <span class="font-semibold" th:text="${payment.booking.vehicle.brand + ' ' + payment.booking.vehicle.model}">Vehicle</span>
-                                <span class="text-gray-400" th:text="'(' + payment.booking.vehicle.vehicleNo + ')'">(License)</span>
+                                <div>
+                                    <span class="font-semibold block"
+                                          th:text="${payment.booking?.vehicle != null ? (payment.booking.vehicle.brand + ' ' + payment.booking.vehicle.model) : 'N/A'}">Vehicle</span>
+                                    <span class="text-gray-400 text-sm"
+                                          th:text="${payment.booking?.vehicle?.vehicleNo != null ? '(' + payment.booking.vehicle.vehicleNo + ')' : '(N/A)'}">(License)</span>
+                                </div>
                             </div>
-                            <span th:if="${payment.status.name() == 'Pending'}"
+                            <span th:if="${payment.status.toString() == 'Pending'}"
                                   class="status-pending px-3 py-1 rounded-full text-xs font-medium">Pending</span>
-                            <span th:if="${payment.status.name() == 'Completed'}"
+                            <span th:if="${payment.status.toString() == 'Completed'}"
                                   class="status-completed px-3 py-1 rounded-full text-xs font-medium">Completed</span>
-                            <span th:if="${payment.status.name() == 'Failed'}"
+                            <span th:if="${payment.status.toString() == 'Failed'}"
                                   class="status-failed px-3 py-1 rounded-full text-xs font-medium">Failed</span>
                         </div>
+
+                        <!-- Payment Details Grid -->
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                            <!-- Location -->
                             <div>
-                                <span class="text-gray-400">Location:</span>
-                                <span th:text="${payment.booking.parkingSlot.parkingLot.location + ', ' + payment.booking.parkingSlot.parkingLot.city}">Location</span>
+                                <span class="text-gray-400 block">Location:</span>
+                                <span th:if="${payment.booking?.parkingSlot?.parkingLot != null}">
+                                    <span th:text="${payment.booking.parkingSlot.parkingLot.location + ', ' + payment.booking.parkingSlot.parkingLot.city}">Location</span>
+                                </span>
+                                <span th:unless="${payment.booking?.parkingSlot?.parkingLot != null}"
+                                      th:if="${payment.originalParkingLotId != null}">
+                                    <span>Parking Lot (ID: <span th:text="${payment.originalParkingLotId}"></span>)</span>
+                                </span>
+                                <span th:unless="${payment.booking?.parkingSlot?.parkingLot != null or payment.originalParkingLotId != null}"
+                                      class="text-gray-500">N/A</span>
                             </div>
+
+                            <!-- Date -->
                             <div>
-                                <span class="text-gray-400">Date:</span>
+                                <span class="text-gray-400 block">Date:</span>
                                 <span th:text="${#temporals.format(payment.timestamp, 'dd/MM/yyyy')}">Date</span>
                             </div>
+
+                            <!-- Time -->
                             <div>
-                                <span class="text-gray-400">Time:</span>
-                                <span th:if="${payment.booking.endTime != null}"
-                                      th:text="${#temporals.format(payment.booking.startTime, 'HH:mm') + ' - ' + #temporals.format(payment.booking.endTime, 'HH:mm')}">Time</span>
-                                <span th:unless="${payment.booking.endTime != null}" class="text-yellow-400">Pending</span>
+                                <span class="text-gray-400 block">Time:</span>
+                                <span th:if="${payment.booking?.endTime != null and payment.booking?.startTime != null}"
+                                      th:text="${#temporals.format(payment.booking.startTime, 'HH:mm')} + ' - ' + ${#temporals.format(payment.booking.endTime, 'HH:mm')}">Time</span>
+                                <span th:unless="${payment.booking?.endTime != null}" class="text-yellow-400">Pending</span>
                             </div>
+
+                            <!-- Duration -->
                             <div>
-                                <span class="text-gray-400">Duration:</span>
-                                <span th:if="${payment.booking.endTime != null}"
-                                      th:text="${#temporals.between(payment.booking.startTime, payment.booking.endTime, #temporals.Unit.HOURS) + ' hours'}">Duration</span>
-                                <span th:unless="${payment.booking.endTime != null}" class="text-yellow-400">Ongoing</span>
+                                <span class="text-gray-400 block">Duration:</span>
+                                <span th:if="${payment.booking?.endTime != null and payment.booking?.startTime != null}">
+                                    <span th:text="${T(java.time.Duration).between(payment.booking.startTime, payment.booking.endTime).toHours()} + ' hours'">Duration</span>
+                                </span>
+                                <span th:unless="${payment.booking?.endTime != null}" class="text-yellow-400">Ongoing</span>
                             </div>
+
+                            <!-- Slot ID -->
                             <div>
-                                <span class="text-gray-400">Amount:</span>
-                                <span th:text="'LKR ' + ${#numbers.formatDecimal(payment.amount, 1, 2)}">Amount</span>
+                                <span class="text-gray-400 block">Slot ID:</span>
+                                <span th:if="${payment.originalSlotId != null}">
+                                    <span th:text="${payment.originalSlotId}">Slot</span>
+                                </span>
+                                <span th:unless="${payment.originalSlotId != null}"
+                                      th:if="${payment.booking?.parkingSlot != null}">
+                                    <span th:text="${payment.booking.parkingSlot.id}">Slot</span>
+                                </span>
+                                <span th:unless="${payment.originalSlotId != null or payment.booking?.parkingSlot != null}"
+                                      class="text-gray-500">N/A</span>
                             </div>
+
+                            <!-- Amount -->
                             <div>
-                                <span class="text-gray-400">Method:</span>
-                                <span th:text="${payment.method}">Method</span>
+                                <span class="text-gray-400 block">Amount:</span>
+                                <span class="font-semibold text-green-400"
+                                      th:text="'LKR ' + ${#numbers.formatDecimal(payment.amount, 1, 2)}">Amount</span>
+                            </div>
+
+                            <!-- Method -->
+                            <div>
+                                <span class="text-gray-400 block">Method:</span>
+                                <span th:text="${payment.method != null ? payment.method.toString() : 'N/A'}">Method</span>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Action Buttons -->
                     <div class="flex gap-2">
-                        <button th:if="${payment.status.name() == 'Pending'}"
+                        <!-- Pay Now Button for Pending Payments -->
+                        <button th:if="${payment.status.toString() == 'Pending' and payment.booking != null}"
                                 class="px-4 py-2 neon-btn pay-now-btn"
-                                th:onclick="'window.location.href=\'/user/payments?bookingId=' + ${payment.booking.id} + '\''">
+                                th:attr="onclick=|'window.location.href=\'/user/payment-gateway?bookingId=' + ${payment.booking.id}|">
                             <i class="fas fa-credit-card mr-1"></i> Pay Now
                         </button>
-                        <button th:if="${payment.status.name() == 'Completed'}"
+
+                        <!-- Download Receipt Button for Completed Payments -->
+                        <button th:if="${payment.status.toString() == 'Completed'}"
                                 class="px-4 py-2 neon-btn download-receipt-btn"
-                                th:data-payment-id="${payment.id}">
-                            <i class="fas fa-download mr-1"></i> Download Receipt
+                                th:data-payment-id="${payment.id}"
+                                th:data-booking-id="${payment.booking?.id}">
+                            <i class="fas fa-download mr-1"></i> Receipt
                         </button>
+
+                        <!-- Details Button -->
                         <button class="px-4 py-2 neon-btn details-btn"
                                 th:data-payment-id="${payment.id}">
                             <i class="fas fa-info-circle mr-1"></i> Details
@@ -261,9 +346,57 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal for Payment Details -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content relative text-white">
+            <span class="modal-close" onclick="closePaymentModal()">&times;</span>
+            <div id="payment-modal-content"></div>
+        </div>
+    </div>
 </main>
 
 <script>
+    // Modal Functions
+    function showPaymentModal(content, type = 'info') {
+        const modal = document.getElementById('paymentModal');
+        const modalContent = document.getElementById('payment-modal-content');
+        let bgColor = 'bg-blue-500';
+        if (type === 'error') bgColor = 'bg-red-500';
+        if (type === 'success') bgColor = 'bg-green-500';
+        if (type === 'warning') bgColor = 'bg-yellow-500';
+
+        modalContent.innerHTML = `
+            <div class="${bgColor} text-white p-4 rounded-t-lg">
+                <h3 class="text-lg font-semibold">${type.charAt(0).toUpperCase() + type.slice(1)} Details</h3>
+            </div>
+            <div class="p-4">${content}</div>
+            <div class="p-4 border-t border-gray-700 flex justify-end">
+                <button class="py-2 px-4 bg-gray-600 rounded-lg text-white hover:bg-gray-700" onclick="closePaymentModal()">Close</button>
+            </div>
+        `;
+        modal.style.display = 'flex';
+
+        // Close modal on click outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closePaymentModal();
+        });
+
+        // Close modal on ESC key
+        document.addEventListener('keydown', function closeOnEsc(e) {
+            if (e.key === 'Escape') {
+                closePaymentModal();
+                document.removeEventListener('keydown', closeOnEsc);
+            }
+        });
+    }
+
+    function closePaymentModal() {
+        const modal = document.getElementById('paymentModal');
+        modal.style.display = 'none';
+        document.getElementById('payment-modal-content').innerHTML = '';
+    }
+
     // Filter Functionality
     const statusFilter = document.getElementById('statusFilter');
     const dateFilter = document.getElementById('dateFilter');
@@ -279,11 +412,16 @@
         paymentCards.forEach(card => {
             const status = card.dataset.status;
             const date = card.dataset.date;
+            const amount = card.dataset.amount || '';
+            const bookingId = card.dataset.bookingId || '';
             const text = card.textContent.toLowerCase();
 
             const statusMatch = !statusValue || status === statusValue;
             const dateMatch = !dateValue || date === dateValue;
-            const searchMatch = !searchValue || text.includes(searchValue);
+            const searchMatch = !searchValue ||
+                text.includes(searchValue) ||
+                amount.includes(searchValue) ||
+                bookingId.includes(searchValue);
 
             card.style.display = statusMatch && dateMatch && searchMatch ? 'block' : 'none';
         });
@@ -300,33 +438,88 @@
     document.querySelectorAll('.download-receipt-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const paymentId = this.dataset.paymentId;
-            console.log(`Download receipt for payment ${paymentId} at ${new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata' })}`);
-            alert(`Simulated receipt download for payment ${paymentId}.`);
+            const bookingId = this.dataset.bookingId;
+            console.log(`Download receipt for payment ${paymentId}, booking ${bookingId} at ${new Date().toLocaleString('en-GB', { timeZone: 'Asia/Colombo' })}`);
+
+            // Simulate receipt download
+            const link = document.createElement('a');
+            link.href = `/user/receipt/${paymentId}`;
+            link.download = `parqhub-receipt-${paymentId}.pdf`;
+            link.click();
+
+            // Show success message
+            showPaymentModal(`Receipt download started for payment #${paymentId}`, 'success');
         });
     });
 
-    // Details
+    // Payment Details Modal
     document.querySelectorAll('.details-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const paymentId = this.dataset.paymentId;
             const card = this.closest('.payment-card');
-            const vehicle = card.querySelector('.font-semibold').textContent + ' ' + card.querySelector('.text-gray-400').textContent;
-            const location = card.querySelector('[th\\:text*=".parkingLot.location"]').textContent;
-            const date = card.querySelector('[th\\:text*=".timestamp"]').textContent;
-            const time = card.querySelector('[th\\:text*=".startTime"][th\\:text*=".endTime"]') || card.querySelector('.text-yellow-400');
-            const duration = card.querySelector('[th\\:text*=".between"]') || card.querySelector('.text-yellow-400');
-            const amount = card.querySelector('[th\\:text*=".amount"]');
-            const method = card.querySelector('[th\\:text*=".method"]');
             const status = card.dataset.status;
 
-            alert(`Payment Details\nID: ${paymentId}\nVehicle: ${vehicle}\nLocation: ${location}\nDate: ${date}\nTime: ${time.textContent}\nDuration: ${duration.textContent}\nAmount: ${amount.textContent}\nMethod: ${method.textContent}\nStatus: ${status}`);
+            // Extract data from card
+            const vehicleName = card.querySelector('.font-semibold').textContent.trim();
+            const license = card.querySelector('.text-gray-400.text-sm').textContent.trim();
+            const location = card.querySelector('span[th\\:text*=".parkingLot."]').textContent.trim() ||
+                card.querySelector('span:contains("Parking Lot")').textContent.trim() || 'N/A';
+            const date = card.querySelector('span[th\\:text*=".timestamp"]').textContent.trim();
+            const time = card.querySelector('span[th\\:text*=".startTime"]').textContent.trim() ||
+                card.querySelector('.text-yellow-400').textContent.trim();
+            const duration = card.querySelector('span[th\\:text*=".endTime"]').textContent.trim() ||
+                card.querySelector('span:contains("hours")').textContent.trim();
+            const amount = card.querySelector('span[th\\:text*=".amount"]').textContent.trim();
+            const method = card.querySelector('span[th\\:text*=".method"]').textContent.trim();
+            const slotId = card.querySelector('span[th\\:text*=".originalSlotId"], span[th\\:text*=".parkingSlot.id"]').textContent.trim();
+
+            const detailsHtml = `
+                <div class="space-y-3">
+                    <h4 class="text-lg font-semibold text-blue-400 mb-3">Payment Details</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p><strong>Payment ID:</strong> <span class="text-gray-300">#${paymentId}</span></p>
+                            <p><strong>Vehicle:</strong> <span class="text-gray-300">${vehicleName} ${license}</span></p>
+                            <p><strong>Location:</strong> <span class="text-gray-300">${location}</span></p>
+                            <p><strong>Slot ID:</strong> <span class="text-gray-300">${slotId}</span></p>
+                        </div>
+                        <div>
+                            <p><strong>Date:</strong> <span class="text-gray-300">${date}</span></p>
+                            <p><strong>Time:</strong> <span class="text-gray-300">${time}</span></p>
+                            <p><strong>Duration:</strong> <span class="text-gray-300">${duration}</span></p>
+                            <p><strong>Payment Method:</strong> <span class="text-gray-300">${method}</span></p>
+                            <p><strong>Status:</strong>
+                                <span class="px-2 py-1 rounded-full text-xs font-medium
+                                    ${status === 'Completed' ? 'bg-green-500/20 text-green-400' :
+                status === 'Pending' ? 'bg-yellow-500/20 text-yellow-400' :
+                    'bg-red-500/20 text-red-400'}">
+                                    ${status}
+                                </span>
+                            </p>
+                            <p><strong>Amount:</strong> <span class="text-green-400 font-bold">${amount}</span></p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            showPaymentModal(detailsHtml, status.toLowerCase());
         });
+    });
+
+    // Initialize filters on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        filterPayments();
+
+        // Set today's date as default for date filter
+        const today = new Date().toISOString().split('T')[0];
+        dateFilter.value = today;
+        filterPayments();
     });
 
     // Debug: Log all fetch requests
     const originalFetch = window.fetch;
     window.fetch = async function(...args) {
-        console.log(`Fetch called at ${new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata' })} with:`, args);
+        console.log(`Fetch called at ${new Date().toLocaleString('en-GB', { timeZone: 'Asia/Colombo' })} with:`, args);
         return originalFetch.apply(this, args);
     };
 </script>
