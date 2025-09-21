@@ -7,8 +7,6 @@ import com.prmplatform.parqhub.model.ParkingLot;
 import com.prmplatform.parqhub.model.VehicleLog;
 import com.prmplatform.parqhub.repository.BookingRepository;
 import com.prmplatform.parqhub.repository.VehicleLogRepository;
-import com.prmplatform.parqhub.repository.VehicleRepository;
-import com.prmplatform.parqhub.repository.ParkingLotRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -30,20 +28,15 @@ public class VehicleLogController {
     @Autowired
     private BookingRepository bookingRepository;
 
-    @Autowired
-    private VehicleRepository vehicleRepository;
-
-    @Autowired
-    private ParkingLotRepository parkingLotRepository;
 
     @PostMapping("/log-entry")
     @ResponseBody
-    public Map<String, String> logEntry(@RequestParam Long bookingId, @RequestParam Long vehicleId, @RequestParam Long lotId, HttpSession session) {
+    public Map<String, String> logEntry(@RequestParam Long bookingId, @RequestParam Long vehicleId, HttpSession session) {
         Map<String, String> response = new HashMap<>();
         try {
             LocalDateTime now = LocalDateTime.now();
             System.out.println("logEntry: Request received at " + now.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) +
-                    " with bookingId=" + bookingId + ", vehicleId=" + vehicleId + ", lotId=" + lotId);
+                    " with bookingId=" + bookingId + ", vehicleId=" + vehicleId);
             User user = (User) session.getAttribute("loggedInUser");
             if (user == null) {
                 response.put("status", "error");
@@ -80,11 +73,11 @@ public class VehicleLogController {
                 return response;
             }
 
-            // Validate parking lot
-            if (!booking.getParkingSlot().getParkingLot().getId().equals(lotId)) {
+            // Skip parking lot validation for completed bookings
+            if (booking.getParkingSlot() == null) {
                 response.put("status", "error");
-                response.put("message", "Parking lot does not match booking");
-                System.out.println("logEntry: Parking lot ID " + lotId + " does not match booking parking lot ID: " + booking.getParkingSlot().getParkingLot().getId());
+                response.put("message", "Cannot log entry for completed booking");
+                System.out.println("logEntry: Cannot log entry for completed booking");
                 return response;
             }
 

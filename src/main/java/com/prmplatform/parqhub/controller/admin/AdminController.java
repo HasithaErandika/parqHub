@@ -1,6 +1,7 @@
 package com.prmplatform.parqhub.controller.admin;
 
 import com.prmplatform.parqhub.model.Admin;
+import com.prmplatform.parqhub.model.Booking;
 import com.prmplatform.parqhub.model.ParkingSlot.SlotStatus;
 import com.prmplatform.parqhub.repository.*;
 import jakarta.servlet.http.HttpSession;
@@ -93,12 +94,12 @@ public class AdminController {
                 LocalDateTime startOfDay = LocalDateTime.now().with(LocalTime.MIN);
                 Double todayRevenue = paymentRepository.sumAmountByCompletedAndTimestampAfter(startOfDay);
                 model.addAttribute("todayRevenue", todayRevenue != null ? todayRevenue : 0.0);
-                model.addAttribute("pendingPayments", bookingRepository.countByPaymentStatus("Pending"));
+                model.addAttribute("pendingPayments", bookingRepository.countByPaymentStatus(Booking.PaymentStatus.Pending));
             }
 
             if (admin.getRole().name().equals("CUSTOMER_SERVICE_OFFICER") || admin.getRole().name().equals("SUPER_ADMIN")) {
                 model.addAttribute("totalUsers", userRepository.count());
-                model.addAttribute("pendingBookings", bookingRepository.countByPaymentStatus("Pending"));
+                model.addAttribute("pendingBookings", bookingRepository.countByPaymentStatus(Booking.PaymentStatus.Pending));
             }
 
             if (admin.getRole().name().equals("SECURITY_SUPERVISOR") || admin.getRole().name().equals("SUPER_ADMIN")) {

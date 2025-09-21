@@ -69,6 +69,12 @@ public class PaymentController {
                 return "user/payment-gateway";
             }
 
+            // Handle completed bookings that may not have parking slot
+            if (booking.getParkingSlot() == null) {
+                model.addAttribute("error", "Cannot process payment for completed booking");
+                return "user/payment-gateway";
+            }
+
             Optional<VehicleLog> vehicleLogOpt = vehicleLogRepository.findByVehicleIdAndExitTimeIsNotNull(booking.getVehicle().getId());
             if (!vehicleLogOpt.isPresent()) {
                 model.addAttribute("error", "Vehicle has not exited yet");
@@ -76,6 +82,7 @@ public class PaymentController {
             }
 
             VehicleLog vehicleLog = vehicleLogOpt.get();
+            
             Optional<ParkingLot> parkingLotOpt = parkingLotRepository.findById(booking.getParkingSlot().getParkingLot().getId());
             if (!parkingLotOpt.isPresent()) {
                 model.addAttribute("error", "Parking lot not found");
@@ -130,6 +137,12 @@ public class PaymentController {
                 return "user/payment-gateway";
             }
 
+            // Handle completed bookings that may not have parking slot
+            if (booking.getParkingSlot() == null) {
+                model.addAttribute("error", "Cannot process payment for completed booking");
+                return "user/payment-gateway";
+            }
+
             Optional<VehicleLog> vehicleLogOpt = vehicleLogRepository.findByVehicleIdAndExitTimeIsNotNull(booking.getVehicle().getId());
             if (!vehicleLogOpt.isPresent()) {
                 model.addAttribute("error", "Vehicle has not exited yet");
@@ -137,6 +150,7 @@ public class PaymentController {
             }
 
             VehicleLog vehicleLog = vehicleLogOpt.get();
+            
             Optional<ParkingLot> parkingLotOpt = parkingLotRepository.findById(booking.getParkingSlot().getParkingLot().getId());
             if (!parkingLotOpt.isPresent()) {
                 model.addAttribute("error", "Parking lot not found");

@@ -2,7 +2,6 @@ package com.prmplatform.parqhub.controller.user;
 
 import com.prmplatform.parqhub.model.User;
 import com.prmplatform.parqhub.model.Vehicle;
-import com.prmplatform.parqhub.model.ParkingLot;
 import com.prmplatform.parqhub.model.ParkingSlot;
 import com.prmplatform.parqhub.model.Booking;
 import com.prmplatform.parqhub.model.Notification;
@@ -10,10 +9,8 @@ import com.prmplatform.parqhub.model.VehicleDTO;
 import com.prmplatform.parqhub.model.ParkingSlotDTO;
 import com.prmplatform.parqhub.repository.UserRepository;
 import com.prmplatform.parqhub.repository.VehicleRepository;
-import com.prmplatform.parqhub.repository.ParkingLotRepository;
 import com.prmplatform.parqhub.repository.ParkingSlotRepository;
 import com.prmplatform.parqhub.repository.BookingRepository;
-import com.prmplatform.parqhub.repository.PaymentRepository;
 import com.prmplatform.parqhub.repository.NotificationRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
@@ -33,26 +30,20 @@ public class UserController {
 
     private final UserRepository userRepository;
     private final VehicleRepository vehicleRepository;
-    private final ParkingLotRepository parkingLotRepository;
     private final ParkingSlotRepository parkingSlotRepository;
     private final BookingRepository bookingRepository;
-    private final PaymentRepository paymentRepository;
     private final NotificationRepository notificationRepository;
 
     @Autowired
     public UserController(UserRepository userRepository,
                           VehicleRepository vehicleRepository,
-                          ParkingLotRepository parkingLotRepository,
                           ParkingSlotRepository parkingSlotRepository,
                           BookingRepository bookingRepository,
-                          PaymentRepository paymentRepository,
                           NotificationRepository notificationRepository) {
         this.userRepository = userRepository;
         this.vehicleRepository = vehicleRepository;
-        this.parkingLotRepository = parkingLotRepository;
         this.parkingSlotRepository = parkingSlotRepository;
         this.bookingRepository = bookingRepository;
-        this.paymentRepository = paymentRepository;
         this.notificationRepository = notificationRepository;
     }
 
@@ -89,8 +80,17 @@ public class UserController {
 
         long totalVehicles = userVehicles.size();
         long activeBookings = userBookings.stream()
+                .filter(booking -> booking.getPaymentStatus() == Booking.PaymentStatus.Pending)
+                .count();
+        
+        long completedBookings = userBookings.stream()
                 .filter(booking -> booking.getPaymentStatus() == Booking.PaymentStatus.Completed)
                 .count();
+
+        // Get recent bookings (last 5)
+        List<Booking> recentBookings = userBookings.stream()
+                .limit(5)
+                .collect(Collectors.toList());
 
         model.addAttribute("userId", user.getId());
         model.addAttribute("userName", user.getName());
@@ -98,7 +98,8 @@ public class UserController {
         model.addAttribute("userContactNo", user.getContactNo());
         model.addAttribute("totalVehicles", totalVehicles);
         model.addAttribute("activeBookings", activeBookings);
-        model.addAttribute("recentBookings", userBookings.subList(0, Math.min(userBookings.size(), 3)));
+        model.addAttribute("completedBookings", completedBookings);
+        model.addAttribute("recentBookings", recentBookings);
 
         return "user/dashboard";
     }
