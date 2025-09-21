@@ -54,7 +54,7 @@
 <!-- Sidebar -->
 <aside class="w-72 h-screen glass flex flex-col fixed">
     <div class="p-6 flex items-center gap-3 border-b border-gray-700">
-        <img src="/images/logo.png" alt="ParQHub" class="h-10">
+        <img src="/images/logo.svg" alt="ParQHub" class="h-10">
         <span class="text-2xl font-bold">ParQHub</span>
     </div>
     <nav class="flex-1 p-4 space-y-2">
@@ -107,6 +107,14 @@
         </div>
     </div>
 
+    <!-- Error Message -->
+    <div id="errorMessage" class="success-message glass p-4 rounded-2xl mb-6 border border-red-500/30 bg-red-500/10">
+        <div class="flex items-center gap-3">
+            <i class="fas fa-exclamation-circle text-red-400 text-xl"></i>
+            <span class="text-red-400 font-medium" id="errorText">An error occurred!</span>
+        </div>
+    </div>
+
     <!-- Settings Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Profile Settings -->
@@ -142,17 +150,13 @@
                                    placeholder="+94 71 234 5678">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium mb-2">Date of Birth</label>
-                            <input type="date" id="dob" name="dob" 
-                                   class="form-input w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none">
+                            <label class="block text-sm font-medium mb-2">User ID</label>
+                            <input type="text" id="userId" name="userId" 
+                                   th:value="${user.id}"
+                                   class="form-input w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none"
+                                   readonly>
+                            <p class="text-xs text-gray-400 mt-1">User ID cannot be changed</p>
                         </div>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Address</label>
-                        <textarea id="address" name="address" rows="3" 
-                                  class="form-input w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none"
-                                  placeholder="Enter your full address"></textarea>
                     </div>
                     
                     <div class="flex gap-4">
@@ -284,6 +288,12 @@
             contactNo: formData.get('contactNo')
         };
         
+        // Show loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Saving...';
+        submitBtn.disabled = true;
+        
         try {
             const response = await fetch('/user/settings/update', {
                 method: 'POST',
@@ -300,21 +310,43 @@
                 // Update the displayed name in the top bar
                 document.querySelector('.text-gray-300 span').textContent = profileData.name;
             } else {
-                alert(result.replace('error:', ''));
+                showErrorMessage(result.replace('error:', ''));
             }
         } catch (error) {
-            alert('Error updating profile: ' + error.message);
+            showErrorMessage('Error updating profile: ' + error.message);
+        } finally {
+            // Reset button state
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
         }
     });
 
     // Show success message
     function showSuccessMessage() {
         const successMessage = document.getElementById('successMessage');
+        const errorMessage = document.getElementById('errorMessage');
+        
+        errorMessage.classList.remove('show');
         successMessage.classList.add('show');
         
         setTimeout(() => {
             successMessage.classList.remove('show');
         }, 3000);
+    }
+
+    // Show error message
+    function showErrorMessage(message) {
+        const successMessage = document.getElementById('successMessage');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        
+        successMessage.classList.remove('show');
+        errorText.textContent = message;
+        errorMessage.classList.add('show');
+        
+        setTimeout(() => {
+            errorMessage.classList.remove('show');
+        }, 5000);
     }
 
     // Change password functionality (placeholder)

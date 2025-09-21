@@ -247,7 +247,6 @@
                  th:data-booking-id="${booking.id}"
                  th:data-status="${booking.paymentStatus.name()}"
                  th:data-vehicle="${booking.vehicle.brand + ' ' + booking.vehicle.model + ' (' + booking.vehicle.vehicleNo + ')'}"
-                 th:data-lot-id="${booking.paymentStatus.name() == 'Completed' ? null : booking.parkingSlot?.parkingLot?.id}"
                  th:data-vehicle-id="${booking.vehicle.id}"
                  th:data-user-id="${userId}"
                  class="booking-card glass p-6 rounded-2xl border border-gray-600">
@@ -275,15 +274,15 @@
                             </div>
                             <div>
                                 <span class="text-gray-400">Location:</span>
-                                <span class="location" th:if="${booking.parkingSlot != null and booking.paymentStatus.name() != 'Completed'}" th:text="${booking.parkingSlot.parkingLot.location + ', ' + booking.parkingSlot.parkingLot.city}">Location</span>
-                                <span class="location" th:if="${booking.paymentStatus.name() == 'Completed'}" class="text-gray-500">Completed Booking</span>
-                                <span class="location" th:if="${booking.parkingSlot == null and booking.paymentStatus.name() != 'Completed'}">N/A</span>
+                                <span class="location" th:if="${booking.paymentStatus.name() == 'Completed'}" class="text-gray-500">Previous Booking</span>
+                                <span class="location" th:if="${booking.paymentStatus.name() != 'Completed' and booking.parkingSlot != null}" th:text="${booking.parkingSlot.parkingLot.location + ', ' + booking.parkingSlot.parkingLot.city}">Location</span>
+                                <span class="location" th:if="${booking.paymentStatus.name() != 'Completed' and booking.parkingSlot == null}">N/A</span>
                             </div>
                             <div>
                                 <span class="text-gray-400">Slot ID:</span>
-                                <span class="slot-id" th:if="${booking.parkingSlot != null and booking.paymentStatus.name() != 'Completed'}" th:text="${booking.parkingSlot.id}">Slot</span>
-                                <span class="slot-id" th:if="${booking.paymentStatus.name() == 'Completed'}" class="text-gray-500">Completed</span>
-                                <span class="slot-id" th:if="${booking.parkingSlot == null and booking.paymentStatus.name() != 'Completed'}">N/A</span>
+                                <span class="slot-id" th:if="${booking.paymentStatus.name() == 'Completed'}" class="text-gray-500">Previous</span>
+                                <span class="slot-id" th:if="${booking.paymentStatus.name() != 'Completed' and booking.parkingSlot != null}" th:text="${booking.parkingSlot.id}">Slot</span>
+                                <span class="slot-id" th:if="${booking.paymentStatus.name() != 'Completed' and booking.parkingSlot == null}">N/A</span>
                             </div>
                             <div>
                                 <span class="text-gray-400">Start Time:</span>
@@ -307,35 +306,33 @@
                     </div>
 
                     <div class="flex flex-wrap gap-2 button-group">
-                        <!-- Entry/Exit Logging Buttons -->
-                        <button th:if="${booking.paymentStatus.name() == 'Pending' and booking.parkingSlot != null}"
+                        <!-- Entry/Exit Logging Buttons - Only for Pending bookings -->
+                        <button th:if="${booking.paymentStatus.name() == 'Pending'}"
                                 class="px-4 py-2 neon-btn log-in-btn"
                                 th:data-booking-id="${booking.id}"
-                                th:data-vehicle-id="${booking.vehicle.id}"
-                                th:data-lot-id="${booking.paymentStatus.name() == 'Completed' ? null : booking.parkingSlot?.parkingLot?.id}">
+                                th:data-vehicle-id="${booking.vehicle.id}">
                             <i class="fas fa-sign-in-alt mr-1"></i> In
                         </button>
-                        <button th:if="${booking.paymentStatus.name() == 'Pending' and booking.parkingSlot != null}"
+                        <button th:if="${booking.paymentStatus.name() == 'Pending'}"
                                 class="px-4 py-2 btn-orange log-out-btn"
                                 th:data-booking-id="${booking.id}"
-                                th:data-vehicle-id="${booking.vehicle.id}"
-                                th:data-lot-id="${booking.paymentStatus.name() == 'Completed' ? null : booking.parkingSlot?.parkingLot?.id}">
+                                th:data-vehicle-id="${booking.vehicle.id}">
                             <i class="fas fa-sign-out-alt mr-1"></i> Out
                         </button>
-                        
-                        <!-- Payment Button -->
+
+                        <!-- Payment Button - Only for Pending bookings -->
                         <button th:if="${booking.paymentStatus.name() == 'Pending'}"
                                 class="px-4 py-2 btn-green pay-now-btn"
                                 th:data-booking-id="${booking.id}">
                             <i class="fas fa-credit-card mr-1"></i> Pay Now
                         </button>
-                        
+
                         <!-- Completed Booking Actions -->
                         <button th:if="${booking.paymentStatus.name() == 'Completed'}"
                                 class="px-4 py-2 neon-btn view-receipt-btn">
                             <i class="fas fa-receipt mr-1"></i> View Receipt
                         </button>
-                        
+
                         <!-- Details Button -->
                         <button class="px-4 py-2 btn-gray view-details-btn"
                                 th:data-booking-id="${booking.id}">
@@ -445,7 +442,6 @@
             const bookingId = card.dataset.bookingId;
             const userName = document.getElementById('user-name').textContent;
             const vehicle = card.dataset.vehicle;
-            const lotId = card.dataset.lotId || 'N/A';
             const location = card.querySelector('.location').textContent || 'N/A';
             const slotId = card.querySelector('.slot-id').textContent || 'N/A';
             const startTime = card.querySelector('[th\\:text*=".startTime"]').textContent;
@@ -461,7 +457,7 @@
                 <p><strong>Booking ID:</strong> ${bookingId}</p>
                 <p><strong>Customer Name:</strong> ${userName}</p>
                 <p><strong>Vehicle:</strong> ${vehicle}</p>
-                <p><strong>Parking Lot:</strong> ${location} ${lotId !== 'N/A' ? '(Lot ID: ' + lotId + ')' : ''}</p>
+                <p><strong>Location:</strong> ${location}</p>
                 <p><strong>Slot ID:</strong> ${slotId}</p>
                 <p><strong>Start Time:</strong> ${startTime}</p>
                 <p><strong>In Time:</strong> ${inTime}</p>
@@ -525,8 +521,8 @@
     }
 
     // Log Entry/Exit
-    async function handleLogAction(bookingId, vehicleId, lotId, action) {
-        console.log(`Handling ${action} for booking ${bookingId}, vehicle ${vehicleId}, lot ${lotId}`);
+    async function handleLogAction(bookingId, vehicleId, action) {
+        console.log(`Handling ${action} for booking ${bookingId}, vehicle ${vehicleId}`);
         try {
             const response = await fetch(`/user/log-${action}`, {
                 method: 'POST',
@@ -534,7 +530,7 @@
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'Accept': 'application/json'
                 },
-                body: action === 'exit' ? `bookingId=${bookingId}` : `bookingId=${bookingId}&vehicleId=${vehicleId}&lotId=${lotId}`
+                body: action === 'exit' ? `bookingId=${bookingId}` : `bookingId=${bookingId}&vehicleId=${vehicleId}`
             });
             const result = await response.json();
             console.log(`${action} response for booking ${bookingId}:`, result);
@@ -568,8 +564,7 @@
             console.log(`In button clicked for booking ${bookingId}`);
             if (confirm('Are you sure you want to log entry for this booking?')) {
                 const vehicleId = this.dataset.vehicleId;
-                const lotId = this.dataset.lotId;
-                handleLogAction(bookingId, vehicleId, lotId, 'entry');
+                handleLogAction(bookingId, vehicleId, 'entry');
             }
         });
     });
@@ -581,8 +576,7 @@
             console.log(`Out button clicked for booking ${bookingId}`);
             if (confirm('Are you sure you want to log exit for this booking?')) {
                 const vehicleId = this.dataset.vehicleId;
-                const lotId = this.dataset.lotId;
-                handleLogAction(bookingId, vehicleId, lotId, 'exit');
+                handleLogAction(bookingId, vehicleId, 'exit');
             }
         });
     });
@@ -610,6 +604,12 @@
             if (status === 'Pending') {
                 await fetchEntryTime(bookingId, entryTimeElement);
                 await fetchExitTime(bookingId, exitTimeElement);
+            } else if (status === 'Completed') {
+                // For completed bookings, show as previous booking
+                entryTimeElement.textContent = 'Previous Booking';
+                entryTimeElement.className = 'entry-time text-gray-500';
+                exitTimeElement.textContent = 'Previous Booking';
+                exitTimeElement.className = 'exit-time text-gray-500';
             } else {
                 entryTimeElement.textContent = 'Not Entered';
                 entryTimeElement.className = 'entry-time text-yellow-400';
