@@ -273,22 +273,18 @@
 
                     <div class="flex gap-2 button-group">
                         <button th:if="${booking.paymentStatus.name() == 'Pending'}"
-                                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition log-in-btn"
+                                class="px-4 py-2 neon-btn log-in-btn"
                                 th:data-booking-id="${booking.id}"
                                 th:data-vehicle-id="${booking.vehicle.id}"
                                 th:data-lot-id="${booking.parkingSlot.parkingLot.id}">
                             <i class="fas fa-sign-in-alt mr-1"></i> In
                         </button>
                         <button th:if="${booking.paymentStatus.name() == 'Pending'}"
-                                class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm transition log-out-btn"
+                                class="px-4 py-2 neon-btn log-out-btn"
                                 th:data-booking-id="${booking.id}"
                                 th:data-vehicle-id="${booking.vehicle.id}"
                                 th:data-lot-id="${booking.parkingSlot.parkingLot.id}">
                             <i class="fas fa-sign-out-alt mr-1"></i> Out
-                        </button>
-                        <button th:if="${booking.paymentStatus.name() == 'Pending'}"
-                                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition pay-now-btn">
-                            <i class="fas fa-credit-card mr-1"></i> Pay Now
                         </button>
                         <button th:if="${booking.paymentStatus.name() == 'Completed'}"
                                 class="px-4 py-2 neon-btn view-receipt-btn">
@@ -462,7 +458,7 @@
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'Accept': 'application/json'
                 },
-                body: `bookingId=${bookingId}&vehicleId=${vehicleId}&lotId=${lotId}`
+                body: action === 'exit' ? `bookingId=${bookingId}` : `bookingId=${bookingId}&vehicleId=${vehicleId}&lotId=${lotId}`
             });
             const result = await response.json();
             console.log(`${action} response for booking ${bookingId}:`, result);

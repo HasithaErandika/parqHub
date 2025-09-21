@@ -119,12 +119,12 @@ public class VehicleLogController {
 
     @PostMapping("/log-exit")
     @ResponseBody
-    public Map<String, String> logExit(@RequestParam Long bookingId, @RequestParam Long vehicleId, @RequestParam Long lotId, HttpSession session) {
+    public Map<String, String> logExit(@RequestParam Long bookingId, HttpSession session) {
         Map<String, String> response = new HashMap<>();
         try {
             LocalDateTime now = LocalDateTime.now();
             System.out.println("logExit: Request received at " + now.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) +
-                    " with bookingId=" + bookingId + ", vehicleId=" + vehicleId + ", lotId=" + lotId);
+                    " with bookingId=" + bookingId);
             User user = (User) session.getAttribute("loggedInUser");
             if (user == null) {
                 response.put("status", "error");
@@ -148,15 +148,10 @@ public class VehicleLogController {
                 System.out.println("logExit: Invalid payment status: " + booking.getPaymentStatus().name());
                 return response;
             }
-            VehicleLog log = vehicleLogRepository.findByVehicleIdAndExitTimeIsNull(vehicleId)
+
+            VehicleLog log = vehicleLogRepository.findByVehicleIdAndExitTimeIsNull(booking.getVehicle().getId())
                     .orElseThrow(() -> new IllegalArgumentException("No active entry found for this vehicle"));
             System.out.println("logExit: Found VehicleLog ID: " + log.getId());
-            if (!log.getParkingLot().getId().equals(lotId)) {
-                response.put("status", "error");
-                response.put("message", "Vehicle is not logged in this parking lot");
-                System.out.println("logExit: Mismatch parking lot ID: " + lotId + ", log parking lot ID: " + log.getParkingLot().getId());
-                return response;
-            }
 
             log.setExitTime(now);
             VehicleLog savedLog = vehicleLogRepository.save(log);
@@ -164,7 +159,7 @@ public class VehicleLogController {
                     savedLog.getExitTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
             response.put("status", "success");
             response.put("message", "Exit logged successfully");
-            response.put("redirectUrl", "/user/payments?bookingId=" + bookingId);
+            response.put("redirectUrl", "/user/payment-gateway?bookingId=" + bookingId);
             return response;
         } catch (Exception e) {
             response.put("status", "error");
