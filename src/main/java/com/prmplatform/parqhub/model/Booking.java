@@ -2,6 +2,7 @@ package com.prmplatform.parqhub.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.time.Duration;
 
 @Entity
 @Table(name = "Booking")
@@ -62,4 +63,13 @@ public class Booking {
 
     public PaymentStatus getPaymentStatus() { return paymentStatus; }
     public void setPaymentStatus(PaymentStatus paymentStatus) { this.paymentStatus = paymentStatus; }
+
+    public String getFormattedDuration() {
+        if (this.endTime == null) {
+            return "Ongoing";
+        } else {
+            long hours = Duration.between(this.startTime, this.endTime).toHours();
+            return hours + " hours";
+        }
+    }
 }

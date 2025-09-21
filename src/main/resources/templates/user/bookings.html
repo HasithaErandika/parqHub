@@ -252,7 +252,7 @@
                  th:data-location="${booking.parkingSlot.parkingLot.location + ', ' + booking.parkingSlot.parkingLot.city}"
                  th:data-slot-id="${booking.parkingSlot.id}"
                  th:data-start-time="${#temporals.format(booking.startTime, 'dd/MM/yyyy HH:mm')}"
-                 th:data-duration="${booking.endTime != null ? #temporals.between(booking.startTime, booking.endTime, #temporals.Unit.HOURS) + ' hours' : 'Ongoing'}"
+                 th:data-duration="${booking.formattedDuration}"
                  class="booking-card glass p-6 rounded-2xl border border-gray-600">
 
                 <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
@@ -306,7 +306,7 @@
                             <div>
                                 <span class="text-gray-400">Duration:</span>
                                 <span th:if="${booking.endTime != null}"
-                                      th:text="${#temporals.between(booking.startTime, booking.endTime, #temporals.Unit.HOURS) + ' hours'}">Duration</span>
+                                      th:data-duration="${booking.formattedDuration}">Duration</span>
                                 <span th:if="${booking.endTime == null}" class="text-yellow-400">Ongoing</span>
                             </div>
                         </div>
