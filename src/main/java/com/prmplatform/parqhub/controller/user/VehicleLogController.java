@@ -28,7 +28,6 @@ public class VehicleLogController {
     @Autowired
     private BookingRepository bookingRepository;
 
-
     @PostMapping("/log-entry")
     @ResponseBody
     public Map<String, String> logEntry(@RequestParam Long bookingId, @RequestParam Long vehicleId, HttpSession session) {
@@ -92,21 +91,36 @@ public class VehicleLogController {
             Vehicle vehicle = booking.getVehicle();
             ParkingLot parkingLot = booking.getParkingSlot().getParkingLot();
 
+            // FIXED: Create VehicleLog with proper entity relationships
             VehicleLog log = new VehicleLog();
             log.setVehicle(vehicle);
-            log.setParkingLot(parkingLot);
             log.setEntryTime(now);
+
+            // Set lot_id directly using parkingLot.getId() to avoid JPA mapping issues
+            if (parkingLot != null && parkingLot.getId() != null) {
+                log.setId(parkingLot.getId());
+                System.out.println("logEntry: Setting lot_id = " + parkingLot.getId() + " for parking lot: " + parkingLot.getLocation());
+            } else {
+                response.put("status", "error");
+                response.put("message", "Parking lot not found for this booking");
+                System.out.println("logEntry: Parking lot is null or has no ID");
+                return response;
+            }
+
             VehicleLog savedLog = vehicleLogRepository.save(log);
             System.out.println("logEntry: Saved VehicleLog ID: " + savedLog.getId() + ", entryTime: " +
-                    savedLog.getEntryTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+                    savedLog.getEntryTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) +
+                    ", lot_id: " + savedLog.getId());
 
             response.put("status", "success");
             response.put("message", "Entry logged successfully");
+            response.put("entryTime", savedLog.getEntryTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
             return response;
         } catch (Exception e) {
             response.put("status", "error");
             response.put("message", e.getMessage());
             System.out.println("logEntry: Error: " + e.getMessage());
+            e.printStackTrace(); // Add this for better debugging
             return response;
         }
     }
@@ -156,11 +170,13 @@ public class VehicleLogController {
             response.put("status", "success");
             response.put("message", "Exit logged successfully");
             response.put("redirectUrl", "/user/payment-gateway?bookingId=" + bookingId);
+            response.put("exitTime", savedLog.getExitTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
             return response;
         } catch (Exception e) {
             response.put("status", "error");
             response.put("message", e.getMessage());
             System.out.println("logExit: Error: " + e.getMessage());
+            e.printStackTrace(); // Add this for better debugging
             return response;
         }
     }
@@ -206,6 +222,7 @@ public class VehicleLogController {
             response.put("status", "error");
             response.put("message", e.getMessage());
             System.out.println("logEntryTime: Error: " + e.getMessage());
+            e.printStackTrace(); // Add this for better debugging
             return response;
         }
     }
@@ -240,9 +257,10 @@ public class VehicleLogController {
                 return response;
             }
 
-            // Check for completed vehicle log (with exit time)
+            // FIXED: Get the most recent completed log for this vehicle
             VehicleLog log = vehicleLogRepository.findByVehicleIdAndExitTimeIsNotNull(booking.getVehicle().getId())
                     .orElse(null);
+
             if (log == null || log.getExitTime() == null) {
                 response.put("status", "error");
                 response.put("message", "No exit logged for this vehicle");
@@ -258,6 +276,7 @@ public class VehicleLogController {
             response.put("status", "error");
             response.put("message", e.getMessage());
             System.out.println("logExitTime: Error: " + e.getMessage());
+            e.printStackTrace(); // Add this for better debugging
             return response;
         }
     }

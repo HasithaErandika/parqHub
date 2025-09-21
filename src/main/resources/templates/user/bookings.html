@@ -249,6 +249,10 @@
                  th:data-vehicle="${booking.vehicle.brand + ' ' + booking.vehicle.model + ' (' + booking.vehicle.vehicleNo + ')'}"
                  th:data-vehicle-id="${booking.vehicle.id}"
                  th:data-user-id="${userId}"
+                 th:data-location="${booking.parkingSlot.parkingLot.location + ', ' + booking.parkingSlot.parkingLot.city}"
+                 th:data-slot-id="${booking.parkingSlot.id}"
+                 th:data-start-time="${#temporals.format(booking.startTime, 'dd/MM/yyyy HH:mm')}"
+                 th:data-duration="${booking.endTime != null ? #temporals.between(booking.startTime, booking.endTime, #temporals.Unit.HOURS) + ' hours' : 'Ongoing'}"
                  class="booking-card glass p-6 rounded-2xl border border-gray-600">
 
                 <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
@@ -273,24 +277,18 @@
                                 <span th:text="${booking.id}">ID</span>
                             </div>
 
-                            <!-- FIXED: Location - Single element with conditional content and classes -->
+                            <!-- Location -->
                             <div>
                                 <span class="text-gray-400">Location:</span>
-                                <span th:class="${booking.paymentStatus.name() == 'Completed'} ? 'text-gray-500' : 'text-gray-300'"
-                                      th:text="${booking.paymentStatus.name() == 'Completed'} ? 'Previous Booking' :
-                                               (${booking.parkingSlot != null} ? ${#strings.abbreviate(booking.parkingSlot.parkingLot.location + ', ' + booking.parkingSlot.parkingLot.city, 30)} : 'N/A')">
+                                <span th:text="${#strings.abbreviate(booking.parkingSlot.parkingLot.location + ', ' + booking.parkingSlot.parkingLot.city, 30)}">
                                     Location
                                 </span>
                             </div>
 
-                            <!-- FIXED: Slot ID - Single element with conditional content and classes -->
+                            <!-- Slot ID -->
                             <div>
                                 <span class="text-gray-400">Slot ID:</span>
-                                <span th:class="${booking.paymentStatus.name() == 'Completed'} ? 'text-gray-500' : 'text-gray-300'"
-                                      th:text="${booking.paymentStatus.name() == 'Completed'} ? 'Previous' :
-                                               (${booking.parkingSlot != null} ? ${booking.parkingSlot.id} : 'N/A')">
-                                    Slot
-                                </span>
+                                <span th:text="${booking.parkingSlot.id}">Slot</span>
                             </div>
 
                             <div>
@@ -453,35 +451,76 @@
             e.preventDefault();
             const btn = e.target.closest('.view-details-btn');
             const card = btn.closest('.booking-card');
+
+            // Extract all data from data attributes
             const bookingId = card.dataset.bookingId;
             const userName = document.getElementById('user-name').textContent;
             const vehicle = card.dataset.vehicle;
-            const locationElement = card.querySelector('span[th\\:class*="text-gray"]');
-            const location = locationElement ? locationElement.textContent : 'N/A';
-            const slotIdElement = card.querySelector('span[th\\:class*="text-gray"]:nth-of-type(2)');
-            const slotId = slotIdElement ? slotIdElement.textContent : 'N/A';
-            const startTimeElement = card.querySelector('span[th\\:text*=".startTime"]');
-            const startTime = startTimeElement ? startTimeElement.textContent : 'N/A';
-            const inTimeElement = card.querySelector('.entry-time');
-            const inTime = inTimeElement ? inTimeElement.textContent : 'N/A';
-            const endTimeElement = card.querySelector('.exit-time');
-            const endTime = endTimeElement ? endTimeElement.textContent : 'Pending';
-            const durationElement = card.querySelector('span[th\\:text*=".between"], span.text-yellow-400');
-            const duration = durationElement ? durationElement.textContent : 'Ongoing';
             const status = card.dataset.status;
+            const location = card.dataset.location || 'N/A';
+            const slotId = card.dataset.slotId || 'N/A';
+            const startTime = card.dataset.startTime || 'N/A';
+            const duration = card.dataset.duration || 'Ongoing';
+
+            // Get current entry/exit times from elements
+            const entryTimeElement = card.querySelector('.entry-time');
+            const inTime = entryTimeElement ? entryTimeElement.textContent.trim() : 'Not Entered';
+
+            const exitTimeElement = card.querySelector('.exit-time');
+            const endTime = exitTimeElement ? exitTimeElement.textContent.trim() : 'Pending';
+
+            // Status styling
+            const statusBgClass = status === 'Pending' ? 'bg-yellow-500 text-yellow-900' :
+                status === 'Completed' ? 'bg-green-500 text-green-900' :
+                    'bg-red-500 text-red-900';
 
             showModal(`
-                <h4 class="text-lg font-semibold text-blue-400 mb-2">Booking Details</h4>
-                <p><strong>Booking ID:</strong> ${bookingId}</p>
-                <p><strong>Customer Name:</strong> ${userName}</p>
-                <p><strong>Vehicle:</strong> ${vehicle}</p>
-                <p><strong>Location:</strong> ${location}</p>
-                <p><strong>Slot ID:</strong> ${slotId}</p>
-                <p><strong>Start Time:</strong> ${startTime}</p>
-                <p><strong>In Time:</strong> ${inTime}</p>
-                <p><strong>End Time:</strong> ${endTime}</p>
-                <p><strong>Duration:</strong> ${duration}</p>
-                <p><strong>Payment Status:</strong> <span class="px-2 py-1 rounded-full text-xs font-medium ${status === 'Pending' ? 'bg-yellow-500' : status === 'Completed' ? 'bg-green-500' : 'bg-red-500'}">${status}</span></p>
+                <div class="text-center mb-4">
+                    <i class="fas fa-info-circle text-blue-400 text-3xl"></i>
+                    <h4 class="text-xl font-bold text-blue-400 mt-2">Booking Details</h4>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex justify-between p-3 bg-gray-800/50 rounded-lg">
+                        <span class="text-gray-400">Booking ID:</span>
+                        <span class="font-semibold text-white">${bookingId}</span>
+                    </div>
+                    <div class="flex justify-between p-3 bg-gray-800/50 rounded-lg">
+                        <span class="text-gray-400">Customer Name:</span>
+                        <span class="font-semibold text-white">${userName}</span>
+                    </div>
+                    <div class="flex justify-between p-3 bg-gray-800/50 rounded-lg">
+                        <span class="text-gray-400">Vehicle:</span>
+                        <span class="font-semibold text-white">${vehicle}</span>
+                    </div>
+                    <div class="flex justify-between p-3 bg-gray-800/50 rounded-lg">
+                        <span class="text-gray-400">Location:</span>
+                        <span class="font-semibold text-white">${location}</span>
+                    </div>
+                    <div class="flex justify-between p-3 bg-gray-800/50 rounded-lg">
+                        <span class="text-gray-400">Slot ID:</span>
+                        <span class="font-semibold text-white">${slotId}</span>
+                    </div>
+                    <div class="flex justify-between p-3 bg-gray-800/50 rounded-lg">
+                        <span class="text-gray-400">Start Time:</span>
+                        <span class="font-semibold text-white">${startTime}</span>
+                    </div>
+                    <div class="flex justify-between p-3 bg-gray-800/50 rounded-lg">
+                        <span class="text-gray-400">In Time:</span>
+                        <span class="font-semibold ${inTime === 'Not Entered' ? 'text-yellow-400' : 'text-green-400'}">${inTime}</span>
+                    </div>
+                    <div class="flex justify-between p-3 bg-gray-800/50 rounded-lg">
+                        <span class="text-gray-400">End Time:</span>
+                        <span class="font-semibold ${endTime === 'Pending' ? 'text-yellow-400' : 'text-green-400'}">${endTime}</span>
+                    </div>
+                    <div class="flex justify-between p-3 bg-gray-800/50 rounded-lg">
+                        <span class="text-gray-400">Duration:</span>
+                        <span class="font-semibold ${duration === 'Ongoing' ? 'text-yellow-400' : 'text-white'}">${duration}</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-gray-800/50 rounded-lg">
+                        <span class="text-gray-400">Payment Status:</span>
+                        <span class="px-3 py-1 rounded-full text-xs font-medium ${statusBgClass}">${status}</span>
+                    </div>
+                </div>
             `, 'info');
         }
     });

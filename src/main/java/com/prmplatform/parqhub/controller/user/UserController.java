@@ -76,7 +76,7 @@ public class UserController {
         }
 
         List<Vehicle> userVehicles = vehicleRepository.findByUserId(user.getId());
-        List<Booking> userBookings = bookingRepository.findByUserIdOrderByStartTimeDesc(user.getId());
+        List<Booking> userBookings = bookingRepository.findByUserIdWithParkingDetailsOrderByStartTimeDesc(user.getId());
 
         long totalVehicles = userVehicles.size();
         long activeBookings = userBookings.stream()
@@ -112,7 +112,7 @@ public class UserController {
         }
 
         List<Vehicle> userVehicles = vehicleRepository.findByUserId(user.getId());
-        List<Booking> vehicleActivity = bookingRepository.findByUserIdOrderByStartTimeDesc(user.getId());
+        List<Booking> vehicleActivity = bookingRepository.findByUserIdWithParkingDetailsOrderByStartTimeDesc(user.getId());
 
         model.addAttribute("userId", user.getId());
         model.addAttribute("userName", user.getName());
@@ -228,7 +228,7 @@ public class UserController {
             return "redirect:/user/login";
         }
 
-        List<Booking> userBookings = bookingRepository.findByUserIdOrderByStartTimeDesc(user.getId());
+        List<Booking> userBookings = bookingRepository.findByUserIdWithParkingDetailsOrderByStartTimeDesc(user.getId());
 
         model.addAttribute("userId", user.getId());
         model.addAttribute("userName", user.getName());

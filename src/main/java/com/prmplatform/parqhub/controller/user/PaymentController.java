@@ -202,7 +202,7 @@ public class PaymentController {
                 return "redirect:/user/login";
             }
 
-            List<Booking> userBookings = bookingRepository.findByUserId(user.getId());
+            List<Booking> userBookings = bookingRepository.findByUserIdWithParkingDetailsOrderByStartTimeDesc(user.getId());
             List<Payment> userPayments = paymentRepository.findAll().stream()
                     .filter(payment -> userBookings.stream().anyMatch(booking -> booking.getId().equals(payment.getBooking().getId())))
                     .toList();
