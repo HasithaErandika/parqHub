@@ -79,6 +79,7 @@ public class UserController {
                 .filter(booking -> booking.getPaymentStatus() == Booking.PaymentStatus.Completed)
                 .count();
 
+        model.addAttribute("userId", user.getId());
         model.addAttribute("userName", user.getName());
         model.addAttribute("userEmail", user.getEmail());
         model.addAttribute("userContactNo", user.getContactNo());
@@ -99,6 +100,7 @@ public class UserController {
         List<Vehicle> userVehicles = vehicleRepository.findByUserId(user.getId());
         List<Booking> vehicleActivity = bookingRepository.findByUserIdOrderByStartTimeDesc(user.getId());
 
+        model.addAttribute("userId", user.getId());
         model.addAttribute("userName", user.getName());
         model.addAttribute("vehicles", userVehicles);
         model.addAttribute("vehicleActivity", vehicleActivity);
@@ -215,6 +217,7 @@ public class UserController {
 
         List<Booking> userBookings = bookingRepository.findByUserIdOrderByStartTimeDesc(user.getId());
 
+        model.addAttribute("userId", user.getId());
         model.addAttribute("userName", user.getName());
         model.addAttribute("bookings", userBookings);
 
@@ -230,6 +233,7 @@ public class UserController {
 
         List<Booking> userBookings = bookingRepository.findByUserId(user.getId());
 
+        model.addAttribute("userId", user.getId());
         model.addAttribute("userName", user.getName());
         model.addAttribute("bookings", userBookings);
 
@@ -245,6 +249,7 @@ public class UserController {
 
         List<Notification> userNotifications = notificationRepository.findByUserIdOrderByTimestampDesc(user.getId());
 
+        model.addAttribute("userId", user.getId());
         model.addAttribute("userName", user.getName());
         model.addAttribute("notifications", userNotifications);
 
@@ -258,6 +263,7 @@ public class UserController {
             return "redirect:/user/login";
         }
 
+        model.addAttribute("userId", user.getId());
         model.addAttribute("userName", user.getName());
         model.addAttribute("user", user);
 
