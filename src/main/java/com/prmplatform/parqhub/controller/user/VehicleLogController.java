@@ -52,14 +52,8 @@ public class VehicleLogController {
                 return response;
             }
 
-            Optional<Booking> bookingOpt = bookingRepository.findById(bookingId);
-            if (!bookingOpt.isPresent()) {
-                response.put("status", "error");
-                response.put("message", "Booking not found");
-                System.out.println("logEntry: Booking not found for ID: " + bookingId);
-                return response;
-            }
-            Booking booking = bookingOpt.get();
+            Booking booking = bookingRepository.findById(bookingId)
+                    .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
             System.out.println("logEntry: Found booking ID: " + bookingId);
 
             // Validate user ownership
@@ -140,14 +134,8 @@ public class VehicleLogController {
                 return response;
             }
 
-            Optional<Booking> bookingOpt = bookingRepository.findById(bookingId);
-            if (!bookingOpt.isPresent()) {
-                response.put("status", "error");
-                response.put("message", "Booking not found");
-                System.out.println("logExit: Booking not found for ID: " + bookingId);
-                return response;
-            }
-            Booking booking = bookingOpt.get();
+            Booking booking = bookingRepository.findById(bookingId)
+                    .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
             System.out.println("logExit: Found booking ID: " + bookingId);
             if (!booking.getUser().getId().equals(user.getId())) {
                 response.put("status", "error");
@@ -162,14 +150,8 @@ public class VehicleLogController {
                 return response;
             }
 
-            Optional<VehicleLog> logOpt = vehicleLogRepository.findByVehicleIdAndExitTimeIsNull(booking.getVehicle().getId());
-            if (!logOpt.isPresent()) {
-                response.put("status", "error");
-                response.put("message", "No active entry found for this vehicle");
-                System.out.println("logExit: No active entry for vehicle ID: " + booking.getVehicle().getId());
-                return response;
-            }
-            VehicleLog log = logOpt.get();
+            VehicleLog log = vehicleLogRepository.findByVehicleIdAndExitTimeIsNull(booking.getVehicle().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("No active entry found for this vehicle"));
             System.out.println("logExit: Found VehicleLog ID: " + log.getId());
 
             // ONLY set the exit time. DO NOT update booking or parking slot.
@@ -204,14 +186,8 @@ public class VehicleLogController {
                 return response;
             }
 
-            Optional<Booking> bookingOpt = bookingRepository.findById(bookingId);
-            if (!bookingOpt.isPresent()) {
-                response.put("status", "error");
-                response.put("message", "Booking not found");
-                System.out.println("logEntryTime: Booking not found for ID: " + bookingId);
-                return response;
-            }
-            Booking booking = bookingOpt.get();
+            Booking booking = bookingRepository.findById(bookingId)
+                    .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
             System.out.println("logEntryTime: Found booking ID: " + bookingId);
             if (!booking.getUser().getId().equals(user.getId())) {
                 response.put("status", "error");
@@ -237,6 +213,58 @@ public class VehicleLogController {
             response.put("status", "error");
             response.put("message", e.getMessage());
             System.out.println("logEntryTime: Error: " + e.getMessage());
+            return response;
+        }
+    }
+
+    @GetMapping("/log-exit-time")
+    @ResponseBody
+    public Map<String, String> getLogExitTime(@RequestParam Long bookingId, HttpSession session) {
+        Map<String, String> response = new HashMap<>();
+        try {
+            System.out.println("logExitTime: Request received for booking ID: " + bookingId);
+            User user = (User) session.getAttribute("loggedInUser");
+            if (user == null) {
+                response.put("status", "error");
+                response.put("message", "User not logged in");
+                System.out.println("logExitTime: User not logged in for booking ID: " + bookingId);
+                return response;
+            }
+
+            Optional<Booking> bookingOpt = bookingRepository.findById(bookingId);
+            if (!bookingOpt.isPresent()) {
+                response.put("status", "error");
+                response.put("message", "Booking not found");
+                System.out.println("logExitTime: Booking not found for ID: " + bookingId);
+                return response;
+            }
+            Booking booking = bookingOpt.get();
+            System.out.println("logExitTime: Found booking ID: " + bookingId);
+            if (!booking.getUser().getId().equals(user.getId())) {
+                response.put("status", "error");
+                response.put("message", "Unauthorized access to booking");
+                System.out.println("logExitTime: Unauthorized access for user ID: " + user.getId() + ", booking user ID: " + booking.getUser().getId());
+                return response;
+            }
+
+            // Check for completed vehicle log (with exit time)
+            VehicleLog log = vehicleLogRepository.findByVehicleIdAndExitTimeIsNotNull(booking.getVehicle().getId())
+                    .orElse(null);
+            if (log == null || log.getExitTime() == null) {
+                response.put("status", "error");
+                response.put("message", "No exit logged for this vehicle");
+                System.out.println("logExitTime: No exit logged for vehicle ID: " + booking.getVehicle().getId());
+                return response;
+            }
+
+            response.put("status", "success");
+            response.put("exitTime", log.getExitTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+            System.out.println("logExitTime: Exit time for booking ID: " + bookingId + ": " + response.get("exitTime"));
+            return response;
+        } catch (Exception e) {
+            response.put("status", "error");
+            response.put("message", e.getMessage());
+            System.out.println("logExitTime: Error: " + e.getMessage());
             return response;
         }
     }

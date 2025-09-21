@@ -258,12 +258,9 @@
                                 <span class="text-gray-400 block">Location:</span>
                                 <span th:if="${payment.booking?.parkingSlot?.parkingLot != null}">
                                     <span th:text="${payment.booking.parkingSlot.parkingLot.location + ', ' + payment.booking.parkingSlot.parkingLot.city}">Location</span>
+                                    <span th:if="${payment.booking.paymentStatus.name() == 'Completed'}" class="text-xs text-gray-500 ml-1">(Completed)</span>
                                 </span>
                                 <span th:unless="${payment.booking?.parkingSlot?.parkingLot != null}"
-                                      th:if="${payment.originalParkingLotId != null}">
-                                    <span>Parking Lot (ID: <span th:text="${payment.originalParkingLotId}"></span>)</span>
-                                </span>
-                                <span th:unless="${payment.booking?.parkingSlot?.parkingLot != null or payment.originalParkingLotId != null}"
                                       class="text-gray-500">N/A</span>
                             </div>
 
@@ -293,14 +290,11 @@
                             <!-- Slot ID -->
                             <div>
                                 <span class="text-gray-400 block">Slot ID:</span>
-                                <span th:if="${payment.originalSlotId != null}">
-                                    <span th:text="${payment.originalSlotId}">Slot</span>
-                                </span>
-                                <span th:unless="${payment.originalSlotId != null}"
-                                      th:if="${payment.booking?.parkingSlot != null}">
+                                <span th:if="${payment.booking?.parkingSlot != null}">
                                     <span th:text="${payment.booking.parkingSlot.id}">Slot</span>
+                                    <span th:if="${payment.booking.paymentStatus.name() == 'Completed'}" class="text-xs text-gray-500 ml-1">(Completed)</span>
                                 </span>
-                                <span th:unless="${payment.originalSlotId != null or payment.booking?.parkingSlot != null}"
+                                <span th:unless="${payment.booking?.parkingSlot != null}"
                                       class="text-gray-500">N/A</span>
                             </div>
 
@@ -471,7 +465,7 @@
                 card.querySelector('span:contains("hours")').textContent.trim();
             const amount = card.querySelector('span[th\\:text*=".amount"]').textContent.trim();
             const method = card.querySelector('span[th\\:text*=".method"]').textContent.trim();
-            const slotId = card.querySelector('span[th\\:text*=".originalSlotId"], span[th\\:text*=".parkingSlot.id"]').textContent.trim();
+            const slotId = card.querySelector('span[th\\:text*=".parkingSlot.id"]').textContent.trim();
 
             const detailsHtml = `
                 <div class="space-y-3">

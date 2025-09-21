@@ -31,13 +31,6 @@ public class Payment {
     @Column(name = "timestamp")
     private LocalDateTime timestamp;
 
-    // If you need to store original slot info, you can add these fields
-    @Column(name = "original_slot_id")
-    private Long originalSlotId;
-
-    @Column(name = "original_parking_lot_id")
-    private Long originalParkingLotId;
-
     public enum PaymentMethod {
         Card, Cash, Arrival
     }
@@ -67,11 +60,4 @@ public class Payment {
 
     public LocalDateTime getTimestamp() { return timestamp; }
     public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
-
-    // New getters and setters for historical slot info
-    public Long getOriginalSlotId() { return originalSlotId; }
-    public void setOriginalSlotId(Long originalSlotId) { this.originalSlotId = originalSlotId; }
-
-    public Long getOriginalParkingLotId() { return originalParkingLotId; }
-    public void setOriginalParkingLotId(Long originalParkingLotId) { this.originalParkingLotId = originalParkingLotId; }
 }
