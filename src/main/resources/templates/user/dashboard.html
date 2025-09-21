@@ -128,19 +128,10 @@
         
         <div class="stat-card glass p-6 rounded-2xl text-center">
             <div class="flex items-center justify-center mb-3">
-                <i class="fas fa-clock text-yellow-400 text-3xl"></i>
-            </div>
-            <h3 class="text-lg font-semibold mb-2">Parking Hours</h3>
-            <p class="text-3xl font-bold text-yellow-400">24.5</p>
-            <p class="text-sm text-gray-400 mt-1">This month</p>
-        </div>
-        
-        <div class="stat-card glass p-6 rounded-2xl text-center">
-            <div class="flex items-center justify-center mb-3">
                 <i class="fas fa-dollar-sign text-purple-400 text-3xl"></i>
             </div>
             <h3 class="text-lg font-semibold mb-2">Total Spent</h3>
-            <p class="text-3xl font-bold text-purple-400">LKR 2,450</p>
+            <p class="text-3xl font-bold text-purple-400" th:text="'LKR ' + ${#numbers.formatDecimal(totalSpentThisMonth, 0, 'COMMA', 0, 'POINT')}">0</p>
             <p class="text-sm text-gray-400 mt-1">This month</p>
         </div>
     </div>

@@ -12,6 +12,7 @@ import com.prmplatform.parqhub.repository.VehicleRepository;
 import com.prmplatform.parqhub.repository.ParkingSlotRepository;
 import com.prmplatform.parqhub.repository.BookingRepository;
 import com.prmplatform.parqhub.repository.NotificationRepository;
+import com.prmplatform.parqhub.repository.PaymentRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -33,18 +34,21 @@ public class UserController {
     private final ParkingSlotRepository parkingSlotRepository;
     private final BookingRepository bookingRepository;
     private final NotificationRepository notificationRepository;
+    private final PaymentRepository paymentRepository;
 
     @Autowired
     public UserController(UserRepository userRepository,
                           VehicleRepository vehicleRepository,
                           ParkingSlotRepository parkingSlotRepository,
                           BookingRepository bookingRepository,
-                          NotificationRepository notificationRepository) {
+                          NotificationRepository notificationRepository,
+                          PaymentRepository paymentRepository) {
         this.userRepository = userRepository;
         this.vehicleRepository = vehicleRepository;
         this.parkingSlotRepository = parkingSlotRepository;
         this.bookingRepository = bookingRepository;
         this.notificationRepository = notificationRepository;
+        this.paymentRepository = paymentRepository;
     }
 
     @GetMapping("/login")
@@ -92,6 +96,11 @@ public class UserController {
                 .limit(5)
                 .collect(Collectors.toList());
 
+        // Calculate total spent this month
+        LocalDateTime startOfMonth = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        Double totalSpentThisMonth = paymentRepository.sumAmountByUserIdAndCompletedAndTimestampAfter(user.getId(), startOfMonth);
+        if (totalSpentThisMonth == null) totalSpentThisMonth = 0.0;
+
         model.addAttribute("userId", user.getId());
         model.addAttribute("userName", user.getName());
         model.addAttribute("userEmail", user.getEmail());
@@ -100,6 +109,7 @@ public class UserController {
         model.addAttribute("activeBookings", activeBookings);
         model.addAttribute("completedBookings", completedBookings);
         model.addAttribute("recentBookings", recentBookings);
+        model.addAttribute("totalSpentThisMonth", totalSpentThisMonth);
 
         return "user/dashboard";
     }
