@@ -34,25 +34,21 @@ public class VehicleLogController {
         Map<String, String> response = new HashMap<>();
         try {
             LocalDateTime now = LocalDateTime.now();
-            System.out.println("logEntry: Request received at " + now.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) +
-                    " with bookingId=" + bookingId + ", vehicleId=" + vehicleId);
             User user = (User) session.getAttribute("loggedInUser");
+
             if (user == null) {
                 response.put("status", "error");
                 response.put("message", "User not logged in");
-                System.out.println("logEntry: User not logged in");
                 return response;
             }
 
             Booking booking = bookingRepository.findById(bookingId)
                     .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
-            System.out.println("logEntry: Found booking ID: " + bookingId);
 
             // Validate user ownership
             if (!booking.getUser().getId().equals(user.getId())) {
                 response.put("status", "error");
                 response.put("message", "Unauthorized access to booking");
-                System.out.println("logEntry: Unauthorized access for user ID: " + user.getId() + ", booking user ID: " + booking.getUser().getId());
                 return response;
             }
 
@@ -60,7 +56,6 @@ public class VehicleLogController {
             if (!booking.getPaymentStatus().name().equals("Pending")) {
                 response.put("status", "error");
                 response.put("message", "Cannot log entry for non-pending booking");
-                System.out.println("logEntry: Invalid payment status: " + booking.getPaymentStatus().name());
                 return response;
             }
 
@@ -68,49 +63,53 @@ public class VehicleLogController {
             if (!booking.getVehicle().getId().equals(vehicleId)) {
                 response.put("status", "error");
                 response.put("message", "Vehicle does not match booking");
-                System.out.println("logEntry: Vehicle ID " + vehicleId + " does not match booking vehicle ID: " + booking.getVehicle().getId());
                 return response;
             }
 
-            // Skip parking lot validation for completed bookings
+            // Check if booking has a valid parking slot
             if (booking.getParkingSlot() == null) {
                 response.put("status", "error");
-                response.put("message", "Cannot log entry for completed booking");
-                System.out.println("logEntry: Cannot log entry for completed booking");
-                return response;
-            }
-
-            // Check for existing active log
-            if (vehicleLogRepository.findByVehicleIdAndExitTimeIsNull(vehicleId).isPresent()) {
-                response.put("status", "error");
-                response.put("message", "Vehicle already has an active log entry");
-                System.out.println("logEntry: Active log exists for vehicle ID: " + vehicleId);
+                response.put("message", "Booking has no assigned parking slot");
                 return response;
             }
 
             Vehicle vehicle = booking.getVehicle();
             ParkingLot parkingLot = booking.getParkingSlot().getParkingLot();
 
-            // FIXED: Create VehicleLog with proper entity relationships
+            // Validate parking lot exists and has a valid ID
+            if (parkingLot == null) {
+                response.put("status", "error");
+                response.put("message", "No parking lot assigned to this booking");
+                return response;
+            }
+
+            if (parkingLot.getId() == null) {
+                response.put("status", "error");
+                response.put("message", "Parking lot ID is missing");
+                return response;
+            }
+
+            // Check for existing active log
+            if (vehicleLogRepository.findByVehicleAndExitTimeIsNull(vehicle).isPresent()) {
+                response.put("status", "error");
+                response.put("message", "Vehicle already has an active log entry");
+                return response;
+            }
+
+            // Create VehicleLog with proper entity relationships
             VehicleLog log = new VehicleLog();
             log.setVehicle(vehicle);
             log.setEntryTime(now);
+            log.setParkingLot(parkingLot);
 
-            // Set lot_id directly using parkingLot.getId() to avoid JPA mapping issues
-            if (parkingLot != null && parkingLot.getId() != null) {
-                log.setId(parkingLot.getId());
-                System.out.println("logEntry: Setting lot_id = " + parkingLot.getId() + " for parking lot: " + parkingLot.getLocation());
-            } else {
+            // Double-check before saving
+            if (log.getParkingLot() == null || log.getParkingLot().getId() == null) {
                 response.put("status", "error");
-                response.put("message", "Parking lot not found for this booking");
-                System.out.println("logEntry: Parking lot is null or has no ID");
+                response.put("message", "Invalid parking lot reference");
                 return response;
             }
 
             VehicleLog savedLog = vehicleLogRepository.save(log);
-            System.out.println("logEntry: Saved VehicleLog ID: " + savedLog.getId() + ", entryTime: " +
-                    savedLog.getEntryTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) +
-                    ", lot_id: " + savedLog.getId());
 
             response.put("status", "success");
             response.put("message", "Entry logged successfully");
@@ -118,9 +117,7 @@ public class VehicleLogController {
             return response;
         } catch (Exception e) {
             response.put("status", "error");
-            response.put("message", e.getMessage());
-            System.out.println("logEntry: Error: " + e.getMessage());
-            e.printStackTrace(); // Add this for better debugging
+            response.put("message", "Failed to log entry: " + e.getMessage());
             return response;
         }
     }
@@ -131,41 +128,35 @@ public class VehicleLogController {
         Map<String, String> response = new HashMap<>();
         try {
             LocalDateTime now = LocalDateTime.now();
-            System.out.println("logExit: Request received at " + now.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) +
-                    " with bookingId=" + bookingId);
             User user = (User) session.getAttribute("loggedInUser");
+
             if (user == null) {
                 response.put("status", "error");
                 response.put("message", "User not logged in");
-                System.out.println("logExit: User not logged in");
                 return response;
             }
 
             Booking booking = bookingRepository.findById(bookingId)
                     .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
-            System.out.println("logExit: Found booking ID: " + bookingId);
+
             if (!booking.getUser().getId().equals(user.getId())) {
                 response.put("status", "error");
                 response.put("message", "Unauthorized access to booking");
-                System.out.println("logExit: Unauthorized access for user ID: " + user.getId() + ", booking user ID: " + booking.getUser().getId());
-                return response;
-            }
-            if (!booking.getPaymentStatus().name().equals("Pending")) {
-                response.put("status", "error");
-                response.put("message", "Cannot log exit for non-pending booking");
-                System.out.println("logExit: Invalid payment status: " + booking.getPaymentStatus().name());
                 return response;
             }
 
-            VehicleLog log = vehicleLogRepository.findByVehicleIdAndExitTimeIsNull(booking.getVehicle().getId())
+            if (!booking.getPaymentStatus().name().equals("Pending")) {
+                response.put("status", "error");
+                response.put("message", "Cannot log exit for non-pending booking");
+                return response;
+            }
+
+            VehicleLog log = vehicleLogRepository.findByVehicleAndExitTimeIsNull(booking.getVehicle())
                     .orElseThrow(() -> new IllegalArgumentException("No active entry found for this vehicle"));
-            System.out.println("logExit: Found VehicleLog ID: " + log.getId());
 
             // ONLY set the exit time. DO NOT update booking or parking slot.
             log.setExitTime(now);
             VehicleLog savedLog = vehicleLogRepository.save(log);
-            System.out.println("logExit: Updated VehicleLog ID: " + savedLog.getId() + ", exitTime: " +
-                    savedLog.getExitTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
 
             response.put("status", "success");
             response.put("message", "Exit logged successfully");
@@ -174,9 +165,7 @@ public class VehicleLogController {
             return response;
         } catch (Exception e) {
             response.put("status", "error");
-            response.put("message", e.getMessage());
-            System.out.println("logExit: Error: " + e.getMessage());
-            e.printStackTrace(); // Add this for better debugging
+            response.put("message", "Failed to log exit: " + e.getMessage());
             return response;
         }
     }
@@ -186,43 +175,37 @@ public class VehicleLogController {
     public Map<String, String> getLogEntryTime(@RequestParam Long bookingId, HttpSession session) {
         Map<String, String> response = new HashMap<>();
         try {
-            System.out.println("logEntryTime: Request received for booking ID: " + bookingId);
             User user = (User) session.getAttribute("loggedInUser");
             if (user == null) {
                 response.put("status", "error");
                 response.put("message", "User not logged in");
-                System.out.println("logEntryTime: User not logged in for booking ID: " + bookingId);
                 return response;
             }
 
             Booking booking = bookingRepository.findById(bookingId)
                     .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
-            System.out.println("logEntryTime: Found booking ID: " + bookingId);
+
             if (!booking.getUser().getId().equals(user.getId())) {
                 response.put("status", "error");
                 response.put("message", "Unauthorized access to booking");
-                System.out.println("logEntryTime: Unauthorized access for user ID: " + user.getId() + ", booking user ID: " + booking.getUser().getId());
                 return response;
             }
 
-            VehicleLog log = vehicleLogRepository.findByVehicleIdAndExitTimeIsNull(booking.getVehicle().getId())
+            VehicleLog log = vehicleLogRepository.findByVehicleAndExitTimeIsNull(booking.getVehicle())
                     .orElse(null);
+
             if (log == null || log.getEntryTime() == null) {
                 response.put("status", "error");
                 response.put("message", "No active entry found for this vehicle");
-                System.out.println("logEntryTime: No active entry for vehicle ID: " + booking.getVehicle().getId());
                 return response;
             }
 
             response.put("status", "success");
             response.put("entryTime", log.getEntryTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
-            System.out.println("logEntryTime: Entry time for booking ID: " + bookingId + ": " + response.get("entryTime"));
             return response;
         } catch (Exception e) {
             response.put("status", "error");
-            response.put("message", e.getMessage());
-            System.out.println("logEntryTime: Error: " + e.getMessage());
-            e.printStackTrace(); // Add this for better debugging
+            response.put("message", "Failed to retrieve entry time: " + e.getMessage());
             return response;
         }
     }
@@ -232,12 +215,10 @@ public class VehicleLogController {
     public Map<String, String> getLogExitTime(@RequestParam Long bookingId, HttpSession session) {
         Map<String, String> response = new HashMap<>();
         try {
-            System.out.println("logExitTime: Request received for booking ID: " + bookingId);
             User user = (User) session.getAttribute("loggedInUser");
             if (user == null) {
                 response.put("status", "error");
                 response.put("message", "User not logged in");
-                System.out.println("logExitTime: User not logged in for booking ID: " + bookingId);
                 return response;
             }
 
@@ -245,41 +226,36 @@ public class VehicleLogController {
             if (!bookingOpt.isPresent()) {
                 response.put("status", "error");
                 response.put("message", "Booking not found");
-                System.out.println("logExitTime: Booking not found for ID: " + bookingId);
                 return response;
             }
             Booking booking = bookingOpt.get();
-            System.out.println("logExitTime: Found booking ID: " + bookingId);
+
             if (!booking.getUser().getId().equals(user.getId())) {
                 response.put("status", "error");
                 response.put("message", "Unauthorized access to booking");
-                System.out.println("logExitTime: Unauthorized access for user ID: " + user.getId() + ", booking user ID: " + booking.getUser().getId());
                 return response;
             }
 
-            // FIXED: Get the most recent completed log for this vehicle
-            VehicleLog log = vehicleLogRepository.findByVehicleIdAndExitTimeIsNotNull(booking.getVehicle().getId())
+            // Get the most recent completed log for this vehicle
+            VehicleLog log = vehicleLogRepository.findTopByVehicleAndExitTimeIsNotNullOrderByEntryTimeDesc(booking.getVehicle())
                     .orElse(null);
 
             if (log == null || log.getExitTime() == null) {
                 response.put("status", "error");
                 response.put("message", "No exit logged for this vehicle");
-                System.out.println("logExitTime: No exit logged for vehicle ID: " + booking.getVehicle().getId());
                 return response;
             }
 
             response.put("status", "success");
             response.put("exitTime", log.getExitTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
-            System.out.println("logExitTime: Exit time for booking ID: " + bookingId + ": " + response.get("exitTime"));
             return response;
         } catch (Exception e) {
             response.put("status", "error");
-            response.put("message", e.getMessage());
-            System.out.println("logExitTime: Error: " + e.getMessage());
-            e.printStackTrace(); // Add this for better debugging
+            response.put("message", "Failed to retrieve exit time: " + e.getMessage());
             return response;
         }
     }
+
 
     public static class LogStatus {
         private boolean hasEntry;

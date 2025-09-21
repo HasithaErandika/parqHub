@@ -13,7 +13,7 @@ CREATE TABLE ParkingLot (
 
 
 -- Adding Colombo parking lots
-INSERT INTO parkinglot (city, location, total_slots, price_hr) VALUES
+INSERT INTO ParkingLot (city, location, total_slots, price_hr) VALUES
                                                                    ('Colombo', 'Pettah', 50, 250.00),
                                                                    ('Colombo', 'Galle Face', 35, 200.00),
                                                                    ('Colombo', 'Maligakanda', 24, 140.00),
@@ -21,7 +21,7 @@ INSERT INTO parkinglot (city, location, total_slots, price_hr) VALUES
                                                                    ('Colombo', 'SSC ', 22, 100.00);
 
 -- Adding Galle parking lots
-INSERT INTO parkinglot (city, location, total_slots, price_hr) VALUES
+INSERT INTO ParkingLot (city, location, total_slots, price_hr) VALUES
                                                                    ('Galle', 'Galle Dutch Fort', 50, 250.00),
                                                                    ('Galle', 'Galle ICS', 35, 200.00),
                                                                    ('Galle', 'Galle Beach', 24, 140.00),
@@ -29,7 +29,7 @@ INSERT INTO parkinglot (city, location, total_slots, price_hr) VALUES
                                                                    ('Galle', 'Galle Meusium 5', 22, 100.00);
 
 -- Adding Kandy parking lots
-INSERT INTO parkinglot (city, location, total_slots, price_hr) VALUES
+INSERT INTO ParkingLot (city, location, total_slots, price_hr) VALUES
                                                                    ('Kandy', 'Dalada Maligawa', 50, 250.00),
                                                                    ('Kandy', 'Raja Veediya', 35, 200.00),
                                                                    ('Kandy', 'Old Royal Palace', 24, 140.00),
@@ -52,7 +52,7 @@ BEGIN
     DECLARE v_status ENUM('Available','Booked','Occupied');
 
     DECLARE lot_cursor CURSOR FOR
-SELECT lot_id, total_slots FROM parkinglot;
+SELECT lot_id, total_slots FROM ParkingLot;
 DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
 OPEN lot_cursor;
