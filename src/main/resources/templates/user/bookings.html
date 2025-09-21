@@ -253,6 +253,10 @@
                                 <span th:text="${#temporals.format(booking.startTime, 'dd/MM/yyyy HH:mm')}">Start</span>
                             </div>
                             <div>
+                                <span class="text-gray-400">In Time:</span>
+                                <span class="entry-time text-yellow-400" th:data-booking-id="${booking.id}">Not Entered</span>
+                            </div>
+                            <div>
                                 <span class="text-gray-400">End Time:</span>
                                 <span th:if="${booking.endTime} != null"
                                       th:text="${#temporals.format(booking.endTime, 'dd/MM/yyyy HH:mm')}">End</span>
@@ -267,7 +271,7 @@
                         </div>
                     </div>
 
-                    <div class="flex gap-2">
+                    <div class="flex gap-2 button-group">
                         <button th:if="${booking.paymentStatus.name() == 'Pending'}"
                                 class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition log-in-btn"
                                 th:data-booking-id="${booking.id}"
@@ -279,16 +283,15 @@
                                 class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm transition log-out-btn"
                                 th:data-booking-id="${booking.id}"
                                 th:data-vehicle-id="${booking.vehicle.id}"
-                                th:data-lot-id="${booking.parkingSlot.parkingLot.id}"
-                                disabled>
+                                th:data-lot-id="${booking.parkingSlot.parkingLot.id}">
                             <i class="fas fa-sign-out-alt mr-1"></i> Out
                         </button>
                         <button th:if="${booking.paymentStatus.name() == 'Pending'}"
-                                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition">
+                                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition pay-now-btn">
                             <i class="fas fa-credit-card mr-1"></i> Pay Now
                         </button>
                         <button th:if="${booking.paymentStatus.name() == 'Completed'}"
-                                class="px-4 py-2 neon-btn">
+                                class="px-4 py-2 neon-btn view-receipt-btn">
                             <i class="fas fa-receipt mr-1"></i> View Receipt
                         </button>
                         <button class="px-4 py-2 neon-btn view-details-btn"
@@ -383,18 +386,9 @@
         if (e.key === 'Enter') filterBookings();
     });
 
-    // Pay Now (Placeholder)
-    document.querySelectorAll('.fa-credit-card').forEach(btn => {
-        btn.parentElement.addEventListener('click', function() {
-            const card = this.closest('.booking-card');
-            const bookingId = card.dataset.bookingId;
-            showModal(`Payment functionality for booking ${bookingId} would be implemented here.`, 'info');
-        });
-    });
-
-    // View Receipt (Placeholder)
-    document.querySelectorAll('.fa-receipt').forEach(btn => {
-        btn.parentElement.addEventListener('click', function() {
+    // View Receipt
+    document.querySelectorAll('.view-receipt-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
             const card = this.closest('.booking-card');
             const bookingId = card.dataset.bookingId;
             showModal(`Receipt view for booking ${bookingId} would be implemented here.`, 'info');
@@ -412,6 +406,7 @@
             const location = card.querySelector('[th\\:text*=".parkingLot.location"]').textContent;
             const slotId = card.querySelector('[th\\:text*=".slotId"]').textContent;
             const startTime = card.querySelector('[th\\:text*=".startTime"]').textContent;
+            const inTime = card.querySelector('.entry-time').textContent;
             const endTime = card.querySelector('[th\\:text*=".endTime"]') ?
                 card.querySelector('[th\\:text*=".endTime"]').textContent : 'Pending';
             const duration = card.querySelector('[th\\:text*=".between"]') ?
@@ -426,6 +421,7 @@
                 <p><strong>Parking Lot:</strong> ${location} (Lot ID: ${lotId})</p>
                 <p><strong>Slot ID:</strong> ${slotId}</p>
                 <p><strong>Start Time:</strong> ${startTime}</p>
+                <p><strong>In Time:</strong> ${inTime}</p>
                 <p><strong>End Time:</strong> ${endTime}</p>
                 <p><strong>Duration:</strong> ${duration}</p>
                 <p><strong>Payment Status:</strong> ${status}</p>
@@ -433,33 +429,64 @@
         });
     });
 
+    // Fetch Entry Time for a Booking
+    async function fetchEntryTime(bookingId, entryTimeElement) {
+        console.log(`Fetching entry time for booking ${bookingId}`);
+        try {
+            const response = await fetch(`/user/log-entry-time?bookingId=${bookingId}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            const result = await response.json();
+            console.log(`Entry time response for booking ${bookingId}:`, result);
+            if (result.status === 'success') {
+                entryTimeElement.textContent = result.entryTime;
+            } else {
+                entryTimeElement.textContent = 'Not Entered';
+            }
+        } catch (error) {
+            console.error(`Error fetching entry time for booking ${bookingId}:`, error);
+            entryTimeElement.textContent = 'Not Entered';
+        }
+    }
+
     // Log Entry/Exit
     async function handleLogAction(bookingId, vehicleId, lotId, action) {
+        console.log(`Handling ${action} for booking ${bookingId}, vehicle ${vehicleId}, lot ${lotId}`);
         try {
             const response = await fetch(`/user/log-${action}`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Accept': 'application/json'
                 },
                 body: `bookingId=${bookingId}&vehicleId=${vehicleId}&lotId=${lotId}`
             });
-            const result = await response.text();
-            console.log(`${action} response:`, result);
-            if (result.startsWith('success')) {
+            const result = await response.json();
+            console.log(`${action} response for booking ${bookingId}:`, result);
+            if (result.status === 'success') {
                 showModal(`${action.charAt(0).toUpperCase() + action.slice(1)} logged successfully!`, 'success');
-                // Update button states
                 const card = document.querySelector(`[data-booking-id="${bookingId}"]`);
+                const entryTimeElement = card.querySelector('.entry-time');
+
                 if (action === 'entry') {
-                    card.querySelector('.log-in-btn').disabled = true;
-                    card.querySelector('.log-out-btn').disabled = false;
+                    // Fetch entry time to update UI
+                    fetchEntryTime(bookingId, entryTimeElement);
                 } else if (action === 'exit') {
-                    card.querySelector('.log-out-btn').disabled = true;
+                    // Redirect to payment gateway if provided
+                    if (result.redirectUrl) {
+                        window.location.href = result.redirectUrl;
+                    } else {
+                        showModal('Exit logged, but no payment redirect available.', 'warning');
+                    }
                 }
             } else {
-                showModal(result.replace('error:', ''), 'error');
+                showModal(result.message || `Failed to log ${action}. Please try again.`, 'error');
             }
         } catch (error) {
-            console.error(`Error logging ${action}:`, error);
+            console.error(`Error logging ${action} for booking ${bookingId}:`, error);
             showModal(`Failed to log ${action}. Please try again.`, 'error');
         }
     }
@@ -468,9 +495,12 @@
     document.querySelectorAll('.log-in-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const bookingId = this.dataset.bookingId;
-            const vehicleId = this.dataset.vehicleId;
-            const lotId = this.dataset.lotId;
-            handleLogAction(bookingId, vehicleId, lotId, 'entry');
+            console.log(`In button clicked for booking ${bookingId}`);
+            if (confirm('Are you sure you want to log entry for this booking?')) {
+                const vehicleId = this.dataset.vehicleId;
+                const lotId = this.dataset.lotId;
+                handleLogAction(bookingId, vehicleId, lotId, 'entry');
+            }
         });
     });
 
@@ -478,41 +508,42 @@
     document.querySelectorAll('.log-out-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const bookingId = this.dataset.bookingId;
-            const vehicleId = this.dataset.vehicleId;
-            const lotId = this.dataset.lotId;
-            handleLogAction(bookingId, vehicleId, lotId, 'exit');
+            console.log(`Out button clicked for booking ${bookingId}`);
+            if (confirm('Are you sure you want to log exit for this booking?')) {
+                const vehicleId = this.dataset.vehicleId;
+                const lotId = this.dataset.lotId;
+                handleLogAction(bookingId, vehicleId, lotId, 'exit');
+            }
         });
     });
 
     // Check VehicleLog Status on Page Load
     async function checkVehicleLogStatus() {
+        console.log('Checking vehicle log status for all bookings');
+        const bookingCards = document.querySelectorAll('.booking-card');
         bookingCards.forEach(async card => {
             const bookingId = card.dataset.bookingId;
-            try {
-                const response = await fetch(`/user/log-status?bookingId=${bookingId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                });
-                const logStatus = await response.json();
-                console.log(`Log status for booking ${bookingId}:`, logStatus);
-                const inBtn = card.querySelector('.log-in-btn');
-                const outBtn = card.querySelector('.log-out-btn');
-                if (logStatus.hasEntry && !logStatus.hasExit) {
-                    inBtn.disabled = true;
-                    outBtn.disabled = false;
-                } else if (logStatus.hasEntry && logStatus.hasExit) {
-                    inBtn.disabled = true;
-                    outBtn.disabled = true;
-                }
-            } catch (error) {
-                console.error(`Error checking log status for booking ${bookingId}:`, error);
+            const entryTimeElement = card.querySelector('.entry-time');
+            const status = card.dataset.status;
+
+            // Only fetch entry time for Pending bookings
+            if (status === 'Pending') {
+                await fetchEntryTime(bookingId, entryTimeElement);
+            } else {
+                entryTimeElement.textContent = 'Not Entered';
             }
         });
     }
 
+    // Run check on page load
     checkVehicleLogStatus();
+
+    // Debug: Log all fetch requests to detect unintended calls
+    const originalFetch = window.fetch;
+    window.fetch = async function(...args) {
+        console.log('Fetch called with:', args);
+        return originalFetch.apply(this, args);
+    };
 </script>
 </body>
 </html>
