@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface VehicleLogRepository extends JpaRepository<VehicleLog, Long> {
     long countByExitTimeIsNull();
     Optional<VehicleLog> findByVehicleIdAndExitTimeIsNull(Long vehicleId);
+    Optional<VehicleLog> findByVehicleIdAndExitTimeIsNotNull(Long vehicleId);
 }

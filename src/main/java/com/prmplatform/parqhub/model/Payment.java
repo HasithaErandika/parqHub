@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "payment")
+@Table(name = "Payment")
 public class Payment {
 
     @Id
@@ -17,48 +17,39 @@ public class Payment {
     @JoinColumn(name = "booking_id", nullable = false)
     private Booking booking;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(name = "amount", nullable = false)
     private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(name = "method", nullable = false)
     private PaymentMethod method;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(name = "status", nullable = false)
     private PaymentStatus status;
 
-    @Column(nullable = false)
+    @Column(name = "timestamp")
     private LocalDateTime timestamp;
 
-    // Enum for payment methods
     public enum PaymentMethod {
-        Card,
-        Cash,
-        Arrival
+        Card, Cash, Arrival
     }
 
-    // Enum for payment status
     public enum PaymentStatus {
         Pending, Completed, Failed
     }
 
-    // Getters and Setters
+    // Getters and setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-
     public Booking getBooking() { return booking; }
     public void setBooking(Booking booking) { this.booking = booking; }
-
     public BigDecimal getAmount() { return amount; }
     public void setAmount(BigDecimal amount) { this.amount = amount; }
-
     public PaymentMethod getMethod() { return method; }
     public void setMethod(PaymentMethod method) { this.method = method; }
-
     public PaymentStatus getStatus() { return status; }
     public void setStatus(PaymentStatus status) { this.status = status; }
-
     public LocalDateTime getTimestamp() { return timestamp; }
     public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
 }

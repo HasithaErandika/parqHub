@@ -224,22 +224,6 @@ public class UserController {
         return "user/bookings";
     }
 
-    @GetMapping("/payments")
-    public String paymentHistory(HttpSession session, Model model) {
-        User user = (User) session.getAttribute("loggedInUser");
-        if (user == null) {
-            return "redirect:/user/login";
-        }
-
-        List<Booking> userBookings = bookingRepository.findByUserId(user.getId());
-
-        model.addAttribute("userId", user.getId());
-        model.addAttribute("userName", user.getName());
-        model.addAttribute("bookings", userBookings);
-
-        return "user/payments";
-    }
-
     @GetMapping("/notifications")
     public String notifications(HttpSession session, Model model) {
         User user = (User) session.getAttribute("loggedInUser");
