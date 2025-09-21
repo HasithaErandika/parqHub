@@ -51,7 +51,6 @@ public class FindParkingController {
                 ? parkingLotRepository.findDistinctLocationsByCity((String) model.getAttribute("city"))
                 : List.of();
 
-        // Fetch parking lots with slots eagerly
         List<ParkingLot> parkingLots = parkingLotRepository.findAllWithSlots();
         Map<Long, Long> availableSlotsCount = parkingLots.stream()
                 .collect(Collectors.toMap(

@@ -74,6 +74,10 @@
             display: none;
             margin-top: 1rem;
         }
+        .booking-form-container {
+            display: none;
+            margin-top: 1rem;
+        }
     </style>
 </head>
 <body class="text-white flex">
@@ -164,6 +168,7 @@
     <div th:if="${parkingLots.size() > 0}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div th:each="lot : ${parkingLots}" class="glass p-6 rounded-2xl">
             <h3 class="text-xl font-semibold text-blue-400" th:text="${lot.location}"></h3>
+            <p class="text-gray-300">Lot ID: <span th:text="${lot.id}"></span></p>
             <p class="text-gray-300">City: <span th:text="${lot.city}"></span></p>
             <p class="text-gray-300">Price per Hour: LKR <span th:text="${lot.priceHr}"></span></p>
             <p class="text-gray-300">Total Slots: <span th:text="${lot.totalSlots}"></span></p>
@@ -172,21 +177,43 @@
             <div th:id="'slots-section-' + ${lot.id}" class="slots-section glass p-4 mt-4 rounded-lg">
                 <h4 class="text-lg font-semibold text-blue-400 mb-2">All Slots</h4>
                 <div th:id="'slots-container-' + ${lot.id}" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
+                <div th:id="'booking-form-container-' + ${lot.id}" class="booking-form-container glass p-4 mt-4 rounded-lg">
+                    <h4 class="text-lg font-semibold text-blue-400 mb-2">Book Slot</h4>
+                    <form th:action="@{/user/book-slot}" method="post" class="space-y-4">
+                        <input type="hidden" name="slotId" th:id="'slot-id-' + ${lot.id}">
+                        <div>
+                            <label for="vehicleId" class="block mb-1 font-medium">Select Vehicle</label>
+                            <select th:id="'vehicle-id-' + ${lot.id}" name="vehicleId" class="form-select w-full px-4 py-2 rounded-lg focus:outline-none" required>
+                                <option value="">Select a vehicle</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="startTime" class="block mb-1 font-medium">Start Time</label>
+                            <input type="datetime-local" th:id="'start-time-' + ${lot.id}" name="startTime" class="form-input w-full px-4 py-2 rounded-lg focus:outline-none" required>
+                        </div>
+                        <button type="submit" class="w-full py-2 neon-btn">Book Slot</button>
+                        <button type="button" class="w-full py-2 mt-2 bg-gray-600 rounded-lg text-white hover:bg-gray-700" onclick="cancelBooking(this)">Cancel</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </main>
 
-<!-- JavaScript for Fetching Slots and Dynamic Locations -->
+<!-- JavaScript for Fetching Slots, Vehicles, and Booking -->
 <script>
+    let currentLotId = null;
+
     async function viewSlots(button) {
         const lotId = button.getAttribute('data-lot-id');
         const slotsSection = document.getElementById(`slots-section-${lotId}`);
         const slotsContainer = document.getElementById(`slots-container-${lotId}`);
+        const bookingFormContainer = document.getElementById(`booking-form-container-${lotId}`);
 
         // Toggle visibility
         if (slotsSection.style.display === 'block') {
             slotsSection.style.display = 'none';
+            bookingFormContainer.style.display = 'none';
             return;
         }
 
@@ -202,7 +229,7 @@
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
             const slots = await response.json();
-            console.log('Slots response:', slots); // Debug log
+            console.log('Slots response:', slots);
             slotsContainer.innerHTML = '';
 
             if (slots.length === 0) {
@@ -213,8 +240,13 @@
                     slotDiv.className = `slot-box ${slot.status.toLowerCase()}`;
                     slotDiv.textContent = `Slot ${slot.id} (${slot.status})`;
                     slotDiv.setAttribute('data-slot-id', slot.id);
+                    slotDiv.setAttribute('data-status', slot.status);
                     slotDiv.addEventListener('click', () => {
-                        window.location.href = `/user/paymentGateway?slotId=${slot.id}`;
+                        if (slot.status !== 'AVAILABLE') {
+                            alert(`This slot is ${slot.status}. Please select an AVAILABLE slot.`);
+                            return;
+                        }
+                        showBookingForm(lotId, slot.id);
                     });
                     slotsContainer.appendChild(slotDiv);
                 });
@@ -227,6 +259,65 @@
             slotsContainer.innerHTML = '<p class="text-red-300 text-center">Error fetching slots. Please try again.</p>';
             slotsSection.style.display = 'block';
         }
+    }
+
+    async function showBookingForm(lotId, slotId) {
+        const bookingFormContainer = document.getElementById(`booking-form-container-${lotId}`);
+        const slotIdInput = document.getElementById(`slot-id-${lotId}`);
+        const vehicleSelect = document.getElementById(`vehicle-id-${lotId}`);
+
+        // Set slotId in the form
+        slotIdInput.value = slotId;
+
+        // Fetch user vehicles
+        try {
+            const response = await fetch('/user/vehicles/json', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            const vehicles = await response.json();
+            console.log('Vehicles response:', vehicles);
+            vehicleSelect.innerHTML = '<option value="">Select a vehicle</option>';
+            if (vehicles.length === 0) {
+                vehicleSelect.innerHTML += '<option value="" disabled>No vehicles available</option>';
+                alert('No vehicles found. Please add a vehicle in the "My Vehicles" section.');
+                bookingFormContainer.style.display = 'none';
+                return;
+            }
+            vehicles.forEach(vehicle => {
+                const option = document.createElement('option');
+                option.value = vehicle.id;
+                option.textContent = `${vehicle.vehicleNo} (${vehicle.vehicleType})`;
+                vehicleSelect.appendChild(option);
+            });
+
+            // Set minimum start time to now
+            const now = new Date();
+            const minStartTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+            document.getElementById(`start-time-${lotId}`).setAttribute('min', minStartTime);
+
+            // Show the booking form
+            if (currentLotId && currentLotId !== lotId) {
+                document.getElementById(`booking-form-container-${currentLotId}`).style.display = 'none';
+            }
+            bookingFormContainer.style.display = 'block';
+            currentLotId = lotId;
+        } catch (error) {
+            console.error('Error fetching vehicles:', error);
+            alert('Error fetching vehicles. Please try again.');
+            bookingFormContainer.style.display = 'none';
+        }
+    }
+
+    function cancelBooking(button) {
+        const lotId = button.closest('.booking-form-container').id.split('-').pop();
+        const bookingFormContainer = document.getElementById(`booking-form-container-${lotId}`);
+        bookingFormContainer.style.display = 'none';
     }
 
     document.getElementById('city').addEventListener('change', async function() {

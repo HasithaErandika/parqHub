@@ -24,11 +24,11 @@ public interface ParkingLotRepository extends JpaRepository<ParkingLot, Long> {
     @Query("SELECT DISTINCT LOWER(p.location) FROM ParkingLot p WHERE LOWER(p.city) = LOWER(:city) AND p.location IS NOT NULL ORDER BY LOWER(p.location) ASC")
     List<String> findDistinctLocationsByCity(@Param("city") String city);
 
-    @Query("SELECT pl FROM ParkingLot pl WHERE " +
-            "(:city IS NULL OR LOWER(pl.city) LIKE LOWER(CONCAT('%', :city, '%'))) AND " +
-            "(:location IS NULL OR LOWER(pl.location) LIKE LOWER(CONCAT('%', :location, '%'))) AND " +
-            "(:maxPrice IS NULL OR pl.priceHr <= :maxPrice) AND " +
-            "(:availableOnly = false OR EXISTS (SELECT ps FROM pl.parkingSlots ps WHERE ps.status = 'AVAILABLE'))")
+    @Query("SELECT p FROM ParkingLot p WHERE " +
+            "(:city IS NULL OR LOWER(p.city) LIKE LOWER(CONCAT('%', :city, '%'))) AND " +
+            "(:location IS NULL OR LOWER(p.location) LIKE LOWER(CONCAT('%', :location, '%'))) AND " +
+            "(:maxPrice IS NULL OR p.priceHr <= :maxPrice) AND " +
+            "(:availableOnly = false OR EXISTS (SELECT ps FROM p.parkingSlots ps WHERE ps.status = 'AVAILABLE'))")
     List<ParkingLot> findByFilters(@Param("city") String city,
                                    @Param("location") String location,
                                    @Param("maxPrice") BigDecimal maxPrice,

@@ -99,21 +99,19 @@ public class PaymentController {
         LocalDateTime startTime = LocalDateTime.now();
         LocalDateTime endTime = startTime.plusHours(duration);
 
-        // Create a booking
+        // Create or update a booking
         Booking booking = new Booking();
         booking.setUser(user);
         booking.setVehicle(vehicle);
         booking.setParkingSlot(slot);
         booking.setStartTime(startTime);
         booking.setEndTime(endTime);
-        booking.setPaymentStatus(Booking.PaymentStatus.Completed); // Assuming payment is processed successfully
+        booking.setPaymentStatus(Booking.PaymentStatus.Completed);
 
-        // Update slot status
         slot.setStatus(ParkingSlot.SlotStatus.BOOKED);
         parkingSlotRepository.save(slot);
         bookingRepository.save(booking);
 
-        // Redirect to bookings page with success message
         model.addAttribute("success", "Payment processed successfully. Booking confirmed.");
         return "redirect:/user/bookings";
     }

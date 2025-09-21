@@ -107,6 +107,18 @@ public class UserController {
         return "user/vehicles";
     }
 
+    @GetMapping("/vehicles/json")
+    @ResponseBody
+    public List<VehicleDTO> getUserVehicles(HttpSession session) {
+        User user = (User) session.getAttribute("loggedInUser");
+        if (user == null) {
+            return List.of();
+        }
+        return vehicleRepository.findByUserId(user.getId()).stream()
+                .map(v -> new VehicleDTO(v.getId(), v.getVehicleNo(), v.getVehicleType().name()))
+                .collect(Collectors.toList());
+    }
+
     @PostMapping("/vehicles/add")
     @ResponseBody
     public String addVehicle(@RequestParam String brand,
@@ -146,13 +158,12 @@ public class UserController {
                 .collect(Collectors.toList());
     }
 
-    @PostMapping("/book-parking")
+    @PostMapping("/book-slot")
     @ResponseBody
-    public String bookParking(@RequestParam Long slotId,
-                              @RequestParam Long vehicleId,
-                              @RequestParam String startTime,
-                              @RequestParam int duration,
-                              HttpSession session) {
+    public String bookSlot(@RequestParam Long slotId,
+                           @RequestParam Long vehicleId,
+                           @RequestParam String startTime,
+                           HttpSession session) {
         User user = (User) session.getAttribute("loggedInUser");
         if (user == null) {
             return "error:User not logged in";
@@ -161,7 +172,6 @@ public class UserController {
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
             LocalDateTime startDateTime = LocalDateTime.parse(startTime, formatter);
-            LocalDateTime endDateTime = startDateTime.plusHours(duration);
 
             Optional<Vehicle> vehicleOpt = vehicleRepository.findById(vehicleId);
             Optional<ParkingSlot> slotOpt = parkingSlotRepository.findById(slotId);
@@ -182,7 +192,7 @@ public class UserController {
             booking.setVehicle(vehicle);
             booking.setParkingSlot(slot);
             booking.setStartTime(startDateTime);
-            booking.setEndTime(endDateTime);
+            booking.setEndTime(null); // Set end_time to null
             booking.setPaymentStatus(Booking.PaymentStatus.Pending);
 
             slot.setStatus(ParkingSlot.SlotStatus.BOOKED);
