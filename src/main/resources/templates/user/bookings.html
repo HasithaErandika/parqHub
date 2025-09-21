@@ -133,7 +133,7 @@
 <!-- Sidebar -->
 <aside class="w-72 h-screen glass flex flex-col fixed">
     <div class="p-6 flex items-center gap-3 border-b border-gray-700">
-        <img src="/images/logo.png" alt="ParQHub" class="h-10">
+        <img src="/images/logo.svg" alt="ParQHub" class="h-10">
         <span class="text-2xl font-bold">ParQHub</span>
     </div>
     <nav class="flex-1 p-4 space-y-2">
@@ -214,8 +214,8 @@
                 </select>
                 <select id="vehicleFilter" class="form-select px-4 py-2 rounded-lg focus:outline-none">
                     <option value="">All Vehicles</option>
-                    <option th:each="vehicle : ${bookings.![vehicle].![brand + ' ' + model + ' (' + vehicleNo + ')']}"
-                            th:value="${vehicle}" th:text="${vehicle}">Vehicle</option>
+                    <option th:each="vehicle : ${bookings.![vehicle]}" th:value="${vehicle.id}"
+                            th:text="${vehicle.brand + ' ' + vehicle.model + ' (' + vehicle.vehicleNo + ')'}">Vehicle</option>
                 </select>
             </div>
             <div class="flex gap-2">
@@ -272,18 +272,27 @@
                                 <span class="text-gray-400">Booking ID:</span>
                                 <span th:text="${booking.id}">ID</span>
                             </div>
+
+                            <!-- FIXED: Location - Single element with conditional content and classes -->
                             <div>
                                 <span class="text-gray-400">Location:</span>
-                                <span class="location" th:if="${booking.paymentStatus.name() == 'Completed'}" class="text-gray-500">Previous Booking</span>
-                                <span class="location" th:if="${booking.paymentStatus.name() != 'Completed' and booking.parkingSlot != null}" th:text="${booking.parkingSlot.parkingLot.location + ', ' + booking.parkingSlot.parkingLot.city}">Location</span>
-                                <span class="location" th:if="${booking.paymentStatus.name() != 'Completed' and booking.parkingSlot == null}">N/A</span>
+                                <span th:class="${booking.paymentStatus.name() == 'Completed'} ? 'text-gray-500' : 'text-gray-300'"
+                                      th:text="${booking.paymentStatus.name() == 'Completed'} ? 'Previous Booking' :
+                                               (${booking.parkingSlot != null} ? ${#strings.abbreviate(booking.parkingSlot.parkingLot.location + ', ' + booking.parkingSlot.parkingLot.city, 30)} : 'N/A')">
+                                    Location
+                                </span>
                             </div>
+
+                            <!-- FIXED: Slot ID - Single element with conditional content and classes -->
                             <div>
                                 <span class="text-gray-400">Slot ID:</span>
-                                <span class="slot-id" th:if="${booking.paymentStatus.name() == 'Completed'}" class="text-gray-500">Previous</span>
-                                <span class="slot-id" th:if="${booking.paymentStatus.name() != 'Completed' and booking.parkingSlot != null}" th:text="${booking.parkingSlot.id}">Slot</span>
-                                <span class="slot-id" th:if="${booking.paymentStatus.name() != 'Completed' and booking.parkingSlot == null}">N/A</span>
+                                <span th:class="${booking.paymentStatus.name() == 'Completed'} ? 'text-gray-500' : 'text-gray-300'"
+                                      th:text="${booking.paymentStatus.name() == 'Completed'} ? 'Previous' :
+                                               (${booking.parkingSlot != null} ? ${booking.parkingSlot.id} : 'N/A')">
+                                    Slot
+                                </span>
                             </div>
+
                             <div>
                                 <span class="text-gray-400">Start Time:</span>
                                 <span th:text="${#temporals.format(booking.startTime, 'dd/MM/yyyy HH:mm')}">Start</span>
@@ -329,7 +338,8 @@
 
                         <!-- Completed Booking Actions -->
                         <button th:if="${booking.paymentStatus.name() == 'Completed'}"
-                                class="px-4 py-2 neon-btn view-receipt-btn">
+                                class="px-4 py-2 neon-btn view-receipt-btn"
+                                th:data-booking-id="${booking.id}">
                             <i class="fas fa-receipt mr-1"></i> View Receipt
                         </button>
 
@@ -427,29 +437,37 @@
     });
 
     // View Receipt
-    document.querySelectorAll('.view-receipt-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const card = this.closest('.booking-card');
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.view-receipt-btn')) {
+            e.preventDefault();
+            const btn = e.target.closest('.view-receipt-btn');
+            const card = btn.closest('.booking-card');
             const bookingId = card.dataset.bookingId;
             showModal(`Receipt view for booking ${bookingId} would be implemented here.`, 'info');
-        });
+        }
     });
 
     // View Details
-    document.querySelectorAll('.view-details-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const card = this.closest('.booking-card');
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.view-details-btn')) {
+            e.preventDefault();
+            const btn = e.target.closest('.view-details-btn');
+            const card = btn.closest('.booking-card');
             const bookingId = card.dataset.bookingId;
             const userName = document.getElementById('user-name').textContent;
             const vehicle = card.dataset.vehicle;
-            const location = card.querySelector('.location').textContent || 'N/A';
-            const slotId = card.querySelector('.slot-id').textContent || 'N/A';
-            const startTime = card.querySelector('[th\\:text*=".startTime"]').textContent;
-            const inTime = card.querySelector('.entry-time').textContent;
-            const endTime = card.querySelector('[th\\:text*=".endTime"]') ?
-                card.querySelector('[th\\:text*=".endTime"]').textContent : 'Pending';
-            const duration = card.querySelector('[th\\:text*=".between"]') ?
-                card.querySelector('[th\\:text*=".between"]').textContent : 'Ongoing';
+            const locationElement = card.querySelector('span[th\\:class*="text-gray"]');
+            const location = locationElement ? locationElement.textContent : 'N/A';
+            const slotIdElement = card.querySelector('span[th\\:class*="text-gray"]:nth-of-type(2)');
+            const slotId = slotIdElement ? slotIdElement.textContent : 'N/A';
+            const startTimeElement = card.querySelector('span[th\\:text*=".startTime"]');
+            const startTime = startTimeElement ? startTimeElement.textContent : 'N/A';
+            const inTimeElement = card.querySelector('.entry-time');
+            const inTime = inTimeElement ? inTimeElement.textContent : 'N/A';
+            const endTimeElement = card.querySelector('.exit-time');
+            const endTime = endTimeElement ? endTimeElement.textContent : 'Pending';
+            const durationElement = card.querySelector('span[th\\:text*=".between"], span.text-yellow-400');
+            const duration = durationElement ? durationElement.textContent : 'Ongoing';
             const status = card.dataset.status;
 
             showModal(`
@@ -463,9 +481,9 @@
                 <p><strong>In Time:</strong> ${inTime}</p>
                 <p><strong>End Time:</strong> ${endTime}</p>
                 <p><strong>Duration:</strong> ${duration}</p>
-                <p><strong>Payment Status:</strong> ${status}</p>
+                <p><strong>Payment Status:</strong> <span class="px-2 py-1 rounded-full text-xs font-medium ${status === 'Pending' ? 'bg-yellow-500' : status === 'Completed' ? 'bg-green-500' : 'bg-red-500'}">${status}</span></p>
             `, 'info');
-        });
+        }
     });
 
     // Fetch Entry Time for a Booking
@@ -536,17 +554,21 @@
             console.log(`${action} response for booking ${bookingId}:`, result);
             if (result.status === 'success') {
                 showModal(`${action.charAt(0).toUpperCase() + action.slice(1)} logged successfully!`, 'success');
-                const card = document.querySelector(`[data-booking-id="${bookingId}"]`);
-                const entryTimeElement = card.querySelector('.entry-time');
 
                 if (action === 'entry') {
                     // Fetch entry time to update UI
+                    const card = document.querySelector(`[data-booking-id="${bookingId}"]`);
+                    const entryTimeElement = card.querySelector('.entry-time');
                     fetchEntryTime(bookingId, entryTimeElement);
                 } else if (action === 'exit') {
                     // Fetch exit time to update UI
                     const card = document.querySelector(`[data-booking-id="${bookingId}"]`);
                     const exitTimeElement = card.querySelector('.exit-time');
                     fetchExitTime(bookingId, exitTimeElement);
+
+                    // Also update entry time for completed logs
+                    const entryTimeElement = card.querySelector('.entry-time');
+                    fetchEntryTime(bookingId, entryTimeElement);
                 }
             } else {
                 showModal(result.message || `Failed to log ${action}. Please try again.`, 'error');
@@ -558,43 +580,51 @@
     }
 
     // In Button
-    document.querySelectorAll('.log-in-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const bookingId = this.dataset.bookingId;
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.log-in-btn')) {
+            e.preventDefault();
+            const btn = e.target.closest('.log-in-btn');
+            const bookingId = btn.dataset.bookingId;
             console.log(`In button clicked for booking ${bookingId}`);
             if (confirm('Are you sure you want to log entry for this booking?')) {
-                const vehicleId = this.dataset.vehicleId;
+                const vehicleId = btn.dataset.vehicleId;
                 handleLogAction(bookingId, vehicleId, 'entry');
             }
-        });
+        }
     });
 
     // Out Button
-    document.querySelectorAll('.log-out-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const bookingId = this.dataset.bookingId;
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.log-out-btn')) {
+            e.preventDefault();
+            const btn = e.target.closest('.log-out-btn');
+            const bookingId = btn.dataset.bookingId;
             console.log(`Out button clicked for booking ${bookingId}`);
             if (confirm('Are you sure you want to log exit for this booking?')) {
-                const vehicleId = this.dataset.vehicleId;
+                const vehicleId = btn.dataset.vehicleId;
                 handleLogAction(bookingId, vehicleId, 'exit');
             }
-        });
+        }
     });
 
     // Pay Now Button
-    document.querySelectorAll('.pay-now-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const bookingId = this.dataset.bookingId;
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.pay-now-btn')) {
+            e.preventDefault();
+            const btn = e.target.closest('.pay-now-btn');
+            const bookingId = btn.dataset.bookingId;
             console.log(`Pay Now button clicked for booking ${bookingId}`);
             window.location.href = `/user/payment-gateway?bookingId=${bookingId}`;
-        });
+        }
     });
 
     // Check VehicleLog Status on Page Load
     async function checkVehicleLogStatus() {
         console.log('Checking vehicle log status for all bookings');
         const bookingCards = document.querySelectorAll('.booking-card');
-        bookingCards.forEach(async card => {
+
+        // Use Promise.all to handle all async operations
+        const promises = Array.from(bookingCards).map(async (card) => {
             const bookingId = card.dataset.bookingId;
             const entryTimeElement = card.querySelector('.entry-time');
             const exitTimeElement = card.querySelector('.exit-time');
@@ -602,8 +632,10 @@
 
             // Only fetch entry and exit times for Pending bookings
             if (status === 'Pending') {
-                await fetchEntryTime(bookingId, entryTimeElement);
-                await fetchExitTime(bookingId, exitTimeElement);
+                await Promise.all([
+                    fetchEntryTime(bookingId, entryTimeElement),
+                    fetchExitTime(bookingId, exitTimeElement)
+                ]);
             } else if (status === 'Completed') {
                 // For completed bookings, show as previous booking
                 entryTimeElement.textContent = 'Previous Booking';
@@ -617,15 +649,20 @@
                 exitTimeElement.className = 'exit-time text-yellow-400';
             }
         });
+
+        await Promise.all(promises);
+        console.log('All vehicle log status checks completed');
     }
 
     // Run check on page load
-    checkVehicleLogStatus();
+    document.addEventListener('DOMContentLoaded', function() {
+        checkVehicleLogStatus();
+    });
 
     // Debug: Log all fetch requests to detect unintended calls
     const originalFetch = window.fetch;
     window.fetch = async function(...args) {
-        console.log('Fetch called with:', args);
+        console.log('Fetch called with:', args[0]);
         return originalFetch.apply(this, args);
     };
 </script>
