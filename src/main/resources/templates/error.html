@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Error</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/4ad8d5ae3f.js" crossorigin="anonymous"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #0a0f1c;
+            color: #ffffff;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+<div class="glass p-8 rounded-2xl max-w-lg mx-auto text-center">
+    <h1 class="text-2xl font-bold text-red-400 mb-4">An Error Occurred</h1>
+    <p th:text="${error ?: 'Unexpected error'}" class="text-gray-300 mb-6"></p>
+    <a href="/user/bookings" class="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+        <i class="fas fa-arrow-left mr-2"></i> Back to Bookings
+    </a>
+</div>
+</body>
+</html>
