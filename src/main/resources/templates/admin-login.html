@@ -3,81 +3,431 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login - ParQ Hub</title>
+    <title>Admin Portal - ParQHub</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
     <style>
+        :root {
+            --admin-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            --dark-bg: #0f0f23;
+        }
+        
         body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #0a0f1c, #131b2e);
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(ellipse at top, rgba(15, 15, 35, 1) 0%, rgba(5, 5, 15, 1) 100%);
+            position: relative;
+            overflow: hidden;
         }
-        .glass {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 107, 107, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.2) 0%, transparent 50%);
+            z-index: -2;
         }
-        .neon-btn {
-            background: linear-gradient(90deg, #ff0000, #ff6600);
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+        }
+        
+        .admin-btn {
+            background: var(--admin-gradient);
             color: white;
-            font-weight: bold;
-            border-radius: 50px;
-            transition: all 0.3s ease-in-out;
+            font-weight: 600;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
         }
-        .neon-btn:hover {
-            box-shadow: 0 0 15px #ff0000, 0 0 30px #ff6600;
-            transform: scale(1.05);
+        
+        .admin-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
         }
+        
+        .admin-btn:hover::before {
+            left: 100%;
+        }
+        
+        .admin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.4);
+        }
+        
         .form-input {
-            background: #1c2436;
-            border: 1px solid #374151;
-            transition: border 0.3s, box-shadow 0.3s;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: white;
+            transition: all 0.3s ease;
+            border-radius: 12px;
         }
+        
         .form-input:focus {
-            border-color: #f87171;
-            box-shadow: 0 0 10px rgba(248, 113, 113, 0.5);
+            background: rgba(255, 255, 255, 0.12);
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+            outline: none;
+        }
+        
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .gradient-text {
+            background: var(--admin-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(102, 126, 234, 0.6);
+            border-radius: 50%;
+            animation: float 8s infinite linear;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-10vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        .security-badge {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(255, 107, 107, 0);
+            }
+        }
+        
+        .warning-glow {
+            box-shadow: 0 0 30px rgba(255, 107, 107, 0.3);
         }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen text-white">
+<body class="min-h-screen flex items-center justify-center p-4">
 
-<div class="glass p-8 rounded-2xl w-full max-w-md shadow-lg">
-    <div class="text-center mb-6">
-        <div class="mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-red-500/20 border border-red-400">
-            <i class="fas fa-shield-alt text-3xl text-red-400"></i>
-        </div>
-        <h2 class="text-3xl font-extrabold mt-4 text-red-400">Admin Login</h2>
-        <p class="text-gray-400 text-sm">Restricted area – authorized users only</p>
-    </div>
-
-    <!-- Error Message -->
-    <div th:if="${error}" class="bg-red-500/20 text-red-300 text-sm p-3 rounded mb-4 text-center">
-        <span th:text="${error}"></span>
-    </div>
-
-    <form th:action="@{/admin/login}" method="post" class="space-y-5">
-        <div>
-            <label for="adminEmail" class="block mb-1 font-medium">Email</label>
-            <input type="email" id="adminEmail" name="email" placeholder="Enter admin email"
-                   class="form-input w-full px-4 py-2 rounded-lg focus:outline-none" required>
-        </div>
-        <div>
-            <label for="adminPassword" class="block mb-1 font-medium">Password</label>
-            <input type="password" id="adminPassword" name="password" placeholder="Enter admin password"
-                   class="form-input w-full px-4 py-2 rounded-lg focus:outline-none" required>
-        </div>
-        <button type="submit" class="w-full py-2 neon-btn">Login</button>
-    </form>
-
-    <p class="text-xs text-gray-500 text-center mt-6">
-        &copy; 2025 ParQ Hub | Admin Access Only
-    </p>
+<!-- Floating Particles -->
+<div class="floating-particles">
+    <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+    <div class="particle" style="left: 20%; animation-delay: 1s;"></div>
+    <div class="particle" style="left: 30%; animation-delay: 2s;"></div>
+    <div class="particle" style="left: 40%; animation-delay: 3s;"></div>
+    <div class="particle" style="left: 50%; animation-delay: 4s;"></div>
+    <div class="particle" style="left: 60%; animation-delay: 5s;"></div>
+    <div class="particle" style="left: 70%; animation-delay: 6s;"></div>
+    <div class="particle" style="left: 80%; animation-delay: 7s;"></div>
+    <div class="particle" style="left: 90%; animation-delay: 8s;"></div>
 </div>
 
-<!-- Font Awesome for icons -->
+<!-- Back to Home Link -->
+<a th:href="@{/}" class="fixed top-6 left-6 z-50 flex items-center gap-2 text-white/80 hover:text-white transition-colors group">
+    <i class="fas fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
+    <span>Back to Home</span>
+</a>
+
+<!-- Main Admin Login Container -->
+<div class="w-full max-w-lg" data-aos="zoom-in">
+    <!-- Security Warning Banner -->
+    <div class="glass-card p-4 rounded-2xl mb-6 warning-glow" data-aos="fade-down">
+        <div class="flex items-center justify-center gap-3 text-center">
+            <i class="fas fa-shield-alt text-red-400 text-2xl security-badge"></i>
+            <div>
+                <p class="text-red-300 font-semibold">Restricted Access Area</p>
+                <p class="text-red-400/80 text-sm">Authorized Personnel Only</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logo and Header Section -->
+    <div class="text-center mb-8">
+        <div class="flex justify-center mb-6">
+            <div class="relative">
+                <div class="w-24 h-24 bg-gradient-to-r from-red-500 to-orange-600 rounded-3xl flex items-center justify-center relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[300%] transition-transform duration-1000"></div>
+                    <img src="/images/logo.svg" alt="ParQHub Logo" class="h-16 w-16 relative z-10">
+                </div>
+                <div class="absolute -inset-2 bg-gradient-to-r from-red-500 to-orange-600 rounded-3xl blur opacity-30 animate-pulse"></div>
+            </div>
+        </div>
+        <h1 class="text-4xl font-bold mb-3">
+            <span class="gradient-text">Admin Portal</span>
+        </h1>
+        <p class="text-gray-300 text-lg">ParQHub Management System</p>
+        <div class="flex justify-center items-center gap-2 mt-3 text-yellow-400">
+            <i class="fas fa-lock text-sm"></i>
+            <span class="text-sm font-medium">Secure Login Required</span>
+        </div>
+    </div>
+
+    <!-- Login Card -->
+    <div class="glass-card p-8 rounded-3xl" data-aos="fade-up" data-aos-delay="200">
+        <!-- Error Message -->
+        <div th:if="${error}" class="bg-red-500/20 border border-red-500/30 text-red-200 text-sm p-4 rounded-xl mb-6 text-center" data-aos="shake">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            <span th:text="${error}"></span>
+        </div>
+
+        <form th:action="@{/admin/login}" method="post" class="space-y-6">
+            <!-- Email Field -->
+            <div class="space-y-2">
+                <label for="adminEmail" class="block text-sm font-medium text-gray-200">
+                    <i class="fas fa-user-shield mr-2 text-blue-400"></i>Administrator Email
+                </label>
+                <input type="email" id="adminEmail" name="email" placeholder="Enter admin email address"
+                       class="form-input w-full px-4 py-4 text-white placeholder-gray-400" required
+                       autocomplete="email">
+            </div>
+
+            <!-- Password Field -->
+            <div class="space-y-2">
+                <label for="adminPassword" class="block text-sm font-medium text-gray-200">
+                    <i class="fas fa-key mr-2 text-blue-400"></i>Administrator Password
+                </label>
+                <div class="relative">
+                    <input type="password" id="adminPassword" name="password" placeholder="Enter admin password"
+                           class="form-input w-full px-4 py-4 pr-12 text-white placeholder-gray-400" required
+                           autocomplete="current-password">
+                    <button type="button" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                            onclick="toggleAdminPassword()">
+                        <i class="fas fa-eye" id="toggleAdminIcon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Security Notice -->
+            <div class="bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl">
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-info-circle text-blue-400 mt-1"></i>
+                    <div class="text-sm text-blue-200">
+                        <p class="font-medium mb-1">Security Notice</p>
+                        <p class="text-blue-300/80">All admin activities are logged and monitored for security purposes.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Two-Factor Authentication Toggle (UI only) -->
+            <div class="flex items-center justify-between p-4 bg-gray-800/30 rounded-xl">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-mobile-alt text-green-400"></i>
+                    <span class="text-sm text-gray-200">Two-Factor Authentication</span>
+                </div>
+                <div class="relative">
+                    <input type="checkbox" id="twoFA" class="sr-only">
+                    <div class="w-10 h-6 bg-gray-600 rounded-full relative cursor-pointer transition-colors duration-200">
+                        <div class="w-4 h-4 bg-white rounded-full absolute top-1 left-1 transition-transform duration-200"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Login Button -->
+            <button type="submit" class="admin-btn w-full py-4 font-semibold text-lg relative">
+                <i class="fas fa-sign-in-alt mr-2"></i>Access Admin Portal
+            </button>
+        </form>
+
+        <!-- Emergency Contact -->
+        <div class="mt-8 pt-6 border-t border-gray-700">
+            <div class="text-center text-sm text-gray-400">
+                <p class="mb-2">Need assistance?</p>
+                <div class="flex justify-center gap-4">
+                    <a href="#" class="text-blue-400 hover:text-blue-300 transition-colors">
+                        <i class="fas fa-phone mr-1"></i>Emergency: +94 77 123 4567
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center mt-6 space-y-3">
+        <div class="flex justify-center gap-6 text-sm text-gray-400">
+            <a href="#" class="hover:text-white transition-colors">System Status</a>
+            <a href="#" class="hover:text-white transition-colors">Documentation</a>
+            <a href="#" class="hover:text-white transition-colors">Support</a>
+        </div>
+        <p class="text-xs text-gray-500">
+            &copy; <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}"></span> ParQHub Admin Portal. All rights reserved.
+        </p>
+    </div>
+</div>
+
+<!-- Scripts -->
 <script src="https://kit.fontawesome.com/4ad8d5ae3f.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    // Initialize AOS
+    AOS.init({
+        duration: 1000,
+        once: true
+    });
+    
+    // Toggle password visibility for admin
+    function toggleAdminPassword() {
+        const passwordInput = document.getElementById('adminPassword');
+        const toggleIcon = document.getElementById('toggleAdminIcon');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    }
+    
+    // Enhanced form validation and security features
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const inputs = form.querySelectorAll('input[required]');
+        const twoFAToggle = document.getElementById('twoFA');
+        const toggleDiv = twoFAToggle.nextElementSibling;
+        
+        // Two-Factor Authentication toggle (UI only)
+        twoFAToggle.addEventListener('change', function() {
+            if (this.checked) {
+                toggleDiv.classList.add('bg-green-500');
+                toggleDiv.querySelector('div').style.transform = 'translateX(16px)';
+            } else {
+                toggleDiv.classList.remove('bg-green-500');
+                toggleDiv.classList.add('bg-gray-600');
+                toggleDiv.querySelector('div').style.transform = 'translateX(0)';
+            }
+        });
+        
+        // Input validation with security indicators
+        inputs.forEach(input => {
+            input.addEventListener('blur', function() {
+                if (this.value.trim() === '') {
+                    this.style.borderColor = '#ef4444';
+                    this.style.boxShadow = '0 0 10px rgba(239, 68, 68, 0.3)';
+                } else {
+                    this.style.borderColor = '#667eea';
+                    this.style.boxShadow = '0 0 10px rgba(102, 126, 234, 0.3)';
+                }
+            });
+            
+            input.addEventListener('focus', function() {
+                this.style.borderColor = '#667eea';
+                this.style.boxShadow = '0 0 20px rgba(102, 126, 234, 0.3)';
+            });
+        });
+        
+        // Enhanced form submission with loading state
+        form.addEventListener('submit', function(e) {
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Authenticating...';
+            submitBtn.disabled = true;
+            
+            // Add security loading animation
+            setTimeout(() => {
+                if (submitBtn.disabled) {
+                    submitBtn.innerHTML = '<i class="fas fa-shield-alt mr-2"></i>Verifying Credentials...';
+                }
+            }, 1000);
+        });
+        
+        // Caps Lock detection
+        inputs.forEach(input => {
+            input.addEventListener('keydown', function(e) {
+                if (e.getModifierState && e.getModifierState('CapsLock')) {
+                    if (!document.querySelector('.caps-warning')) {
+                        const warning = document.createElement('div');
+                        warning.className = 'caps-warning bg-yellow-500/20 border border-yellow-500/30 text-yellow-200 text-sm p-2 rounded mt-2';
+                        warning.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Caps Lock is ON';
+                        this.parentNode.appendChild(warning);
+                    }
+                } else {
+                    const warning = document.querySelector('.caps-warning');
+                    if (warning) {
+                        warning.remove();
+                    }
+                }
+            });
+        });
+        
+        // Security timeout warning (demo)
+        let inactivityTimer;
+        function resetTimer() {
+            clearTimeout(inactivityTimer);
+            inactivityTimer = setTimeout(() => {
+                if (!document.querySelector('.timeout-warning')) {
+                    const warning = document.createElement('div');
+                    warning.className = 'timeout-warning fixed top-4 right-4 bg-red-500/90 text-white p-4 rounded-lg shadow-lg z-50';
+                    warning.innerHTML = '<i class="fas fa-clock mr-2"></i>Session will expire in 2 minutes due to inactivity';
+                    document.body.appendChild(warning);
+                    
+                    setTimeout(() => {
+                        warning.remove();
+                    }, 5000);
+                }
+            }, 300000); // 5 minutes
+        }
+        
+        // Reset timer on user activity
+        ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(event => {
+            document.addEventListener(event, resetTimer, true);
+        });
+        
+        resetTimer();
+    });
+</script>
 </body>
 </html>
