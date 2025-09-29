@@ -297,16 +297,22 @@
                             </div>
                             <div>
                                 <span class="text-gray-400">In Time:</span>
-                                <span class="entry-time text-yellow-400" th:data-booking-id="${booking.id}">Not Entered</span>
+                                <span class="entry-time text-yellow-400" th:data-booking-id="${booking.id}">
+                                    <span th:if="${booking.paymentStatus.name() == 'Completed'}">Completed Session</span>
+                                    <span th:unless="${booking.paymentStatus.name() == 'Completed'}">Not Entered</span>
+                                </span>
                             </div>
                             <div>
                                 <span class="text-gray-400">End Time:</span>
-                                <span class="exit-time text-yellow-400" th:data-booking-id="${booking.id}">Pending</span>
+                                <span class="exit-time text-yellow-400" th:data-booking-id="${booking.id}">
+                                    <span th:if="${booking.paymentStatus.name() == 'Completed'}">Completed Session</span>
+                                    <span th:unless="${booking.paymentStatus.name() == 'Completed'}">Pending</span>
+                                </span>
                             </div>
                             <div>
                                 <span class="text-gray-400">Duration:</span>
                                 <span th:if="${booking.endTime != null}"
-                                      th:data-duration="${booking.formattedDuration}">Duration</span>
+                                      th:text="${booking.formattedDuration}">Duration</span>
                                 <span th:if="${booking.endTime == null}" class="text-yellow-400">Ongoing</span>
                             </div>
                         </div>
@@ -441,9 +447,106 @@
             const btn = e.target.closest('.view-receipt-btn');
             const card = btn.closest('.booking-card');
             const bookingId = card.dataset.bookingId;
-            showModal(`Receipt view for booking ${bookingId} would be implemented here.`, 'info');
+            const userName = document.getElementById('user-name').textContent;
+            const vehicle = card.dataset.vehicle;
+            const location = card.dataset.location || 'N/A';
+            const slotId = card.dataset.slotId || 'N/A';
+            const startTime = card.dataset.startTime || 'N/A';
+            const duration = card.dataset.duration || 'Completed';
+
+            // Get entry/exit times from displayed elements
+            const entryTimeElement = card.querySelector('.entry-time');
+            const inTime = entryTimeElement ? entryTimeElement.textContent.trim() : 'Completed Session';
+
+            const exitTimeElement = card.querySelector('.exit-time');
+            const endTime = exitTimeElement ? exitTimeElement.textContent.trim() : 'Completed Session';
+
+            showModal(`
+                <div class="text-center mb-6">
+                    <i class="fas fa-receipt text-green-400 text-4xl mb-3"></i>
+                    <h3 class="text-2xl font-bold text-green-400">Payment Receipt</h3>
+                    <p class="text-gray-400">Booking #${bookingId}</p>
+                </div>
+                <div class="bg-white text-black p-6 rounded-lg mx-4">
+                    <div class="text-center border-b pb-4 mb-4">
+                        <h2 class="text-xl font-bold text-blue-600">ParQHub</h2>
+                        <p class="text-sm text-gray-600">Parking Receipt</p>
+                    </div>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="font-medium">Receipt #:</span>
+                            <span>PQH-${bookingId}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="font-medium">Customer:</span>
+                            <span>${userName}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="font-medium">Vehicle:</span>
+                            <span>${vehicle}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="font-medium">Location:</span>
+                            <span>${location}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="font-medium">Slot:</span>
+                            <span>${slotId}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="font-medium">Start Time:</span>
+                            <span>${startTime}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="font-medium">Entry Time:</span>
+                            <span>${inTime}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="font-medium">Exit Time:</span>
+                            <span>${endTime}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="font-medium">Duration:</span>
+                            <span>${duration}</span>
+                        </div>
+                        <div class="border-t pt-2 mt-4">
+                            <div class="flex justify-between font-bold text-lg">
+                                <span>Total Paid:</span>
+                                <span class="text-green-600">Payment Completed</span>
+                            </div>
+                        </div>
+                        <div class="text-center mt-4 text-xs text-gray-500">
+                            <p>Thank you for using ParQHub!</p>
+                            <p>Generated on ${new Date().toLocaleString()}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-center gap-4 mt-6">
+                    <button onclick="downloadReceipt('${bookingId}')" class="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+                        <i class="fas fa-download mr-2"></i>Download PDF
+                    </button>
+                    <button onclick="closeModal()" class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
+                        Close
+                    </button>
+                </div>
+            `, 'success');
         }
     });
+
+    // Download Receipt Function
+    function downloadReceipt(bookingId) {
+        console.log(`Downloading receipt for booking ${bookingId}`);
+        // Create a download link
+        const link = document.createElement('a');
+        link.href = `/user/receipt/download/${bookingId}`;
+        link.download = `parqhub-receipt-${bookingId}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        showModal('Receipt download started successfully!', 'success');
+        setTimeout(closeModal, 2000);
+    }
 
     // View Details
     document.addEventListener('click', function(e) {
@@ -538,16 +641,31 @@
             const result = await response.json();
             console.log(`Entry time response for booking ${bookingId}:`, result);
             if (result.status === 'success') {
-                entryTimeElement.textContent = result.entryTime;
+                entryTimeElement.innerHTML = result.entryTime;
                 entryTimeElement.className = 'entry-time text-green-400';
             } else {
-                entryTimeElement.textContent = 'Not Entered';
-                entryTimeElement.className = 'entry-time text-yellow-400';
+                // Check if this is a completed booking
+                const card = entryTimeElement.closest('.booking-card');
+                const status = card.dataset.status;
+                if (status === 'Completed') {
+                    entryTimeElement.innerHTML = 'Completed Session';
+                    entryTimeElement.className = 'entry-time text-blue-400';
+                } else {
+                    entryTimeElement.innerHTML = 'Not Entered';
+                    entryTimeElement.className = 'entry-time text-yellow-400';
+                }
             }
         } catch (error) {
             console.error(`Error fetching entry time for booking ${bookingId}:`, error);
-            entryTimeElement.textContent = 'Not Entered';
-            entryTimeElement.className = 'entry-time text-yellow-400';
+            const card = entryTimeElement.closest('.booking-card');
+            const status = card.dataset.status;
+            if (status === 'Completed') {
+                entryTimeElement.innerHTML = 'Completed Session';
+                entryTimeElement.className = 'entry-time text-blue-400';
+            } else {
+                entryTimeElement.innerHTML = 'Not Entered';
+                entryTimeElement.className = 'entry-time text-yellow-400';
+            }
         }
     }
 
@@ -564,16 +682,31 @@
             const result = await response.json();
             console.log(`Exit time response for booking ${bookingId}:`, result);
             if (result.status === 'success') {
-                exitTimeElement.textContent = result.exitTime;
+                exitTimeElement.innerHTML = result.exitTime;
                 exitTimeElement.className = 'exit-time text-green-400';
             } else {
-                exitTimeElement.textContent = 'Pending';
-                exitTimeElement.className = 'exit-time text-yellow-400';
+                // Check if this is a completed booking
+                const card = exitTimeElement.closest('.booking-card');
+                const status = card.dataset.status;
+                if (status === 'Completed') {
+                    exitTimeElement.innerHTML = 'Completed Session';
+                    exitTimeElement.className = 'exit-time text-blue-400';
+                } else {
+                    exitTimeElement.innerHTML = 'Pending';
+                    exitTimeElement.className = 'exit-time text-yellow-400';
+                }
             }
         } catch (error) {
             console.error(`Error fetching exit time for booking ${bookingId}:`, error);
-            exitTimeElement.textContent = 'Pending';
-            exitTimeElement.className = 'exit-time text-yellow-400';
+            const card = exitTimeElement.closest('.booking-card');
+            const status = card.dataset.status;
+            if (status === 'Completed') {
+                exitTimeElement.innerHTML = 'Completed Session';
+                exitTimeElement.className = 'exit-time text-blue-400';
+            } else {
+                exitTimeElement.innerHTML = 'Pending';
+                exitTimeElement.className = 'exit-time text-yellow-400';
+            }
         }
     }
 
@@ -605,9 +738,26 @@
                     const exitTimeElement = card.querySelector('.exit-time');
                     fetchExitTime(bookingId, exitTimeElement);
 
-                    // Also update entry time for completed logs
+                    // Also update entry time for completed logs - use the previous entry time
                     const entryTimeElement = card.querySelector('.entry-time');
-                    fetchEntryTime(bookingId, entryTimeElement);
+                    // Keep the entry time that was already displayed, don't refetch it
+                    if (entryTimeElement.innerHTML === 'Not Entered' || entryTimeElement.innerHTML === 'Completed Session') {
+                        fetchEntryTime(bookingId, entryTimeElement);
+                    }
+                    
+                    // Show redirect to payment message
+                    setTimeout(() => {
+                        showModal(
+                            `Vehicle exit logged successfully!<br><br>
+                            <div class="text-center mt-4">
+                                <button onclick="window.location.href='/user/payment-gateway?bookingId=${bookingId}'" 
+                                        class="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">
+                                    <i class="fas fa-credit-card mr-2"></i>Proceed to Payment
+                                </button>
+                            </div>`, 
+                            'success'
+                        );
+                    }, 1500);
                 }
             } else {
                 showModal(result.message || `Failed to log ${action}. Please try again.`, 'error');
@@ -618,17 +768,81 @@
         }
     }
 
+    // Confirmation Modal Functions
+    function showConfirmationModal(title, message, onConfirm, onCancel = null) {
+        const modal = document.getElementById('modal');
+        const modalContent = document.getElementById('modal-content-inner');
+        
+        modalContent.innerHTML = `
+            <div class="bg-blue-500 text-white p-4 rounded-t-lg">
+                <h3 class="text-lg font-semibold flex items-center">
+                    <i class="fas fa-question-circle mr-2"></i>${title}
+                </h3>
+            </div>
+            <div class="p-6">
+                <p class="text-gray-300 mb-6">${message}</p>
+                <div class="flex justify-end gap-4">
+                    <button id="modal-cancel" class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition">
+                        <i class="fas fa-times mr-2"></i>Cancel
+                    </button>
+                    <button id="modal-confirm" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                        <i class="fas fa-check mr-2"></i>Confirm
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        modal.style.display = 'flex';
+        
+        // Add event listeners
+        document.getElementById('modal-confirm').addEventListener('click', () => {
+            closeModal();
+            if (onConfirm) onConfirm();
+        });
+        
+        document.getElementById('modal-cancel').addEventListener('click', () => {
+            closeModal();
+            if (onCancel) onCancel();
+        });
+        
+        // Close on escape key
+        const escapeHandler = (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+                if (onCancel) onCancel();
+                document.removeEventListener('keydown', escapeHandler);
+            }
+        };
+        document.addEventListener('keydown', escapeHandler);
+        
+        // Close on click outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+                if (onCancel) onCancel();
+            }
+        });
+    }
+
     // In Button
     document.addEventListener('click', function(e) {
         if (e.target.closest('.log-in-btn')) {
             e.preventDefault();
             const btn = e.target.closest('.log-in-btn');
             const bookingId = btn.dataset.bookingId;
+            const card = btn.closest('.booking-card');
+            const vehicle = card.dataset.vehicle;
+            
             console.log(`In button clicked for booking ${bookingId}`);
-            if (confirm('Are you sure you want to log entry for this booking?')) {
-                const vehicleId = btn.dataset.vehicleId;
-                handleLogAction(bookingId, vehicleId, 'entry');
-            }
+            
+            showConfirmationModal(
+                'Confirm Vehicle Entry',
+                `Are you sure you want to log entry for <strong>${vehicle}</strong>?<br><br>This will record the current time as your parking entry time.`,
+                () => {
+                    const vehicleId = btn.dataset.vehicleId;
+                    handleLogAction(bookingId, vehicleId, 'entry');
+                }
+            );
         }
     });
 
@@ -638,11 +852,19 @@
             e.preventDefault();
             const btn = e.target.closest('.log-out-btn');
             const bookingId = btn.dataset.bookingId;
+            const card = btn.closest('.booking-card');
+            const vehicle = card.dataset.vehicle;
+            
             console.log(`Out button clicked for booking ${bookingId}`);
-            if (confirm('Are you sure you want to log exit for this booking?')) {
-                const vehicleId = btn.dataset.vehicleId;
-                handleLogAction(bookingId, vehicleId, 'exit');
-            }
+            
+            showConfirmationModal(
+                'Confirm Vehicle Exit',
+                `Are you sure you want to log exit for <strong>${vehicle}</strong>?<br><br>This will record the current time as your parking exit time and prepare the booking for payment.`,
+                () => {
+                    const vehicleId = btn.dataset.vehicleId;
+                    handleLogAction(bookingId, vehicleId, 'exit');
+                }
+            );
         }
     });
 
@@ -676,15 +898,15 @@
                     fetchExitTime(bookingId, exitTimeElement)
                 ]);
             } else if (status === 'Completed') {
-                // For completed bookings, show as previous booking
-                entryTimeElement.textContent = 'Previous Booking';
-                entryTimeElement.className = 'entry-time text-gray-500';
-                exitTimeElement.textContent = 'Previous Booking';
-                exitTimeElement.className = 'exit-time text-gray-500';
+                // For completed bookings, show as completed session
+                entryTimeElement.innerHTML = 'Completed Session';
+                entryTimeElement.className = 'entry-time text-blue-400';
+                exitTimeElement.innerHTML = 'Completed Session';
+                exitTimeElement.className = 'exit-time text-blue-400';
             } else {
-                entryTimeElement.textContent = 'Not Entered';
+                entryTimeElement.innerHTML = 'Not Entered';
                 entryTimeElement.className = 'entry-time text-yellow-400';
-                exitTimeElement.textContent = 'Pending';
+                exitTimeElement.innerHTML = 'Pending';
                 exitTimeElement.className = 'exit-time text-yellow-400';
             }
         });

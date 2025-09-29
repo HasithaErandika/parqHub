@@ -147,7 +147,7 @@
 
     <!-- Filter Section -->
     <div class="glass p-4 rounded-2xl mb-6">
-        <div class="flex flex-col md:flex-row gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div class="flex-1">
                 <label for="statusFilter" class="block text-sm font-medium text-gray-400 mb-2">Filter by Status</label>
                 <select id="statusFilter" class="form-select px-4 py-2 rounded-lg w-full">
@@ -158,15 +158,27 @@
                 </select>
             </div>
             <div class="flex-1">
-                <label for="dateFilter" class="block text-sm font-medium text-gray-400 mb-2">Filter by Date</label>
-                <input type="date" id="dateFilter" class="form-input px-4 py-2 rounded-lg w-full">
+                <label for="fromDateFilter" class="block text-sm font-medium text-gray-400 mb-2">From Date</label>
+                <input type="date" id="fromDateFilter" class="form-input px-4 py-2 rounded-lg w-full">
+            </div>
+            <div class="flex-1">
+                <label for="toDateFilter" class="block text-sm font-medium text-gray-400 mb-2">To Date</label>
+                <input type="date" id="toDateFilter" class="form-input px-4 py-2 rounded-lg w-full">
             </div>
             <div class="flex-1">
                 <label for="searchInput" class="block text-sm font-medium text-gray-400 mb-2">Search</label>
                 <div class="flex">
                     <input type="text" id="searchInput" class="form-input px-4 py-2 rounded-lg flex-1" placeholder="Search payments...">
-                    <button id="searchBtn" class="ml-2 px-4 py-2 neon-btn">
-                        <i class="fas fa-search"></i>
+                </div>
+            </div>
+            <div class="flex-1">
+                <label class="block text-sm font-medium text-gray-400 mb-2">Actions</label>
+                <div class="flex gap-2">
+                    <button id="searchBtn" class="px-4 py-2 neon-btn flex-1">
+                        <i class="fas fa-search"></i> Filter
+                    </button>
+                    <button id="clearBtn" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 flex-1">
+                        <i class="fas fa-times"></i> Clear
                     </button>
                 </div>
             </div>
@@ -273,18 +285,23 @@
                             <!-- Time -->
                             <div>
                                 <span class="text-gray-400 block">Time:</span>
-                                <span th:if="${payment.booking?.endTime != null and payment.booking?.startTime != null}"
-                                      th:text="${#temporals.format(payment.booking.startTime, 'HH:mm')} + ' - ' + ${#temporals.format(payment.booking.endTime, 'HH:mm')}">Time</span>
-                                <span th:unless="${payment.booking?.endTime != null}" class="text-yellow-400">Pending</span>
+                                <span th:if="${payment.booking?.startTime != null and payment.booking?.endTime != null}">
+                                    <span th:text="${#temporals.format(payment.booking.startTime, 'HH:mm')} + ' - ' + ${#temporals.format(payment.booking.endTime, 'HH:mm')}">Time Range</span>
+                                </span>
+                                <span th:if="${payment.booking?.endTime == null and payment.booking?.startTime != null}">
+                                    <span th:text="${#temporals.format(payment.booking.startTime, 'HH:mm')} + ' (Ongoing)'" class="text-yellow-400">Start Time (Ongoing)</span>
+                                </span>
+                                <span th:unless="${payment.booking?.startTime != null}" class="text-gray-500">N/A</span>
                             </div>
 
                             <!-- Duration -->
                             <div>
                                 <span class="text-gray-400 block">Duration:</span>
                                 <span th:if="${payment.booking?.endTime != null and payment.booking?.startTime != null}">
-                                    <span th:text="${T(java.time.Duration).between(payment.booking.startTime, payment.booking.endTime).toHours()} + ' hours'">Duration</span>
+                                    <span th:text="${payment.booking.formattedDuration}">Duration</span>
                                 </span>
-                                <span th:unless="${payment.booking?.endTime != null}" class="text-yellow-400">Ongoing</span>
+                                <span th:if="${payment.booking?.endTime == null and payment.booking?.startTime != null}" class="text-yellow-400">Ongoing</span>
+                                <span th:unless="${payment.booking?.startTime != null}" class="text-gray-500">N/A</span>
                             </div>
 
                             <!-- Slot ID -->
@@ -393,14 +410,17 @@
 
     // Filter Functionality
     const statusFilter = document.getElementById('statusFilter');
-    const dateFilter = document.getElementById('dateFilter');
+    const fromDateFilter = document.getElementById('fromDateFilter');
+    const toDateFilter = document.getElementById('toDateFilter');
     const searchInput = document.getElementById('searchInput');
     const searchBtn = document.getElementById('searchBtn');
+    const clearBtn = document.getElementById('clearBtn');
     const paymentCards = document.querySelectorAll('.payment-card');
 
     function filterPayments() {
         const statusValue = statusFilter.value;
-        const dateValue = dateFilter.value;
+        const fromDateValue = fromDateFilter.value;
+        const toDateValue = toDateFilter.value;
         const searchValue = searchInput.value.toLowerCase();
 
         paymentCards.forEach(card => {
@@ -410,8 +430,23 @@
             const bookingId = card.dataset.bookingId || '';
             const text = card.textContent.toLowerCase();
 
+            // Status filter
             const statusMatch = !statusValue || status === statusValue;
-            const dateMatch = !dateValue || date === dateValue;
+            
+            // Date range filter
+            let dateMatch = true;
+            if (fromDateValue || toDateValue) {
+                if (date) {
+                    const cardDate = new Date(date);
+                    const fromDate = fromDateValue ? new Date(fromDateValue) : null;
+                    const toDate = toDateValue ? new Date(toDateValue) : null;
+                    
+                    if (fromDate && cardDate < fromDate) dateMatch = false;
+                    if (toDate && cardDate > toDate) dateMatch = false;
+                }
+            }
+            
+            // Search filter
             const searchMatch = !searchValue ||
                 text.includes(searchValue) ||
                 amount.includes(searchValue) ||
@@ -419,11 +454,31 @@
 
             card.style.display = statusMatch && dateMatch && searchMatch ? 'block' : 'none';
         });
+        
+        // Show count of filtered results
+        const visibleCards = document.querySelectorAll('.payment-card[style="display: block"], .payment-card:not([style*="none"])');
+        console.log(`Showing ${visibleCards.length} of ${paymentCards.length} payments`);
+    }
+    
+    function clearFilters() {
+        statusFilter.value = '';
+        fromDateFilter.value = '';
+        toDateFilter.value = '';
+        searchInput.value = '';
+        
+        // Show all payments
+        paymentCards.forEach(card => {
+            card.style.display = 'block';
+        });
+        
+        console.log('Filters cleared - showing all payments');
     }
 
     statusFilter.addEventListener('change', filterPayments);
-    dateFilter.addEventListener('change', filterPayments);
+    fromDateFilter.addEventListener('change', filterPayments);
+    toDateFilter.addEventListener('change', filterPayments);
     searchBtn.addEventListener('click', filterPayments);
+    clearBtn.addEventListener('click', clearFilters);
     searchInput.addEventListener('keyup', (e) => {
         if (e.key === 'Enter') filterPayments();
     });
@@ -433,16 +488,19 @@
         btn.addEventListener('click', function() {
             const paymentId = this.dataset.paymentId;
             const bookingId = this.dataset.bookingId;
-            console.log(`Download receipt for payment ${paymentId}, booking ${bookingId} at ${new Date().toLocaleString('en-GB', { timeZone: 'Asia/Colombo' })}`);
+            console.log(`Download receipt for payment ${paymentId}, booking ${bookingId}`);
 
-            // Simulate receipt download
+            // Create receipt download link
             const link = document.createElement('a');
-            link.href = `/user/receipt/${paymentId}`;
+            link.href = `/user/receipt/download/${paymentId}`;
             link.download = `parqhub-receipt-${paymentId}.pdf`;
+            document.body.appendChild(link);
             link.click();
+            document.body.removeChild(link);
 
             // Show success message
             showPaymentModal(`Receipt download started for payment #${paymentId}`, 'success');
+            setTimeout(() => closePaymentModal(), 2000);
         });
     });
 
@@ -502,12 +560,11 @@
 
     // Initialize filters on page load
     document.addEventListener('DOMContentLoaded', function() {
-        filterPayments();
-
-        // Set today's date as default for date filter
-        const today = new Date().toISOString().split('T')[0];
-        dateFilter.value = today;
-        filterPayments();
+        // Don't apply filters immediately - show all payments first
+        console.log('Payment history loaded - showing all payments');
+        
+        // Don't set default date filter - let users see all payments initially
+        // Users can apply filters as needed
     });
 
     // Debug: Log all fetch requests
