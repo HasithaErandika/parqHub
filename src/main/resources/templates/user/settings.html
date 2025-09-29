@@ -13,35 +13,88 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        body { font-family: 'Poppins', sans-serif; background-color: #0a0f1c; }
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: linear-gradient(135deg, #0a0f1c 0%, #1a1f35 50%, #0a0f1c 100%);
+            min-height: 100vh;
+        }
+        
         .glass {
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.15);
         }
+        
+        .glass-strong {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
         .active {
             background: linear-gradient(90deg, #3b82f6, #1d4ed8);
             color: #ffffff !important;
             font-weight: bold;
         }
+        
         .settings-card {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 16px;
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
+        
+        .settings-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .settings-card:hover::before {
+            transform: scaleX(1);
+        }
+        
         .settings-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
+        
+        .floating-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
         .form-input {
+            background: rgba(28, 36, 54, 0.8);
+            border: 1px solid rgba(55, 65, 81, 0.6);
             transition: all 0.3s ease;
+            border-radius: 12px;
         }
+        
         .form-input:focus {
             border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+            outline: none;
+            background: rgba(28, 36, 54, 1);
             transform: translateY(-1px);
         }
+        
         .form-input:valid {
             border-color: #10b981;
         }
+        
         .form-input:invalid:not(:placeholder-shown) {
             border-color: #ef4444;
         }

@@ -13,70 +13,152 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        body { font-family: 'Poppins', sans-serif; background-color: #0a0f1c; }
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: linear-gradient(135deg, #0a0f1c 0%, #1a1f35 50%, #0a0f1c 100%);
+            min-height: 100vh;
+        }
+        
         .glass {
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.15);
         }
+        
+        .glass-strong {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
         .active {
             background: linear-gradient(90deg, #3b82f6, #1d4ed8);
             color: #ffffff !important;
             font-weight: bold;
         }
+        
         .booking-card {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 16px;
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
+        
+        .booking-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .booking-card:hover::before {
+            transform: scaleX(1);
+        }
+        
         .booking-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
-        .status-pending { background: rgba(245, 158, 11, 0.1); border-color: #f59e0b; }
-        .status-completed { background: rgba(34, 197, 94, 0.1); border-color: #22c55e; }
-        .status-failed { background: rgba(239, 68, 68, 0.1); border-color: #ef4444; }
+        
+        .status-pending { 
+            background: rgba(245, 158, 11, 0.1); 
+            border-color: #f59e0b; 
+            color: #f59e0b;
+        }
+        .status-completed { 
+            background: rgba(34, 197, 94, 0.1); 
+            border-color: #22c55e; 
+            color: #22c55e;
+        }
+        .status-failed { 
+            background: rgba(239, 68, 68, 0.1); 
+            border-color: #ef4444; 
+            color: #ef4444;
+        }
+        
         .neon-btn {
             background: linear-gradient(90deg, #3b82f6, #1d4ed8);
             color: #ffffff;
-            font-weight: bold;
-            border-radius: 8px;
+            font-weight: 600;
+            border-radius: 12px;
             transition: all 0.3s ease-in-out;
+            position: relative;
+            overflow: hidden;
         }
+        
         .neon-btn:hover {
-            box-shadow: 0 0 15px #3b82f6, 0 0 30px #1d4ed8;
-            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.6), 0 0 40px rgba(29, 78, 216, 0.4);
+            transform: translateY(-2px);
         }
+        
         .btn-orange {
             background: linear-gradient(90deg, #f97316, #ea580c);
             color: #ffffff;
-            font-weight: bold;
-            border-radius: 8px;
+            font-weight: 600;
+            border-radius: 12px;
             transition: all 0.3s ease-in-out;
         }
+        
         .btn-orange:hover {
             box-shadow: 0 0 15px #f97316, 0 0 30px #ea580c;
-            transform: scale(1.05);
+            transform: translateY(-2px);
         }
+        
         .btn-green {
             background: linear-gradient(90deg, #22c55e, #16a34a);
             color: #ffffff;
-            font-weight: bold;
-            border-radius: 8px;
+            font-weight: 600;
+            border-radius: 12px;
             transition: all 0.3s ease-in-out;
         }
+        
         .btn-green:hover {
             box-shadow: 0 0 15px #22c55e, 0 0 30px #16a34a;
-            transform: scale(1.05);
+            transform: translateY(-2px);
         }
+        
         .btn-gray {
             background: linear-gradient(90deg, #6b7280, #4b5563);
             color: #ffffff;
-            font-weight: bold;
-            border-radius: 8px;
+            font-weight: 600;
+            border-radius: 12px;
             transition: all 0.3s ease-in-out;
         }
+        
         .btn-gray:hover {
             box-shadow: 0 0 15px #6b7280, 0 0 30px #4b5563;
-            transform: scale(1.05);
+            transform: translateY(-2px);
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+            border-color: #3b82f6;
+        }
+        
+        .floating-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
         }
         .modal {
             display: none;
@@ -129,9 +211,15 @@
     </style>
 </head>
 <body class="text-white flex">
+    <!-- Background Animation -->
+    <div class="fixed inset-0 z-0">
+        <div class="absolute top-20 left-20 w-32 h-32 bg-blue-500/10 rounded-full blur-xl floating-animation"></div>
+        <div class="absolute bottom-20 right-20 w-40 h-40 bg-purple-500/10 rounded-full blur-xl floating-animation" style="animation-delay: 1s;"></div>
+        <div class="absolute top-1/2 left-1/4 w-24 h-24 bg-green-500/10 rounded-full blur-xl floating-animation" style="animation-delay: 2s;"></div>
+    </div>
 
 <!-- Sidebar -->
-<aside class="w-72 h-screen glass flex flex-col fixed">
+<aside class="w-72 h-screen glass flex flex-col fixed z-10">
     <div class="p-6 flex items-center gap-3 border-b border-gray-700">
         <img src="/images/logo.svg" alt="ParQHub" class="h-10">
         <span class="text-2xl font-bold">ParQHub</span>
@@ -167,38 +255,41 @@
 </aside>
 
 <!-- Main Content -->
-<main class="ml-72 w-full p-6">
-    <!-- Top Bar -->
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold">My Bookings</h1>
+<main class="ml-72 w-full p-6 relative z-10">
+    <!-- Header Section -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">My Bookings</h1>
+            <p class="text-gray-400 mt-2">Manage your parking reservations and history</p>
+        </div>
         <div class="flex items-center gap-4">
             <span class="text-gray-300">Welcome, <span id="user-name" th:text="${userName}">User</span></span>
             <input type="hidden" id="user-id" th:value="${userId}">
-            <img src="/images/user-avatar.png" alt="User" class="h-10 w-10 rounded-full border-2 border-blue-400">
+            <img src="/images/user-avatar.png" alt="User" class="h-12 w-12 rounded-full border-2 border-blue-400">
         </div>
     </div>
 
     <!-- Booking Statistics -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="glass p-6 rounded-2xl text-center">
-            <i class="fas fa-calendar text-blue-400 text-3xl mb-2"></i>
-            <h3 class="text-lg font-semibold">Total Bookings</h3>
-            <p class="text-2xl font-bold" th:text="${#lists.size(bookings)}">0</p>
+        <div class="stats-card">
+            <i class="fas fa-calendar text-blue-400 text-2xl mb-2"></i>
+            <h3 class="font-semibold text-gray-300">Total Bookings</h3>
+            <p class="text-2xl font-bold text-blue-400" th:text="${#lists.size(bookings)}">0</p>
         </div>
-        <div class="glass p-6 rounded-2xl text-center">
-            <i class="fas fa-clock text-yellow-400 text-3xl mb-2"></i>
-            <h3 class="text-lg font-semibold">Pending</h3>
-            <p class="text-2xl font-bold" th:text="${#lists.size(bookings.?[paymentStatus.name() == 'Pending'])}">0</p>
+        <div class="stats-card">
+            <i class="fas fa-clock text-yellow-400 text-2xl mb-2"></i>
+            <h3 class="font-semibold text-gray-300">Pending</h3>
+            <p class="text-2xl font-bold text-yellow-400" th:text="${#lists.size(bookings.?[paymentStatus.name() == 'Pending'])}">0</p>
         </div>
-        <div class="glass p-6 rounded-2xl text-center">
-            <i class="fas fa-check-circle text-green-400 text-3xl mb-2"></i>
-            <h3 class="text-lg font-semibold">Completed</h3>
-            <p class="text-2xl font-bold" th:text="${#lists.size(bookings.?[paymentStatus.name() == 'Completed'])}">0</p>
+        <div class="stats-card">
+            <i class="fas fa-check-circle text-green-400 text-2xl mb-2"></i>
+            <h3 class="font-semibold text-gray-300">Completed</h3>
+            <p class="text-2xl font-bold text-green-400" th:text="${#lists.size(bookings.?[paymentStatus.name() == 'Completed'])}">0</p>
         </div>
-        <div class="glass p-6 rounded-2xl text-center">
-            <i class="fas fa-times-circle text-red-400 text-3xl mb-2"></i>
-            <h3 class="text-lg font-semibold">Failed</h3>
-            <p class="text-2xl font-bold" th:text="${#lists.size(bookings.?[paymentStatus.name() == 'Failed'])}">0</p>
+        <div class="stats-card">
+            <i class="fas fa-times-circle text-red-400 text-2xl mb-2"></i>
+            <h3 class="font-semibold text-gray-300">Failed</h3>
+            <p class="text-2xl font-bold text-red-400" th:text="${#lists.size(bookings.?[paymentStatus.name() == 'Failed'])}">0</p>
         </div>
     </div>
 

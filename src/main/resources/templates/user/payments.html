@@ -8,53 +8,149 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        body { font-family: 'Poppins', sans-serif; background-color: #0a0f1c; }
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: linear-gradient(135deg, #0a0f1c 0%, #1a1f35 50%, #0a0f1c 100%);
+            min-height: 100vh;
+        }
+        
         .glass {
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.15);
         }
+        
+        .glass-strong {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
         .active {
             background: linear-gradient(90deg, #3b82f6, #1d4ed8);
             color: #ffffff !important;
             font-weight: bold;
         }
+        
         .payment-card {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 16px;
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
+        
+        .payment-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .payment-card:hover::before {
+            transform: scaleX(1);
+        }
+        
         .payment-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
-        .status-pending { background: rgba(245, 158, 11, 0.1); border-color: #f59e0b; }
-        .status-completed { background: rgba(34, 197, 94, 0.1); border-color: #22c55e; }
-        .status-failed { background: rgba(239, 68, 68, 0.1); border-color: #ef4444; }
+        
+        .status-pending { 
+            background: rgba(245, 158, 11, 0.1); 
+            border-color: #f59e0b; 
+            color: #f59e0b;
+        }
+        .status-completed { 
+            background: rgba(34, 197, 94, 0.1); 
+            border-color: #22c55e; 
+            color: #22c55e;
+        }
+        .status-failed { 
+            background: rgba(239, 68, 68, 0.1); 
+            border-color: #ef4444; 
+            color: #ef4444;
+        }
+        
         .neon-btn {
             background: linear-gradient(90deg, #3b82f6, #1d4ed8);
             color: #ffffff;
-            font-weight: bold;
-            border-radius: 8px;
+            font-weight: 600;
+            border-radius: 12px;
             transition: all 0.3s ease-in-out;
+            position: relative;
+            overflow: hidden;
         }
+        
         .neon-btn:hover {
-            box-shadow: 0 0 15px #3b82f6, 0 0 30px #1d4ed8;
-            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.6), 0 0 40px rgba(29, 78, 216, 0.4);
+            transform: translateY(-2px);
         }
+        
+        .neon-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .neon-btn:hover::before {
+            left: 100%;
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+            border-color: #3b82f6;
+        }
+        
+        .floating-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
         .form-input, .form-select {
-            background: #1c2436;
-            border: 1px solid #374151;
-            transition: border 0.3s, box-shadow 0.3s;
+            background: rgba(28, 36, 54, 0.8);
+            border: 1px solid rgba(55, 65, 81, 0.6);
+            transition: all 0.3s ease;
+            border-radius: 8px;
         }
+        
         .form-input:focus, .form-select:focus {
             border-color: #3b82f6;
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
             outline: none;
+            background: rgba(28, 36, 54, 1);
         }
+        
         .modal {
             display: none;
             position: fixed;
@@ -62,26 +158,30 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.8);
             z-index: 1000;
             align-items: center;
             justify-content: center;
         }
+        
         .modal-content {
-            background: #1c2436;
-            border-radius: 12px;
-            padding: 2rem;
+            background: linear-gradient(135deg, #1e293b, #334155);
+            border-radius: 16px;
+            padding: 0;
             max-width: 600px;
             width: 90%;
             max-height: 80vh;
             overflow-y: auto;
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
-            animation: slideIn 0.3s ease-out;
+            box-shadow: 0 0 40px rgba(59, 130, 246, 0.5);
+            animation: modalSlideIn 0.3s ease-out;
+            border: 1px solid rgba(59, 130, 246, 0.3);
         }
-        @keyframes slideIn {
-            from { transform: translateY(-50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+        
+        @keyframes modalSlideIn {
+            from { transform: scale(0.9) translateY(-20px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
         }
+        
         .modal-close {
             position: absolute;
             top: 1rem;
@@ -89,16 +189,34 @@
             cursor: pointer;
             font-size: 1.5rem;
             color: #fff;
+            z-index: 10;
+            transition: all 0.3s ease;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.3);
         }
+        
         .modal-close:hover {
             color: #3b82f6;
+            background: rgba(59, 130, 246, 0.2);
+            transform: scale(1.1);
         }
     </style>
 </head>
 <body class="text-white flex">
+    <!-- Background Animation -->
+    <div class="fixed inset-0 z-0">
+        <div class="absolute top-20 left-20 w-32 h-32 bg-blue-500/10 rounded-full blur-xl floating-animation"></div>
+        <div class="absolute bottom-20 right-20 w-40 h-40 bg-purple-500/10 rounded-full blur-xl floating-animation" style="animation-delay: 1s;"></div>
+        <div class="absolute top-1/2 left-1/4 w-24 h-24 bg-green-500/10 rounded-full blur-xl floating-animation" style="animation-delay: 2s;"></div>
+    </div>
 
 <!-- Sidebar -->
-<aside class="w-72 h-screen glass flex flex-col fixed">
+<aside class="w-72 h-screen glass flex flex-col fixed z-10">
     <div class="p-6 flex items-center gap-3 border-b border-gray-700">
         <img src="/images/logo.svg" alt="ParQHub" class="h-10">
         <span class="text-2xl font-bold">ParQHub</span>
@@ -134,50 +252,70 @@
 </aside>
 
 <!-- Main Content -->
-<main class="ml-72 w-full p-6">
-    <!-- Top Bar -->
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold">Payment History</h1>
+<main class="ml-72 w-full p-6 relative z-10">
+    <!-- Header Section -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Payment History</h1>
+            <p class="text-gray-400 mt-2">Track your parking payments and transactions</p>
+        </div>
         <div class="flex items-center gap-4">
             <span class="text-gray-300">Welcome, <span th:text="${userName}">User</span></span>
             <input type="hidden" id="user-id" th:value="${userId}">
-            <img src="/images/user-avatar.png" alt="User" class="h-10 w-10 rounded-full border-2 border-blue-400">
+            <img src="/images/user-avatar.png" alt="User" class="h-12 w-12 rounded-full border-2 border-blue-400">
         </div>
     </div>
 
-    <!-- Filter Section -->
-    <div class="glass p-4 rounded-2xl mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <div class="flex-1">
-                <label for="statusFilter" class="block text-sm font-medium text-gray-400 mb-2">Filter by Status</label>
-                <select id="statusFilter" class="form-select px-4 py-2 rounded-lg w-full">
+    <!-- Enhanced Filter Section -->
+    <div class="glass-strong p-6 rounded-2xl mb-8">
+        <div class="flex items-center gap-3 mb-6">
+            <i class="fas fa-filter text-3xl text-blue-400"></i>
+            <h3 class="text-2xl font-bold text-white">Filter Payments</h3>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            <div>
+                <label for="statusFilter" class="block mb-2 font-medium text-gray-300">
+                    <i class="fas fa-circle mr-2 text-green-400"></i>Status
+                </label>
+                <select id="statusFilter" class="form-select w-full px-4 py-3 rounded-lg focus:outline-none">
                     <option value="">All Statuses</option>
                     <option value="Pending">Pending</option>
                     <option value="Completed">Completed</option>
                     <option value="Failed">Failed</option>
                 </select>
             </div>
-            <div class="flex-1">
-                <label for="fromDateFilter" class="block text-sm font-medium text-gray-400 mb-2">From Date</label>
-                <input type="date" id="fromDateFilter" class="form-input px-4 py-2 rounded-lg w-full">
+            
+            <div>
+                <label for="fromDateFilter" class="block mb-2 font-medium text-gray-300">
+                    <i class="fas fa-calendar mr-2 text-blue-400"></i>From Date
+                </label>
+                <input type="date" id="fromDateFilter" class="form-input w-full px-4 py-3 rounded-lg focus:outline-none">
             </div>
-            <div class="flex-1">
-                <label for="toDateFilter" class="block text-sm font-medium text-gray-400 mb-2">To Date</label>
-                <input type="date" id="toDateFilter" class="form-input px-4 py-2 rounded-lg w-full">
+            
+            <div>
+                <label for="toDateFilter" class="block mb-2 font-medium text-gray-300">
+                    <i class="fas fa-calendar mr-2 text-purple-400"></i>To Date
+                </label>
+                <input type="date" id="toDateFilter" class="form-input w-full px-4 py-3 rounded-lg focus:outline-none">
             </div>
-            <div class="flex-1">
-                <label for="searchInput" class="block text-sm font-medium text-gray-400 mb-2">Search</label>
-                <div class="flex">
-                    <input type="text" id="searchInput" class="form-input px-4 py-2 rounded-lg flex-1" placeholder="Search payments...">
-                </div>
+            
+            <div>
+                <label for="searchInput" class="block mb-2 font-medium text-gray-300">
+                    <i class="fas fa-search mr-2 text-yellow-400"></i>Search
+                </label>
+                <input type="text" id="searchInput" class="form-input w-full px-4 py-3 rounded-lg focus:outline-none" placeholder="Search payments...">
             </div>
-            <div class="flex-1">
-                <label class="block text-sm font-medium text-gray-400 mb-2">Actions</label>
+            
+            <div class="flex flex-col justify-center">
+                <label class="block mb-2 font-medium text-gray-300">
+                    <i class="fas fa-cog mr-2 text-orange-400"></i>Actions
+                </label>
                 <div class="flex gap-2">
-                    <button id="searchBtn" class="px-4 py-2 neon-btn flex-1">
+                    <button id="searchBtn" class="px-4 py-3 neon-btn flex-1">
                         <i class="fas fa-search"></i> Filter
                     </button>
-                    <button id="clearBtn" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 flex-1">
+                    <button id="clearBtn" class="px-4 py-3 bg-gradient-to-r from-gray-500 to-gray-700 hover:from-gray-600 hover:to-gray-800 text-white rounded-lg transition-all duration-300 hover:scale-105 flex-1">
                         <i class="fas fa-times"></i> Clear
                     </button>
                 </div>
@@ -197,25 +335,25 @@
 
     <!-- Payment Statistics -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="glass p-6 rounded-2xl text-center">
-            <i class="fas fa-credit-card text-blue-400 text-3xl mb-2"></i>
-            <h3 class="text-lg font-semibold">Total Payments</h3>
-            <p class="text-2xl font-bold" th:text="${#lists.size(payments)}">0</p>
+        <div class="stats-card">
+            <i class="fas fa-credit-card text-blue-400 text-2xl mb-2"></i>
+            <h3 class="font-semibold text-gray-300">Total Payments</h3>
+            <p class="text-2xl font-bold text-blue-400" th:text="${#lists.size(payments)}">0</p>
         </div>
-        <div class="glass p-6 rounded-2xl text-center">
-            <i class="fas fa-dollar-sign text-green-400 text-3xl mb-2"></i>
-            <h3 class="text-lg font-semibold">Total Spent Today</h3>
-            <p class="text-2xl font-bold">LKR <span th:text="${#numbers.formatDecimal(totalSpentToday, 1, 2)}">0.00</span></p>
+        <div class="stats-card">
+            <i class="fas fa-dollar-sign text-green-400 text-2xl mb-2"></i>
+            <h3 class="font-semibold text-gray-300">Total Spent Today</h3>
+            <p class="text-2xl font-bold text-green-400">LKR <span th:text="${#numbers.formatDecimal(totalSpentToday, 1, 2)}">0.00</span></p>
         </div>
-        <div class="glass p-6 rounded-2xl text-center">
-            <i class="fas fa-check-circle text-green-400 text-3xl mb-2"></i>
-            <h3 class="text-lg font-semibold">Successful</h3>
-            <p class="text-2xl font-bold" th:text="${#lists.size(payments.?[status.toString() == 'Completed'])}">0</p>
+        <div class="stats-card">
+            <i class="fas fa-check-circle text-green-400 text-2xl mb-2"></i>
+            <h3 class="font-semibold text-gray-300">Successful</h3>
+            <p class="text-2xl font-bold text-green-400" th:text="${#lists.size(payments.?[status.toString() == 'Completed'])}">0</p>
         </div>
-        <div class="glass p-6 rounded-2xl text-center">
-            <i class="fas fa-times-circle text-red-400 text-3xl mb-2"></i>
-            <h3 class="text-lg font-semibold">Failed</h3>
-            <p class="text-2xl font-bold" th:text="${#lists.size(payments.?[status.toString() == 'Failed'])}">0</p>
+        <div class="stats-card">
+            <i class="fas fa-times-circle text-red-400 text-2xl mb-2"></i>
+            <h3 class="font-semibold text-gray-300">Failed</h3>
+            <p class="text-2xl font-bold text-red-400" th:text="${#lists.size(payments.?[status.toString() == 'Failed'])}">0</p>
         </div>
     </div>
 
