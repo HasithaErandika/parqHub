@@ -2,6 +2,8 @@ package com.prmplatform.parqhub.repository;
 
 import com.prmplatform.parqhub.model.ParkingSlot;
 import com.prmplatform.parqhub.model.ParkingSlot.SlotStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -16,7 +18,7 @@ public interface ParkingSlotRepository extends JpaRepository<ParkingSlot, Long> 
     long countByStatus(SlotStatus status);
 
     @Query("SELECT p.parkingLot.city, COUNT(p) FROM ParkingSlot p WHERE p.status = :status GROUP BY p.parkingLot.city")
-    List<Object[]> countByCityAndStatus(SlotStatus status);
+    List<Object[]> countByCityAndStatus(@org.springframework.data.repository.query.Param("status") SlotStatus status);
 
-
+    Page<ParkingSlot> findByStatus(SlotStatus status, Pageable pageable);
 }

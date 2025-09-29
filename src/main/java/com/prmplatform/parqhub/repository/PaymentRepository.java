@@ -1,8 +1,11 @@
 package com.prmplatform.parqhub.repository;
 
 import com.prmplatform.parqhub.model.Payment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,4 +27,8 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     // Original method for total spent today (all users)
     @Query("SELECT SUM(p.amount) FROM Payment p WHERE p.status = 'Completed' AND p.timestamp >= :startOfDay")
     Double sumAmountByCompletedAndTimestampAfter(LocalDateTime startOfDay);
+
+    @Query("SELECT p FROM Payment p WHERE LOWER(p.method) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(p.status) LIKE LOWER(CONCAT('%', :search, '%'))")
+    Page<Payment> findByMethodContainingIgnoreCaseOrStatusContainingIgnoreCase(@Param("search") String search, @Param("search") String search2, Pageable pageable);
+
 }

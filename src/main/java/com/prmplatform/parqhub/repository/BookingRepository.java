@@ -1,6 +1,8 @@
 package com.prmplatform.parqhub.repository;
 
 import com.prmplatform.parqhub.model.Booking;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,4 +20,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
            "WHERE b.user.id = :userId " +
            "ORDER BY b.startTime DESC")
     List<Booking> findByUserIdWithParkingDetailsOrderByStartTimeDesc(@Param("userId") Long userId);
+
+    Page<Booking> findByPaymentStatus(Booking.PaymentStatus paymentStatus, Pageable pageable);
+
 }

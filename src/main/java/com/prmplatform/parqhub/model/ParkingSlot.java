@@ -34,4 +34,6 @@ public class ParkingSlot {
 
     public SlotStatus getStatus() { return status; }
     public void setStatus(SlotStatus status) { this.status = status; }
+
+
 }

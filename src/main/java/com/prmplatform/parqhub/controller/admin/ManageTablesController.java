@@ -15,6 +15,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -24,28 +25,28 @@ public class ManageTablesController {
     private final AdminRepository adminRepository;
     private final UserRepository userRepository;
     private final VehicleRepository vehicleRepository;
-    private final ParkingLotRepository parkinglotRepository;
-    private final ParkingSlotRepository parkingslotRepository;
+    private final ParkingLotRepository parkingLotRepository;
+    private final ParkingSlotRepository parkingSlotRepository;
     private final BookingRepository bookingRepository;
     private final PaymentRepository paymentRepository;
     private final NotificationRepository notificationRepository;
-    private final VehicleLogRepository vehiclelogRepository;
+    private final VehicleLogRepository vehicleLogRepository;
     private final ReportRepository reportRepository;
 
     public ManageTablesController(AdminRepository adminRepository, UserRepository userRepository,
-                                  VehicleRepository vehicleRepository, ParkingLotRepository parkinglotRepository,
-                                  ParkingSlotRepository parkingslotRepository, BookingRepository bookingRepository,
+                                  VehicleRepository vehicleRepository, ParkingLotRepository parkingLotRepository,
+                                  ParkingSlotRepository parkingSlotRepository, BookingRepository bookingRepository,
                                   PaymentRepository paymentRepository, NotificationRepository notificationRepository,
-                                  VehicleLogRepository vehiclelogRepository, ReportRepository reportRepository) {
+                                  VehicleLogRepository vehicleLogRepository, ReportRepository reportRepository) {
         this.adminRepository = adminRepository;
         this.userRepository = userRepository;
         this.vehicleRepository = vehicleRepository;
-        this.parkinglotRepository = parkinglotRepository;
-        this.parkingslotRepository = parkingslotRepository;
+        this.parkingLotRepository = parkingLotRepository;
+        this.parkingSlotRepository = parkingSlotRepository;
         this.bookingRepository = bookingRepository;
         this.paymentRepository = paymentRepository;
         this.notificationRepository = notificationRepository;
-        this.vehiclelogRepository = vehiclelogRepository;
+        this.vehicleLogRepository = vehicleLogRepository;
         this.reportRepository = reportRepository;
     }
 
@@ -86,34 +87,89 @@ public class ManageTablesController {
 
         switch (tableName) {
             case "admins":
-                pageResult = adminRepository.findAll(pageable);
+                if (search.isEmpty()) {
+                    pageResult = adminRepository.findAll(pageable);
+                } else {
+                    pageResult = adminRepository.findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(search, search, pageable);
+                }
                 break;
             case "users":
-                pageResult = userRepository.findAll(pageable);
+                if (search.isEmpty()) {
+                    pageResult = userRepository.findAll(pageable);
+                } else {
+                    pageResult = userRepository.findByNameContainingIgnoreCaseOrEmailContainingIgnoreCaseOrContactNoContainingIgnoreCase(search, search, search, pageable);
+                }
                 break;
             case "vehicle":
-                pageResult = vehicleRepository.findAll(pageable);
+                if (search.isEmpty()) {
+                    pageResult = vehicleRepository.findAll(pageable);
+                } else {
+                    pageResult = vehicleRepository.findByVehicleNoContainingIgnoreCaseOrBrandContainingIgnoreCaseOrModelContainingIgnoreCaseOrColorContainingIgnoreCase(search, search, search, search, pageable);
+                }
                 break;
             case "parkinglot":
-                pageResult = parkinglotRepository.findAll(pageable);
+                if (search.isEmpty()) {
+                    pageResult = parkingLotRepository.findAll(pageable);
+                } else {
+                    pageResult = parkingLotRepository.findByCityContainingIgnoreCaseOrLocationContainingIgnoreCase(search, search, pageable);
+                }
                 break;
             case "parkingslot":
-                pageResult = parkingslotRepository.findAll(pageable);
+                if (search.isEmpty()) {
+                    pageResult = parkingSlotRepository.findAll(pageable);
+                } else {
+                    try {
+                        ParkingSlot.SlotStatus status = ParkingSlot.SlotStatus.valueOf(search.toUpperCase());
+                        pageResult = parkingSlotRepository.findByStatus(status, pageable);
+                    } catch (IllegalArgumentException e) {
+                        pageResult = parkingSlotRepository.findAll(pageable);
+                    }
+                }
                 break;
             case "booking":
-                pageResult = bookingRepository.findAll(pageable);
+                if (search.isEmpty()) {
+                    pageResult = bookingRepository.findAll(pageable);
+                } else {
+                    try {
+                        Booking.PaymentStatus status = Booking.PaymentStatus.valueOf(search.toUpperCase());
+                        pageResult = bookingRepository.findByPaymentStatus(status, pageable);
+                    } catch (IllegalArgumentException e) {
+                        pageResult = bookingRepository.findAll(pageable);
+                    }
+                }
                 break;
             case "payment":
-                pageResult = paymentRepository.findAll(pageable);
+                if (search.isEmpty()) {
+                    pageResult = paymentRepository.findAll(pageable);
+                } else {
+                    pageResult = paymentRepository.findByMethodContainingIgnoreCaseOrStatusContainingIgnoreCase(search, search, pageable);
+                }
                 break;
             case "notification":
-                pageResult = notificationRepository.findAll(pageable);
+                if (search.isEmpty()) {
+                    pageResult = notificationRepository.findAll(pageable);
+                } else {
+                    pageResult = notificationRepository.findByDescriptionContainingIgnoreCaseOrTypeContainingIgnoreCase(search, search, pageable);
+                }
                 break;
             case "vehiclelog":
-                pageResult = vehiclelogRepository.findAll(pageable);
+                if (search.isEmpty()) {
+                    pageResult = vehicleLogRepository.findAll(pageable);
+                } else {
+                    pageResult = vehicleLogRepository.findAll(pageable); // Limited search due to datetime fields
+                }
                 break;
             case "report":
-                pageResult = reportRepository.findAll(pageable);
+                if (search.isEmpty()) {
+                    pageResult = reportRepository.findAll(pageable);
+                } else {
+                    try {
+                        Report.ReportType type = Report.ReportType.valueOf(search.toUpperCase());
+                        pageResult = reportRepository.findByType(type, pageable);
+                    } catch (IllegalArgumentException e) {
+                        pageResult = reportRepository.findAll(pageable);
+                    }
+                }
                 break;
             default:
                 return "redirect:/admin/tables";
@@ -124,8 +180,7 @@ public class ManageTablesController {
         model.addAttribute("totalPages", pageResult.getTotalPages());
         model.addAttribute("currentPage", page);
         model.addAttribute("startItem", page * size + 1);
-        model.addAttribute("endItem", Math.min((page + 1) * size, pageResult.getTotalElements()));
-        model.addAttribute("newItem", createNewItem(tableName));
+        model.addAttribute("endItem", Math.min((page + 1) * size, (int) pageResult.getTotalElements()));
 
         return "admin/manageTable";
     }
@@ -136,45 +191,25 @@ public class ManageTablesController {
         try {
             switch (tableName) {
                 case "admins":
-                    return adminRepository.findById(id)
-                            .map(ResponseEntity::ok)
-                            .orElseGet(() -> ResponseEntity.notFound().build());
+                    return adminRepository.findById(id).map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
                 case "users":
-                    return userRepository.findById(id)
-                            .map(ResponseEntity::ok)
-                            .orElseGet(() -> ResponseEntity.notFound().build());
+                    return userRepository.findById(id).map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
                 case "vehicle":
-                    return vehicleRepository.findById(id)
-                            .map(ResponseEntity::ok)
-                            .orElseGet(() -> ResponseEntity.notFound().build());
+                    return vehicleRepository.findById(id).map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
                 case "parkinglot":
-                    return parkinglotRepository.findById(id)
-                            .map(ResponseEntity::ok)
-                            .orElseGet(() -> ResponseEntity.notFound().build());
+                    return parkingLotRepository.findById(id).map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
                 case "parkingslot":
-                    return parkingslotRepository.findById(id)
-                            .map(ResponseEntity::ok)
-                            .orElseGet(() -> ResponseEntity.notFound().build());
+                    return parkingSlotRepository.findById(id).map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
                 case "booking":
-                    return bookingRepository.findById(id)
-                            .map(ResponseEntity::ok)
-                            .orElseGet(() -> ResponseEntity.notFound().build());
+                    return bookingRepository.findById(id).map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
                 case "payment":
-                    return paymentRepository.findById(id)
-                            .map(ResponseEntity::ok)
-                            .orElseGet(() -> ResponseEntity.notFound().build());
+                    return paymentRepository.findById(id).map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
                 case "notification":
-                    return notificationRepository.findById(id)
-                            .map(ResponseEntity::ok)
-                            .orElseGet(() -> ResponseEntity.notFound().build());
+                    return notificationRepository.findById(id).map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
                 case "vehiclelog":
-                    return vehiclelogRepository.findById(id)
-                            .map(ResponseEntity::ok)
-                            .orElseGet(() -> ResponseEntity.notFound().build());
+                    return vehicleLogRepository.findById(id).map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
                 case "report":
-                    return reportRepository.findById(id)
-                            .map(ResponseEntity::ok)
-                            .orElseGet(() -> ResponseEntity.notFound().build());
+                    return reportRepository.findById(id).map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
                 default:
                     return ResponseEntity.badRequest().body("Invalid table name");
             }
@@ -184,43 +219,112 @@ public class ManageTablesController {
     }
 
     @PostMapping("/{tableName}/save")
-    public String saveItem(@PathVariable String tableName, @ModelAttribute Object item, RedirectAttributes redirectAttributes) {
+    public String saveItem(@PathVariable String tableName, @RequestParam Map<String, String> params, RedirectAttributes redirectAttributes) {
         try {
             switch (tableName) {
                 case "admins":
-                    adminRepository.save((Admin) item);
+                    Long adminId = getLongParam(params, "admin_id");
+                    Admin admin = adminId == null ? new Admin() : adminRepository.findById(adminId).orElseThrow();
+                    admin.setName(params.get("name"));
+                    admin.setEmail(params.get("email"));
+                    admin.setPassword(params.get("password"));
+                    admin.setRole(Admin.Role.valueOf(params.get("role")));
+                    adminRepository.save(admin);
                     break;
                 case "users":
-                    userRepository.save((User) item);
+                    Long userId = getLongParam(params, "user_id");
+                    User user = userId == null ? new User() : userRepository.findById(userId).orElseThrow();
+                    user.setName(params.get("name"));
+                    user.setEmail(params.get("email"));
+                    user.setPassword(params.get("password"));
+                    user.setContactNo(params.get("contact_no"));
+                    userRepository.save(user);
                     break;
                 case "vehicle":
-                    vehicleRepository.save((Vehicle) item);
+                    Long vehicleId = getLongParam(params, "vehicle_id");
+                    Vehicle vehicle = vehicleId == null ? new Vehicle() : vehicleRepository.findById(vehicleId).orElseThrow();
+                    Long ownerId = getLongParam(params, "user_id");
+                    vehicle.setUser(ownerId == null ? null : userRepository.findById(ownerId).orElseThrow());
+                    vehicle.setVehicleNo(params.get("vehicle_no"));
+                    vehicle.setVehicleType(Vehicle.VehicleType.valueOf(params.get("vehicle_type")));
+                    vehicle.setBrand(params.get("brand"));
+                    vehicle.setModel(params.get("model"));
+                    vehicle.setColor(params.get("color"));
+                    vehicleRepository.save(vehicle);
                     break;
                 case "parkinglot":
-                    parkinglotRepository.save((ParkingLot) item);
+                    Long lotId = getLongParam(params, "lot_id");
+                    ParkingLot parkingLot = lotId == null ? new ParkingLot() : parkingLotRepository.findById(lotId).orElseThrow();
+                    parkingLot.setCity(params.get("city"));
+                    parkingLot.setLocation(params.get("location"));
+                    parkingLot.setTotalSlots(Integer.parseInt(params.get("total_slots")));
+                    parkingLot.setPriceHr(new BigDecimal(params.get("price_hr")));
+                    parkingLotRepository.save(parkingLot);
                     break;
                 case "parkingslot":
-                    parkingslotRepository.save((ParkingSlot) item);
+                    Long slotId = getLongParam(params, "slot_id");
+                    ParkingSlot parkingSlot = slotId == null ? new ParkingSlot() : parkingSlotRepository.findById(slotId).orElseThrow();
+                    Long parkingLotId = getLongParam(params, "lot_id");
+                    parkingSlot.setParkingLot(parkingLotId == null ? null : parkingLotRepository.findById(parkingLotId).orElseThrow());
+                    parkingSlot.setStatus(ParkingSlot.SlotStatus.valueOf(params.get("status")));
+                    parkingSlotRepository.save(parkingSlot);
                     break;
                 case "booking":
-                    Booking booking = (Booking) item;
+                    Long bookingId = getLongParam(params, "booking_id");
+                    Booking booking = bookingId == null ? new Booking() : bookingRepository.findById(bookingId).orElseThrow();
+                    Long bookingUserId = getLongParam(params, "user_id");
+                    booking.setUser(bookingUserId == null ? null : userRepository.findById(bookingUserId).orElseThrow());
+                    Long bookingVehicleId = getLongParam(params, "vehicle_id");
+                    booking.setVehicle(bookingVehicleId == null ? null : vehicleRepository.findById(bookingVehicleId).orElseThrow());
+                    Long bookingSlotId = getLongParam(params, "slot_id");
+                    booking.setParkingSlot(bookingSlotId == null ? null : parkingSlotRepository.findById(bookingSlotId).orElseThrow());
+                    booking.setStartTime(LocalDateTime.parse(params.get("start_time")));
+                    String endTimeStr = params.get("end_time");
+                    booking.setEndTime(endTimeStr.isEmpty() ? null : LocalDateTime.parse(endTimeStr));
+                    booking.setPaymentStatus(Booking.PaymentStatus.valueOf(params.get("payment_status")));
                     bookingRepository.save(booking);
                     break;
                 case "payment":
-                    Payment payment = (Payment) item;
+                    Long paymentId = getLongParam(params, "payment_id");
+                    Payment payment = paymentId == null ? new Payment() : paymentRepository.findById(paymentId).orElseThrow();
+                    Long paymentBookingId = getLongParam(params, "booking_id");
+                    payment.setBooking(paymentBookingId == null ? null : bookingRepository.findById(paymentBookingId).orElseThrow());
+                    payment.setAmount(new BigDecimal(params.get("amount")));
+                    payment.setMethod(Payment.PaymentMethod.valueOf(params.get("method")));
+                    payment.setStatus(Payment.PaymentStatus.valueOf(params.get("status")));
                     payment.setTimestamp(LocalDateTime.now());
                     paymentRepository.save(payment);
                     break;
                 case "notification":
-                    Notification notification = (Notification) item;
+                    Long notificationId = getLongParam(params, "notification_id");
+                    Notification notification = notificationId == null ? new Notification() : notificationRepository.findById(notificationId).orElseThrow();
+                    notification.setType(Notification.NotificationType.valueOf(params.get("type")));
+                    notification.setDescription(params.get("description"));
+                    Long notificationUserId = getLongParam(params, "user_id");
+                    notification.setUser(notificationUserId == null ? null : userRepository.findById(notificationUserId).orElseThrow());
+                    Long notificationAdminId = getLongParam(params, "admin_id");
+                    notification.setAdmin(notificationAdminId == null ? null : adminRepository.findById(notificationAdminId).orElseThrow());
                     notification.setTimestamp(LocalDateTime.now());
                     notificationRepository.save(notification);
                     break;
                 case "vehiclelog":
-                    vehiclelogRepository.save((VehicleLog) item);
+                    Long logId = getLongParam(params, "log_id");
+                    VehicleLog vehicleLog = logId == null ? new VehicleLog() : vehicleLogRepository.findById(logId).orElseThrow();
+                    Long logVehicleId = getLongParam(params, "vehicle_id");
+                    vehicleLog.setVehicle(logVehicleId == null ? null : vehicleRepository.findById(logVehicleId).orElseThrow());
+                    Long logLotId = getLongParam(params, "lot_id");
+                    vehicleLog.setParkingLot(logLotId == null ? null : parkingLotRepository.findById(logLotId).orElseThrow());
+                    vehicleLog.setEntryTime(LocalDateTime.parse(params.get("entry_time")));
+                    String exitTimeStr = params.get("exit_time");
+                    vehicleLog.setExitTime(exitTimeStr.isEmpty() ? null : LocalDateTime.parse(exitTimeStr));
+                    vehicleLogRepository.save(vehicleLog);
                     break;
                 case "report":
-                    Report report = (Report) item;
+                    Long reportId = getLongParam(params, "report_id");
+                    Report report = reportId == null ? new Report() : reportRepository.findById(reportId).orElseThrow();
+                    report.setType(Report.ReportType.valueOf(params.get("type")));
+                    Long reportAdminId = getLongParam(params, "admin_id");
+                    report.setAdmin(reportAdminId == null ? null : adminRepository.findById(reportAdminId).orElseThrow());
                     report.setGeneratedDate(LocalDateTime.now());
                     reportRepository.save(report);
                     break;
@@ -233,6 +337,11 @@ public class ManageTablesController {
             redirectAttributes.addFlashAttribute("error", "Error saving item: " + e.getMessage());
         }
         return "redirect:/admin/tables/" + tableName;
+    }
+
+    private Long getLongParam(Map<String, String> params, String key) {
+        String value = params.get(key);
+        return (value == null || value.isBlank()) ? null : Long.parseLong(value);
     }
 
     @DeleteMapping("/{tableName}/{id}")
@@ -253,12 +362,12 @@ public class ManageTablesController {
                     vehicleRepository.deleteById(id);
                     break;
                 case "parkinglot":
-                    if (!parkinglotRepository.existsById(id)) return "error: Parking lot not found";
-                    parkinglotRepository.deleteById(id);
+                    if (!parkingLotRepository.existsById(id)) return "error: Parking lot not found";
+                    parkingLotRepository.deleteById(id);
                     break;
                 case "parkingslot":
-                    if (!parkingslotRepository.existsById(id)) return "error: Parking slot not found";
-                    parkingslotRepository.deleteById(id);
+                    if (!parkingSlotRepository.existsById(id)) return "error: Parking slot not found";
+                    parkingSlotRepository.deleteById(id);
                     break;
                 case "booking":
                     if (!bookingRepository.existsById(id)) return "error: Booking not found";
@@ -273,8 +382,8 @@ public class ManageTablesController {
                     notificationRepository.deleteById(id);
                     break;
                 case "vehiclelog":
-                    if (!vehiclelogRepository.existsById(id)) return "error: Vehicle log not found";
-                    vehiclelogRepository.deleteById(id);
+                    if (!vehicleLogRepository.existsById(id)) return "error: Vehicle log not found";
+                    vehicleLogRepository.deleteById(id);
                     break;
                 case "report":
                     if (!reportRepository.existsById(id)) return "error: Report not found";
@@ -286,22 +395,6 @@ public class ManageTablesController {
             return "success";
         } catch (Exception e) {
             return "error: " + e.getMessage();
-        }
-    }
-
-    private Object createNewItem(String tableName) {
-        switch (tableName) {
-            case "admins": return new Admin();
-            case "users": return new User();
-            case "vehicle": return new Vehicle();
-            case "parkinglot": return new ParkingLot();
-            case "parkingslot": return new ParkingSlot();
-            case "booking": return new Booking();
-            case "payment": return new Payment();
-            case "notification": return new Notification();
-            case "vehiclelog": return new VehicleLog();
-            case "report": return new Report();
-            default: return null;
         }
     }
 }

@@ -1,6 +1,8 @@
 package com.prmplatform.parqhub.repository;
 
 import com.prmplatform.parqhub.model.ParkingLot;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -36,4 +38,8 @@ public interface ParkingLotRepository extends JpaRepository<ParkingLot, Long> {
 
     @Query("SELECT p FROM ParkingLot p JOIN FETCH p.parkingSlots")
     List<ParkingLot> findAllWithSlots();
+
+    @Query("SELECT p FROM ParkingLot p WHERE LOWER(p.city) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(p.location) LIKE LOWER(CONCAT('%', :search, '%'))")
+    Page<ParkingLot> findByCityContainingIgnoreCaseOrLocationContainingIgnoreCase(@Param("search") String search, @Param("search") String search2, Pageable pageable);
+
 }
