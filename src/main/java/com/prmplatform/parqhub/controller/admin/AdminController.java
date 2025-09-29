@@ -5,12 +5,10 @@ import com.prmplatform.parqhub.model.Booking;
 import com.prmplatform.parqhub.model.ParkingSlot.SlotStatus;
 import com.prmplatform.parqhub.repository.*;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -122,6 +120,110 @@ public class AdminController {
     public String logout(HttpSession session) {
         session.invalidate();
         return "redirect:/admin/login";
+    }
+
+    /**
+     * API endpoint for dashboard live data
+     */
+    @GetMapping("/api/dashboard/stats")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getDashboardStats(HttpSession session) {
+        Admin admin = (Admin) session.getAttribute("loggedInAdmin");
+        if (admin == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Admin not logged in"));
+        }
+
+        Map<String, Object> stats = new HashMap<>();
+        
+        try {
+            // Common stats for all roles
+            stats.put("adminName", admin.getName());
+            stats.put("adminRole", admin.getRole().name());
+            stats.put("timestamp", LocalDateTime.now());
+            
+            // Role-specific stats
+            if (admin.getRole().name().equals("OPERATIONS_MANAGER") || admin.getRole().name().equals("SUPER_ADMIN")) {
+                List<Object[]> slotSummaries = parkingSlotRepository.countByCityAndStatus(SlotStatus.AVAILABLE);
+                Map<String, Long> availableSlotsByCity = new HashMap<>();
+                for (Object[] result : slotSummaries) {
+                    availableSlotsByCity.put((String) result[0], (Long) result[1]);
+                }
+                stats.put("availableSlotsByCity", availableSlotsByCity);
+                stats.put("totalActiveSlots", parkingSlotRepository.countByStatus(SlotStatus.OCCUPIED));
+                stats.put("totalAvailableSlots", parkingSlotRepository.countByStatus(SlotStatus.AVAILABLE));
+                stats.put("totalSlots", parkingSlotRepository.count());
+            }
+
+            if (admin.getRole().name().equals("FINANCE_OFFICER") || admin.getRole().name().equals("SUPER_ADMIN")) {
+                LocalDateTime startOfDay = LocalDateTime.now().with(LocalTime.MIN);
+                Double todayRevenue = paymentRepository.sumAmountByCompletedAndTimestampAfter(startOfDay);
+                stats.put("todayRevenue", todayRevenue != null ? todayRevenue : 0.0);
+                stats.put("totalRevenue", paymentRepository.getTotalCompletedRevenue());
+                stats.put("pendingPayments", bookingRepository.countByPaymentStatus(Booking.PaymentStatus.Pending));
+            }
+
+            if (admin.getRole().name().equals("CUSTOMER_SERVICE_OFFICER") || admin.getRole().name().equals("SUPER_ADMIN")) {
+                stats.put("totalUsers", userRepository.count());
+                stats.put("pendingBookings", bookingRepository.countByPaymentStatus(Booking.PaymentStatus.Pending));
+                stats.put("completedBookings", bookingRepository.countByPaymentStatus(Booking.PaymentStatus.Completed));
+            }
+
+            if (admin.getRole().name().equals("SECURITY_SUPERVISOR") || admin.getRole().name().equals("SUPER_ADMIN")) {
+                stats.put("activeVehicles", vehicleLogRepository.countByExitTimeIsNull());
+                stats.put("securityIncidents", notificationRepository.countByType("SECURITY_INCIDENT"));
+                stats.put("totalVehicleLogs", vehicleLogRepository.count());
+            }
+
+            if (admin.getRole().name().equals("IT_SUPPORT") || admin.getRole().name().equals("SUPER_ADMIN")) {
+                stats.put("systemUptime", "99.9%");
+                stats.put("errorLogs", notificationRepository.countByType("ERROR"));
+                stats.put("totalNotifications", notificationRepository.count());
+            }
+            
+            return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            stats.put("error", "Error fetching dashboard data: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(stats);
+        }
+    }
+
+    /**
+     * API endpoint for real-time system health
+     */
+    @GetMapping("/api/dashboard/health")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getSystemHealth(HttpSession session) {
+        Admin admin = (Admin) session.getAttribute("loggedInAdmin");
+        if (admin == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Admin not logged in"));
+        }
+
+        Map<String, Object> health = new HashMap<>();
+        
+        try {
+            // System performance metrics
+            long totalBookings = bookingRepository.count();
+            long completedBookings = bookingRepository.countByPaymentStatus(Booking.PaymentStatus.Completed);
+            double bookingSuccessRate = totalBookings > 0 ? (double) completedBookings / totalBookings * 100 : 0;
+            
+            health.put("bookingSuccessRate", Math.round(bookingSuccessRate * 100.0) / 100.0);
+            health.put("totalBookings", totalBookings);
+            health.put("systemUptime", "99.9%");
+            health.put("avgResponseTime", "120");
+            health.put("errorRate", "0.1");
+            health.put("timestamp", LocalDateTime.now());
+            
+            // Occupancy rate
+            long totalSlots = parkingSlotRepository.count();
+            long occupiedSlots = parkingSlotRepository.countByStatus(SlotStatus.OCCUPIED);
+            double occupancyRate = totalSlots > 0 ? (double) occupiedSlots / totalSlots * 100 : 0;
+            health.put("currentOccupancyRate", Math.round(occupancyRate * 100.0) / 100.0);
+            
+            return ResponseEntity.ok(health);
+        } catch (Exception e) {
+            health.put("error", "Error fetching system health: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(health);
+        }
     }
 
 

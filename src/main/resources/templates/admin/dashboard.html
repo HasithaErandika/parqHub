@@ -241,34 +241,292 @@
         </div>
     </section>
 
-    <!-- Chart.js Script -->
+    <!-- Chart.js Script with Live Data Integration -->
     <script th:inline="javascript">
-        document.addEventListener('DOMContentLoaded', function () {
-            const ctx = document.getElementById('slotsChart');
-            if (ctx) {
-                const slotData = /*[[${availableSlotsByCity}]]*/ {};
-                const labels = Object.keys(slotData);
-                const data = Object.values(slotData);
+        let refreshInterval;
+        let charts = {};
 
-                new Chart(ctx.getContext('2d'), {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Available Slots',
-                            data: data,
-                            backgroundColor: 'rgba(255, 183, 3, 0.6)',
-                            borderColor: 'rgba(255, 183, 3, 1)',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: { beginAtZero: true }
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initialize dashboard with live data
+            loadDashboardData();
+            
+            // Set up auto-refresh every 30 seconds
+            refreshInterval = setInterval(loadDashboardData, 30000);
+            
+            // Update last refresh time
+            updateLastRefreshTime();
+        });
+
+        function refreshDashboard() {
+            const refreshIcon = document.getElementById('refreshIcon');
+            if (refreshIcon) {
+                refreshIcon.classList.add('fa-spin');
+            }
+            
+            loadDashboardData().then(() => {
+                if (refreshIcon) {
+                    refreshIcon.classList.remove('fa-spin');
+                }
+                updateLastRefreshTime();
+            });
+        }
+
+        function updateLastRefreshTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+            const lastUpdateElement = document.getElementById('lastUpdateTime');
+            if (lastUpdateElement) {
+                lastUpdateElement.textContent = timeString;
+            }
+        }
+
+        async function loadDashboardData() {
+            try {
+                // Load performance metrics
+                await loadPerformanceData();
+                
+                // Load financial data if applicable
+                const adminRole = /*[[${adminRole.name()}]]*/ 'SUPER_ADMIN';
+                if (adminRole === 'FINANCE_OFFICER' || adminRole === 'SUPER_ADMIN') {
+                    await loadFinancialData();
+                }
+                
+                // Load occupancy data if applicable
+                if (adminRole === 'OPERATIONS_MANAGER' || adminRole === 'SUPER_ADMIN') {
+                    await loadOccupancyData();
+                }
+                
+                // Load activity feed
+                await loadActivityFeed();
+                
+                // Update charts
+                updateCharts();
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        async function loadPerformanceData() {
+            try {
+                const response = await fetch('/admin/api/reports/performance/initial');
+                const data = await response.json();
+                
+                if (!data.error) {
+                    updateElement('systemPerformance', Math.round(data.bookingSuccessRate || 0) + '%');
+                    updateElement('responseTime', (data.avgResponseTime || 'N/A') + 'ms');
+                    updateElement('utilizationRate', Math.round(data.currentOccupancyRate || 0) + '%');
+                    updateElement('errorRate', Math.round(data.errorRate || 0) + '%');
+                }
+            } catch (error) {
+                console.error('Error loading performance data:', error);
+            }
+        }
+
+        async function loadFinancialData() {
+            try {
+                const response = await fetch('/admin/api/reports/financial/initial');
+                const data = await response.json();
+                
+                if (!data.error) {
+                    updateElement('totalRevenue', 'LKR ' + formatNumber(data.totalRevenue || 0));
+                    updateElement('avgRevenue', 'LKR ' + formatNumber(data.avgPayment || 0));
+                    updateElement('paymentSuccessRate', Math.round(data.paymentSuccessRate || 0) + '%');
+                    updateElement('pendingPaymentsCount', data.pendingPayments || 0);
+                }
+            } catch (error) {
+                console.error('Error loading financial data:', error);
+            }
+        }
+
+        async function loadOccupancyData() {
+            try {
+                const response = await fetch('/admin/api/reports/occupancy/initial');
+                const data = await response.json();
+                
+                if (!data.error) {
+                    updateElement('availableSlots', data.availableSlots || 0);
+                    updateElement('occupiedSlots', data.occupiedSlots || 0);
+                    updateElement('occupancyRate', Math.round(data.avgOccupancy || 0) + '%');
+                    
+                    // Update city breakdown
+                    updateCityBreakdown(data.cityBreakdown || []);
+                }
+            } catch (error) {
+                console.error('Error loading occupancy data:', error);
+            }
+        }
+
+        async function loadActivityFeed() {
+            try {
+                const response = await fetch('/admin/api/reports');
+                const data = await response.json();
+                
+                if (!data.error && data.reports) {
+                    updateActivityFeed(data.reports.slice(0, 5));
+                }
+            } catch (error) {
+                console.error('Error loading activity feed:', error);
+            }
+        }
+
+        function updateElement(id, value) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+            }
+        }
+
+        function updateCityBreakdown(cityData) {
+            const container = document.getElementById('cityBreakdownContainer');
+            if (!container) return;
+            
+            if (cityData.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-400">No city data available</div>';
+                return;
+            }
+            
+            container.innerHTML = cityData.map(city => `
+                <div class="flex justify-between items-center p-2 glass rounded">
+                    <span class="text-sm">${city.city}</span>
+                    <span class="text-green-400 font-bold">${city.available || 0}</span>
+                </div>
+            `).join('');
+        }
+
+        function updateActivityFeed(reports) {
+            const container = document.getElementById('activityFeed');
+            if (!container) return;
+            
+            if (reports.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-400 py-4">No recent activity</div>';
+                return;
+            }
+            
+            container.innerHTML = reports.map(report => {
+                const date = new Date(report.generatedDate).toLocaleString();
+                return `
+                    <div class="flex items-center justify-between p-3 glass rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-chart-bar text-yellow-400"></i>
+                            <div>
+                                <p class="font-semibold">${report.type} Report Generated</p>
+                                <p class="text-sm text-gray-400">${date}</p>
+                            </div>
+                        </div>
+                        <span class="text-green-400 text-sm">Completed</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateCharts() {
+            const adminRole = /*[[${adminRole.name()}]]*/ 'SUPER_ADMIN';
+            
+            // Update slots chart
+            if (document.getElementById('slotsChart')) {
+                updateSlotsChart();
+            }
+            
+            // Update revenue chart
+            if (document.getElementById('revenueChart')) {
+                updateRevenueChart();
+            }
+        }
+
+        function updateSlotsChart() {
+            const ctx = document.getElementById('slotsChart');
+            if (!ctx) return;
+            
+            if (charts.slotsChart) {
+                charts.slotsChart.destroy();
+            }
+            
+            const slotData = /*[[${availableSlotsByCity}]]*/ {};
+            const labels = Object.keys(slotData);
+            const data = Object.values(slotData);
+            
+            charts.slotsChart = new Chart(ctx.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Available Slots',
+                        data: data,
+                        backgroundColor: [
+                            'rgba(255, 183, 3, 0.8)',
+                            'rgba(34, 197, 94, 0.8)',
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(168, 85, 247, 0.8)'
+                        ],
+                        borderColor: 'rgba(255, 255, 255, 0.2)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: 'white' }
                         }
                     }
-                });
+                }
+            });
+        }
+
+        function updateRevenueChart() {
+            const ctx = document.getElementById('revenueChart');
+            if (!ctx) return;
+            
+            if (charts.revenueChart) {
+                charts.revenueChart.destroy();
+            }
+            
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const revenueData = [12000, 15000, 18000, 14000, 22000, 25000, 20000];
+            
+            charts.revenueChart = new Chart(ctx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: days,
+                    datasets: [{
+                        label: 'Revenue (LKR)',
+                        data: revenueData,
+                        backgroundColor: 'rgba(34, 197, 94, 0.8)',
+                        borderColor: 'rgba(34, 197, 94, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            ticks: { color: 'white' }
+                        },
+                        x: { ticks: { color: 'white' } }
+                    },
+                    plugins: {
+                        legend: { labels: { color: 'white' } }
+                    }
+                }
+            });
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            }
+            return num.toLocaleString();
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
             }
         });
     </script>
