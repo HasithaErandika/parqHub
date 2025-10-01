@@ -305,7 +305,7 @@ GET    /admin/parking-viewer    # Real-time parking monitor
 
 ### Docker Deployment
 
-```dockerfile
+```
 FROM openjdk:21-jdk-slim
 COPY target/parqhub-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8080
@@ -390,13 +390,6 @@ spring.mail.password=your-16-digit-app-password
 server.port=8081
 ```
 
-## 📞 Support
-
-### Getting Help
-- **Documentation**: Check this README and inline code comments
-- **Issues**: Create GitHub issues for bugs and feature requests
-- **Email**: parqhub.system@gmail.com
-- **Phone**: +94 77 123 4567 (Technical Support)
 
 ### Community
 - **GitHub Discussions**: Project discussions and Q&A
@@ -416,14 +409,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-### 📧 Contact Information
-
-**Project Maintainer**: ParQHub Development Team  
-**Email**: parqhub.system@gmail.com  
-**Website**: [https://parqhub.com](https://parqhub.com)  
-**Repository**: [https://github.com/parqhub/parqhub](https://github.com/parqhub/parqhub)
-
----
 
 ⭐ **Star this repository if you find it helpful!**
 
