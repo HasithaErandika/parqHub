@@ -128,7 +128,7 @@ public class PaymentController {
             return "user/payment-gateway";
         } catch (Exception e) {
             model.addAttribute("error", "Failed to load payment page: " + e.getMessage());
-            return "error"; // Fallback to error page
+            return "user/payment-gateway"; // Changed from "error" to "user/payment-gateway"
         }
     }
 
@@ -229,7 +229,7 @@ public class PaymentController {
 
         } catch (Exception e) {
             model.addAttribute("error", "Failed to process payment: " + e.getMessage());
-            return "user/payment-gateway";
+            return "user/payment-gateway"; // Changed from "error" to "user/payment-gateway"
         }
     }
 
@@ -259,7 +259,7 @@ public class PaymentController {
             return "user/payments";
         } catch (Exception e) {
             model.addAttribute("error", "Failed to load payment history: " + e.getMessage());
-            return "error"; // Fallback to error page
+            return "error"; // This is correct as it should go to the error page for payment history
         }
     }
 
