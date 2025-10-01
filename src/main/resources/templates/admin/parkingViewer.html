@@ -245,7 +245,8 @@
                  th:data-slot-id="${slot.id}"
                  th:data-status="${slot.status}"
                  th:text="${slot.id}"
-                 th:title="'Slot ' + ${slot.id} + ' - ' + ${slot.status}">
+                 th:title="'Slot ' + ${slot.id} + ' - ' + ${slot.status}"
+                 onclick="viewSlotDetails(this)">
             </div>
         </div>
     </div>
@@ -342,6 +343,11 @@
         const now = new Date();
         const timeString = now.toLocaleTimeString();
         document.getElementById('lastUpdated').textContent = timeString;
+    }
+
+    function viewSlotDetails(slotElement) {
+        const slotId = slotElement.getAttribute('data-slot-id');
+        window.location.href = `/admin/manage-parking-slot?slotId=${slotId}`;
     }
 
     if (selectedLotId) {

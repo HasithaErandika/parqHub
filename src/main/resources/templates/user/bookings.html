@@ -734,6 +734,14 @@
             if (result.status === 'success') {
                 entryTimeElement.innerHTML = result.entryTime;
                 entryTimeElement.className = 'entry-time text-green-400';
+                
+                // Update the parking slot status display in the UI
+                const card = entryTimeElement.closest('.booking-card');
+                const statusElement = card.querySelector('.status-pending');
+                if (statusElement) {
+                    statusElement.textContent = 'Vehicle Entered';
+                    statusElement.className = 'status-completed px-3 py-1 rounded-full text-xs font-medium';
+                }
             } else {
                 // Check if this is a completed booking
                 const card = entryTimeElement.closest('.booking-card');
@@ -823,6 +831,13 @@
                     const card = document.querySelector(`[data-booking-id="${bookingId}"]`);
                     const entryTimeElement = card.querySelector('.entry-time');
                     fetchEntryTime(bookingId, entryTimeElement);
+                    
+                    // Update the parking slot status display in the UI
+                    const statusElement = card.querySelector('.status-pending');
+                    if (statusElement) {
+                        statusElement.textContent = 'Vehicle Entered';
+                        statusElement.className = 'status-completed px-3 py-1 rounded-full text-xs font-medium';
+                    }
                 } else if (action === 'exit') {
                     // Fetch exit time to update UI
                     const card = document.querySelector(`[data-booking-id="${bookingId}"]`);
