@@ -1,6 +1,62 @@
 USE parqhub_db;
 SET FOREIGN_KEY_CHECKS = 0;
 
+-- Add the new procedures for parking slot management
+DELIMITER $$
+
+-- Procedure to create parking slots for a parking lot
+DROP PROCEDURE IF EXISTS create_parking_slots_for_lot$$
+CREATE PROCEDURE create_parking_slots_for_lot(IN p_lot_id INT, IN p_total_slots INT)
+BEGIN
+    DECLARE v_counter INT DEFAULT 1;
+
+    -- Delete existing slots for this lot
+    DELETE FROM ParkingSlot WHERE lot_id = p_lot_id;
+
+    -- Create new slots, all with "Available" status
+    WHILE v_counter <= p_total_slots DO
+        INSERT INTO ParkingSlot (lot_id, status) VALUES (p_lot_id, 'Available');
+        SET v_counter = v_counter + 1;
+    END WHILE;
+END$$
+
+-- Procedure to update parking slots for a parking lot
+DROP PROCEDURE IF EXISTS update_parking_slots_for_lot$$
+CREATE PROCEDURE update_parking_slots_for_lot(IN p_lot_id INT, IN p_old_total_slots INT, IN p_new_total_slots INT)
+BEGIN
+    DECLARE v_slots_to_add INT;
+    DECLARE v_slots_to_remove INT;
+    DECLARE v_counter INT DEFAULT 1;
+
+    IF p_new_total_slots > p_old_total_slots THEN
+        -- Need to add more slots
+        SET v_slots_to_add = p_new_total_slots - p_old_total_slots;
+        WHILE v_counter <= v_slots_to_add DO
+            -- Add new slots with default 'Available' status
+            INSERT INTO ParkingSlot (lot_id, status) VALUES (p_lot_id, 'Available');
+            SET v_counter = v_counter + 1;
+        END WHILE;
+    ELSEIF p_new_total_slots < p_old_total_slots THEN
+        -- Need to remove excess slots
+        SET v_slots_to_remove = p_old_total_slots - p_new_total_slots;
+        DELETE FROM ParkingSlot 
+        WHERE lot_id = p_lot_id 
+        ORDER BY slot_id DESC 
+        LIMIT v_slots_to_remove;
+    END IF;
+    -- If equal, no action needed
+END$$
+
+-- Procedure to delete parking slots for a parking lot
+DROP PROCEDURE IF EXISTS delete_parking_slots_for_lot$$
+CREATE PROCEDURE delete_parking_slots_for_lot(IN p_lot_id INT)
+BEGIN
+    DELETE FROM ParkingSlot WHERE lot_id = p_lot_id;
+END$$
+
+DELIMITER ;
+
+-- Existing parking lot data
 DROP TABLE IF EXISTS parkinglot;
 
 CREATE TABLE ParkingLot (
@@ -48,8 +104,6 @@ BEGIN
     DECLARE v_lot_id INT;
     DECLARE v_total_slots INT;
     DECLARE v_counter INT;
-    DECLARE v_rand INT;
-    DECLARE v_status ENUM('Available','Booked','Occupied');
 
     DECLARE lot_cursor CURSOR FOR
 SELECT lot_id, total_slots FROM ParkingLot;
@@ -65,18 +119,9 @@ END IF;
 
         SET v_counter = 1;
         WHILE v_counter <= v_total_slots DO
-            -- Randomly assign status
-            SET v_rand = FLOOR(1 + (RAND() * 3)); -- 1,2,3
-            IF v_rand = 1 THEN
-                SET v_status = 'Available';
-            ELSEIF v_rand = 2 THEN
-                SET v_status = 'Booked';
-ELSE
-                SET v_status = 'Occupied';
-END IF;
-
-INSERT INTO ParkingSlot (lot_id, status) VALUES (v_lot_id, v_status);
-SET v_counter = v_counter + 1;
+            -- All slots are created with "Available" status by default
+            INSERT INTO ParkingSlot (lot_id, status) VALUES (v_lot_id, 'Available');
+            SET v_counter = v_counter + 1;
 END WHILE;
 END LOOP;
 

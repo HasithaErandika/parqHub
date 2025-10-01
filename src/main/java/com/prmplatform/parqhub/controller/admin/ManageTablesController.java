@@ -2,6 +2,7 @@ package com.prmplatform.parqhub.controller.admin;
 
 import com.prmplatform.parqhub.model.*;
 import com.prmplatform.parqhub.repository.*;
+import com.prmplatform.parqhub.service.ParkingLotService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,12 +33,14 @@ public class ManageTablesController {
     private final NotificationRepository notificationRepository;
     private final VehicleLogRepository vehicleLogRepository;
     private final ReportRepository reportRepository;
+    private final ParkingLotService parkingLotService;
 
     public ManageTablesController(AdminRepository adminRepository, UserRepository userRepository,
                                   VehicleRepository vehicleRepository, ParkingLotRepository parkingLotRepository,
                                   ParkingSlotRepository parkingSlotRepository, BookingRepository bookingRepository,
                                   PaymentRepository paymentRepository, NotificationRepository notificationRepository,
-                                  VehicleLogRepository vehicleLogRepository, ReportRepository reportRepository) {
+                                  VehicleLogRepository vehicleLogRepository, ReportRepository reportRepository,
+                                  ParkingLotService parkingLotService) {
         this.adminRepository = adminRepository;
         this.userRepository = userRepository;
         this.vehicleRepository = vehicleRepository;
@@ -48,6 +51,7 @@ public class ManageTablesController {
         this.notificationRepository = notificationRepository;
         this.vehicleLogRepository = vehicleLogRepository;
         this.reportRepository = reportRepository;
+        this.parkingLotService = parkingLotService;
     }
 
     @GetMapping
@@ -228,7 +232,10 @@ public class ManageTablesController {
                     admin.setName(params.get("name"));
                     admin.setEmail(params.get("email"));
                     admin.setPassword(params.get("password"));
-                    admin.setRole(Admin.Role.valueOf(params.get("role")));
+                    // Map display names to enum values
+                    String roleDisplayName = params.get("role");
+                    Admin.Role role = mapRoleDisplayNameToEnum(roleDisplayName);
+                    admin.setRole(role);
                     adminRepository.save(admin);
                     break;
                 case "users":
@@ -255,11 +262,26 @@ public class ManageTablesController {
                 case "parkinglot":
                     Long lotId = getLongParam(params, "lot_id");
                     ParkingLot parkingLot = lotId == null ? new ParkingLot() : parkingLotRepository.findById(lotId).orElseThrow();
+                    
+                    // Store the old total slots count if this is an update
+                    int oldTotalSlots = (parkingLot.getId() != null) ? parkingLot.getTotalSlots() : 0;
+                    
                     parkingLot.setCity(params.get("city"));
                     parkingLot.setLocation(params.get("location"));
                     parkingLot.setTotalSlots(Integer.parseInt(params.get("total_slots")));
                     parkingLot.setPriceHr(new BigDecimal(params.get("price_hr")));
                     parkingLotRepository.save(parkingLot);
+                    
+                    // Handle parking slots creation/update
+                    if (lotId == null) {
+                        // This is a new parking lot, create slots
+                        parkingLotService.createParkingSlotsForLot(parkingLot);
+                    } else {
+                        // This is an update, update slots if total slots count changed
+                        if (parkingLot.getTotalSlots() != oldTotalSlots) {
+                            parkingLotService.updateParkingSlotsForLot(parkingLot, oldTotalSlots);
+                        }
+                    }
                     break;
                 case "parkingslot":
                     Long slotId = getLongParam(params, "slot_id");
@@ -344,6 +366,39 @@ public class ManageTablesController {
         return (value == null || value.isBlank()) ? null : Long.parseLong(value);
     }
 
+    /**
+     * Maps display names to enum values for admin roles
+     * @param displayName The display name from the form
+     * @return The corresponding enum value
+     */
+    private Admin.Role mapRoleDisplayNameToEnum(String displayName) {
+        if (displayName == null) {
+            return Admin.Role.SUPER_ADMIN; // Default role
+        }
+        
+        switch (displayName) {
+            case "Operations Manager":
+                return Admin.Role.OPERATIONS_MANAGER;
+            case "Finance Officer":
+                return Admin.Role.FINANCE_OFFICER;
+            case "Security Supervisor":
+                return Admin.Role.SECURITY_SUPERVISOR;
+            case "IT Support":
+                return Admin.Role.IT_SUPPORT;
+            case "Customer Service Officer":
+                return Admin.Role.CUSTOMER_SERVICE_OFFICER;
+            case "Super Admin":
+                return Admin.Role.SUPER_ADMIN;
+            default:
+                // Try to parse as enum directly (in case it's already in enum format)
+                try {
+                    return Admin.Role.valueOf(displayName);
+                } catch (IllegalArgumentException e) {
+                    return Admin.Role.SUPER_ADMIN; // Default role if parsing fails
+                }
+        }
+    }
+
     @DeleteMapping("/{tableName}/{id}")
     @ResponseBody
     public String deleteItem(@PathVariable String tableName, @PathVariable Long id) {
@@ -363,6 +418,8 @@ public class ManageTablesController {
                     break;
                 case "parkinglot":
                     if (!parkingLotRepository.existsById(id)) return "error: Parking lot not found";
+                    // Delete associated parking slots first
+                    parkingLotService.deleteParkingSlotsForLot(id);
                     parkingLotRepository.deleteById(id);
                     break;
                 case "parkingslot":
