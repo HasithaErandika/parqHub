@@ -82,23 +82,21 @@ public class VehicleLogController {
             ParkingLot parkingLot = booking.getParkingSlot().getParkingLot();
 
             // Validate parking lot exists and has a valid ID
-            if (parkingLot == null) {
+            if (parkingLot == null || parkingLot.getId() == null) {
                 response.put("status", "error");
-                response.put("message", "No parking lot assigned to this booking");
+                response.put("message", "Invalid parking lot reference");
                 return response;
             }
 
-            if (parkingLot.getId() == null) {
-                response.put("status", "error");
-                response.put("message", "Parking lot ID is missing");
-                return response;
-            }
-
-            // Check for existing active log
-            if (vehicleLogRepository.findByVehicleAndExitTimeIsNull(vehicle).isPresent()) {
-                response.put("status", "error");
-                response.put("message", "Vehicle already has an active log entry");
-                return response;
+            // Check for existing active log for this vehicle in the same parking lot
+            Optional<VehicleLog> existingLog = vehicleLogRepository.findByVehicleAndExitTimeIsNull(vehicle);
+            if (existingLog.isPresent()) {
+                VehicleLog log = existingLog.get();
+                if (log.getParkingLot().getId().equals(parkingLot.getId())) {
+                    response.put("status", "error");
+                    response.put("message", "Vehicle already has an active log entry in this parking lot");
+                    return response;
+                }
             }
 
             // Update parking slot status to OCCUPIED
@@ -111,13 +109,6 @@ public class VehicleLogController {
             log.setVehicle(vehicle);
             log.setEntryTime(now);
             log.setParkingLot(parkingLot);
-
-            // Double-check before saving
-            if (log.getParkingLot() == null || log.getParkingLot().getId() == null) {
-                response.put("status", "error");
-                response.put("message", "Invalid parking lot reference");
-                return response;
-            }
 
             VehicleLog savedLog = vehicleLogRepository.save(log);
 
@@ -161,12 +152,24 @@ public class VehicleLogController {
                 return response;
             }
 
-            VehicleLog log = vehicleLogRepository.findByVehicleAndExitTimeIsNull(booking.getVehicle())
-                    .orElseThrow(() -> new IllegalArgumentException("No active entry found for this vehicle"));
+            // Find the VehicleLog for this vehicle and parking lot with no exit time
+            Vehicle vehicle = booking.getVehicle();
+            ParkingLot parkingLot = booking.getParkingSlot().getParkingLot();
+            Optional<VehicleLog> logOptional = vehicleLogRepository.findByVehicleAndExitTimeIsNull(vehicle);
+            if (!logOptional.isPresent() || !logOptional.get().getParkingLot().getId().equals(parkingLot.getId())) {
+                response.put("status", "error");
+                response.put("message", "No active entry found for this vehicle in this parking lot");
+                return response;
+            }
 
-            // ONLY set the exit time. DO NOT update booking or parking slot.
+            VehicleLog log = logOptional.get();
             log.setExitTime(now);
             VehicleLog savedLog = vehicleLogRepository.save(log);
+
+            // Update parking slot status to AVAILABLE
+            ParkingSlot parkingSlot = booking.getParkingSlot();
+            parkingSlot.setStatus(ParkingSlot.SlotStatus.AVAILABLE);
+            parkingSlotRepository.save(parkingSlot);
 
             response.put("status", "success");
             response.put("message", "Exit logged successfully");
@@ -201,15 +204,16 @@ public class VehicleLogController {
                 return response;
             }
 
-            VehicleLog log = vehicleLogRepository.findByVehicleAndExitTimeIsNull(booking.getVehicle())
-                    .orElse(null);
-
-            if (log == null || log.getEntryTime() == null) {
+            Vehicle vehicle = booking.getVehicle();
+            ParkingLot parkingLot = booking.getParkingSlot().getParkingLot();
+            Optional<VehicleLog> logOptional = vehicleLogRepository.findByVehicleAndExitTimeIsNull(vehicle);
+            if (!logOptional.isPresent() || !logOptional.get().getParkingLot().getId().equals(parkingLot.getId())) {
                 response.put("status", "error");
-                response.put("message", "No active entry found for this vehicle");
+                response.put("message", "No active entry found for this vehicle in this parking lot");
                 return response;
             }
 
+            VehicleLog log = logOptional.get();
             response.put("status", "success");
             response.put("entryTime", log.getEntryTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
             return response;
@@ -232,13 +236,8 @@ public class VehicleLogController {
                 return response;
             }
 
-            Optional<Booking> bookingOpt = bookingRepository.findById(bookingId);
-            if (!bookingOpt.isPresent()) {
-                response.put("status", "error");
-                response.put("message", "Booking not found");
-                return response;
-            }
-            Booking booking = bookingOpt.get();
+            Booking booking = bookingRepository.findById(bookingId)
+                    .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
 
             if (!booking.getUser().getId().equals(user.getId())) {
                 response.put("status", "error");
@@ -246,16 +245,16 @@ public class VehicleLogController {
                 return response;
             }
 
-            // Get the most recent completed log for this vehicle
-            VehicleLog log = vehicleLogRepository.findTopByVehicleAndExitTimeIsNotNullOrderByEntryTimeDesc(booking.getVehicle())
-                    .orElse(null);
-
-            if (log == null || log.getExitTime() == null) {
+            Vehicle vehicle = booking.getVehicle();
+            ParkingLot parkingLot = booking.getParkingSlot().getParkingLot();
+            Optional<VehicleLog> logOptional = vehicleLogRepository.findTopByVehicleAndExitTimeIsNotNullOrderByEntryTimeDesc(vehicle);
+            if (!logOptional.isPresent() || !logOptional.get().getParkingLot().getId().equals(parkingLot.getId())) {
                 response.put("status", "error");
-                response.put("message", "No exit logged for this vehicle");
+                response.put("message", "No exit logged for this vehicle in this parking lot");
                 return response;
             }
 
+            VehicleLog log = logOptional.get();
             response.put("status", "success");
             response.put("exitTime", log.getExitTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
             return response;
@@ -263,28 +262,6 @@ public class VehicleLogController {
             response.put("status", "error");
             response.put("message", "Failed to retrieve exit time: " + e.getMessage());
             return response;
-        }
-    }
-
-
-    public static class LogStatus {
-        private boolean hasEntry;
-        private boolean hasExit;
-
-        public boolean isHasEntry() {
-            return hasEntry;
-        }
-
-        public void setHasEntry(boolean hasEntry) {
-            this.hasEntry = hasEntry;
-        }
-
-        public boolean isHasExit() {
-            return hasExit;
-        }
-
-        public void setHasExit(boolean hasExit) {
-            this.hasExit = hasExit;
         }
     }
 }

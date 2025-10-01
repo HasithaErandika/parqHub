@@ -45,7 +45,7 @@ public class PaymentController {
     private final ParkingLotRepository parkingLotRepository;
     private final ParkingSlotRepository parkingSlotRepository;
     private final JavaMailSender mailSender;
-    
+
     @Value("${spring.mail.from:parqhub.system@gmail.com}")
     private String fromEmail;
 
@@ -90,14 +90,15 @@ public class PaymentController {
                 return "user/payment-gateway";
             }
 
-            Optional<VehicleLog> vehicleLogOpt = vehicleLogRepository.findByVehicleIdAndExitTimeIsNotNull(booking.getVehicle().getId());
-            if (!vehicleLogOpt.isPresent()) {
-                model.addAttribute("error", "Vehicle has not exited yet");
+            // Find the most recent completed VehicleLog for this vehicle and parking lot
+            Optional<VehicleLog> vehicleLogOpt = vehicleLogRepository.findTopByVehicleAndExitTimeIsNotNullOrderByEntryTimeDesc(booking.getVehicle());
+            if (!vehicleLogOpt.isPresent() || !vehicleLogOpt.get().getParkingLot().getId().equals(booking.getParkingSlot().getParkingLot().getId())) {
+                model.addAttribute("error", "Vehicle has not exited yet or no valid log found for this parking lot");
                 return "user/payment-gateway";
             }
 
             VehicleLog vehicleLog = vehicleLogOpt.get();
-            
+
             Optional<ParkingLot> parkingLotOpt = parkingLotRepository.findById(booking.getParkingSlot().getParkingLot().getId());
             if (!parkingLotOpt.isPresent()) {
                 model.addAttribute("error", "Parking lot not found");
@@ -108,12 +109,12 @@ public class PaymentController {
 
             long hours = ChronoUnit.HOURS.between(vehicleLog.getEntryTime(), vehicleLog.getExitTime());
             long minutes = ChronoUnit.MINUTES.between(vehicleLog.getEntryTime(), vehicleLog.getExitTime()) % 60;
-            
+
             // More accurate calculation: if there are any minutes beyond the hour, charge for the next hour
             if (minutes > 0) {
                 hours += 1;
             }
-            
+
             // Minimum 1 hour charge
             if (hours == 0) hours = 1;
             BigDecimal hoursBigDecimal = new BigDecimal(hours);
@@ -128,7 +129,7 @@ public class PaymentController {
             return "user/payment-gateway";
         } catch (Exception e) {
             model.addAttribute("error", "Failed to load payment page: " + e.getMessage());
-            return "user/payment-gateway"; // Changed from "error" to "user/payment-gateway"
+            return "user/payment-gateway";
         }
     }
 
@@ -166,14 +167,15 @@ public class PaymentController {
                 return "user/payment-gateway";
             }
 
-            Optional<VehicleLog> vehicleLogOpt = vehicleLogRepository.findByVehicleIdAndExitTimeIsNotNull(booking.getVehicle().getId());
-            if (!vehicleLogOpt.isPresent()) {
-                model.addAttribute("error", "Vehicle has not exited yet");
+            // Find the most recent completed VehicleLog for this vehicle and parking lot
+            Optional<VehicleLog> vehicleLogOpt = vehicleLogRepository.findTopByVehicleAndExitTimeIsNotNullOrderByEntryTimeDesc(booking.getVehicle());
+            if (!vehicleLogOpt.isPresent() || !vehicleLogOpt.get().getParkingLot().getId().equals(booking.getParkingSlot().getParkingLot().getId())) {
+                model.addAttribute("error", "Vehicle has not exited yet or no valid log found for this parking lot");
                 return "user/payment-gateway";
             }
 
             VehicleLog vehicleLog = vehicleLogOpt.get();
-            
+
             Optional<ParkingLot> parkingLotOpt = parkingLotRepository.findById(booking.getParkingSlot().getParkingLot().getId());
             if (!parkingLotOpt.isPresent()) {
                 model.addAttribute("error", "Parking lot not found");
@@ -184,12 +186,12 @@ public class PaymentController {
 
             long hours = ChronoUnit.HOURS.between(vehicleLog.getEntryTime(), vehicleLog.getExitTime());
             long minutes = ChronoUnit.MINUTES.between(vehicleLog.getEntryTime(), vehicleLog.getExitTime()) % 60;
-            
+
             // More accurate calculation: if there are any minutes beyond the hour, charge for the next hour
             if (minutes > 0) {
                 hours += 1;
             }
-            
+
             // Minimum 1 hour charge
             if (hours == 0) hours = 1;
             BigDecimal hoursBigDecimal = new BigDecimal(hours);
@@ -229,7 +231,7 @@ public class PaymentController {
 
         } catch (Exception e) {
             model.addAttribute("error", "Failed to process payment: " + e.getMessage());
-            return "user/payment-gateway"; // Changed from "error" to "user/payment-gateway"
+            return "user/payment-gateway";
         }
     }
 
@@ -259,7 +261,7 @@ public class PaymentController {
             return "user/payments";
         } catch (Exception e) {
             model.addAttribute("error", "Failed to load payment history: " + e.getMessage());
-            return "error"; // This is correct as it should go to the error page for payment history
+            return "error";
         }
     }
 
@@ -291,12 +293,12 @@ public class PaymentController {
             receipt.append("Date: ").append(payment.getTimestamp().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))).append("\n");
             receipt.append("Customer: ").append(user.getName()).append("\n");
             receipt.append("Email: ").append(user.getEmail()).append("\n\n");
-            
+
             receipt.append("VEHICLE INFORMATION\n");
             receipt.append("-------------------\n");
             receipt.append("Vehicle: ").append(booking.getVehicle().getBrand()).append(" ").append(booking.getVehicle().getModel()).append("\n");
             receipt.append("License: ").append(booking.getVehicle().getVehicleNo()).append("\n\n");
-            
+
             receipt.append("PARKING DETAILS\n");
             receipt.append("---------------\n");
             if (booking.getParkingSlot() != null) {
@@ -309,13 +311,13 @@ public class PaymentController {
                 receipt.append("Duration: ").append(booking.getFormattedDuration()).append("\n");
             }
             receipt.append("\n");
-            
+
             receipt.append("PAYMENT INFORMATION\n");
             receipt.append("-------------------\n");
             receipt.append("Amount: LKR ").append(payment.getAmount()).append("\n");
             receipt.append("Method: ").append(payment.getMethod()).append("\n");
             receipt.append("Status: ").append(payment.getStatus()).append("\n\n");
-            
+
             receipt.append("Thank you for using ParQHub!\n");
             receipt.append("Generated on: ").append(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
 
@@ -333,81 +335,75 @@ public class PaymentController {
         }
     }
 
-    /**
-     * Send payment confirmation email to the user
-     */
-    private void sendPaymentConfirmationEmail(User user, Booking booking, Payment payment, 
+    private void sendPaymentConfirmationEmail(User user, Booking booking, Payment payment,
                                               VehicleLog vehicleLog, ParkingLot parkingLot, long hours) {
         try {
             if (mailSender == null) {
                 System.out.println("Mail sender not configured. Skipping email notification.");
                 return;
             }
-            
-            // Validate user email
+
             if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
                 System.err.println("User email is empty for user: " + user.getName());
                 return;
             }
-            
+
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo(user.getEmail().trim()); // Ensure no whitespace
+            message.setTo(user.getEmail().trim());
             message.setSubject("ParQHub - Payment Confirmation Receipt #PQH-" + payment.getId());
-            
+
             StringBuilder emailBody = new StringBuilder();
             emailBody.append("Dear ").append(user.getName()).append(",\n\n");
             emailBody.append("Thank you for using ParQHub! Your payment has been successfully processed.\n\n");
-            
+
             emailBody.append("PAYMENT CONFIRMATION\n");
             emailBody.append("=====================\n\n");
-            
+
             emailBody.append("Receipt Number: PQH-").append(payment.getId()).append("\n");
             emailBody.append("Payment Date: ").append(payment.getTimestamp().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))).append("\n");
             emailBody.append("Payment Status: ").append(payment.getStatus()).append("\n\n");
-            
+
             emailBody.append("BOOKING DETAILS\n");
             emailBody.append("===============\n\n");
             emailBody.append("Booking ID: ").append(booking.getId()).append("\n");
             emailBody.append("Vehicle: ").append(booking.getVehicle().getBrand()).append(" ").append(booking.getVehicle().getModel()).append("\n");
             emailBody.append("License Plate: ").append(booking.getVehicle().getVehicleNo()).append("\n");
-            
+
             if (booking.getParkingSlot() != null && booking.getParkingSlot().getParkingLot() != null) {
                 emailBody.append("Location: ").append(booking.getParkingSlot().getParkingLot().getLocation()).append(", ").append(booking.getParkingSlot().getParkingLot().getCity()).append("\n");
                 emailBody.append("Parking Slot: ").append(booking.getParkingSlot().getId()).append("\n");
             }
-            
+
             emailBody.append("\nPARKING DURATION\n");
             emailBody.append("================\n\n");
             emailBody.append("Entry Time: ").append(vehicleLog.getEntryTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))).append("\n");
             emailBody.append("Exit Time: ").append(vehicleLog.getExitTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))).append("\n");
             emailBody.append("Total Duration: ").append(hours).append(" hour(s)\n");
-            
+
             emailBody.append("\nPAYMENT BREAKDOWN\n");
             emailBody.append("=================\n\n");
             emailBody.append("Hourly Rate: LKR ").append(parkingLot.getPriceHr()).append("\n");
             emailBody.append("Duration: ").append(hours).append(" hour(s)\n");
             emailBody.append("Total Amount: LKR ").append(payment.getAmount()).append("\n");
             emailBody.append("Payment Method: ").append(payment.getMethod()).append("\n\n");
-            
+
             emailBody.append("Thank you for choosing ParQHub for your parking needs!\n\n");
             emailBody.append("For any queries, please contact our support team.\n\n");
             emailBody.append("Best regards,\n");
             emailBody.append("ParQHub Team\n");
             emailBody.append("\n---\n");
             emailBody.append("This is an automated message. Please do not reply to this email.");
-            
+
             message.setText(emailBody.toString());
             message.setFrom(fromEmail);
-            
-            // Send email
+
             mailSender.send(message);
             System.out.println("✓ Payment confirmation email sent successfully to: " + user.getEmail());
             System.out.println("✓ Email content preview: Receipt #PQH-" + payment.getId() + " for LKR " + payment.getAmount());
-            
+
         } catch (Exception e) {
             System.err.println("✗ Error sending email to " + user.getEmail() + ": " + e.getMessage());
-            e.printStackTrace(); // Print full stack trace for debugging
-            // Don't throw exception - email failure shouldn't block payment
+            e.printStackTrace();
         }
     }
 }

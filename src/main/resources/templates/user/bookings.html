@@ -13,30 +13,30 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        body { 
-            font-family: 'Poppins', sans-serif; 
+        body {
+            font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #0a0f1c 0%, #1a1f35 50%, #0a0f1c 100%);
             min-height: 100vh;
         }
-        
+
         .glass {
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.15);
         }
-        
+
         .glass-strong {
             background: rgba(255, 255, 255, 0.12);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
+
         .active {
             background: linear-gradient(90deg, #3b82f6, #1d4ed8);
             color: #ffffff !important;
             font-weight: bold;
         }
-        
+
         .booking-card {
             background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
             border: 1px solid rgba(148, 163, 184, 0.2);
@@ -45,7 +45,7 @@
             position: relative;
             overflow: hidden;
         }
-        
+
         .booking-card::before {
             content: '';
             position: absolute;
@@ -57,32 +57,32 @@
             transform: scaleX(0);
             transition: transform 0.3s ease;
         }
-        
+
         .booking-card:hover::before {
             transform: scaleX(1);
         }
-        
+
         .booking-card:hover {
             transform: translateY(-8px);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
-        
-        .status-pending { 
-            background: rgba(245, 158, 11, 0.1); 
-            border-color: #f59e0b; 
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: #f59e0b;
             color: #f59e0b;
         }
-        .status-completed { 
-            background: rgba(34, 197, 94, 0.1); 
-            border-color: #22c55e; 
+        .status-completed {
+            background: rgba(34, 197, 94, 0.1);
+            border-color: #22c55e;
             color: #22c55e;
         }
-        .status-failed { 
-            background: rgba(239, 68, 68, 0.1); 
-            border-color: #ef4444; 
+        .status-failed {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: #ef4444;
             color: #ef4444;
         }
-        
+
         .neon-btn {
             background: linear-gradient(90deg, #3b82f6, #1d4ed8);
             color: #ffffff;
@@ -92,12 +92,12 @@
             position: relative;
             overflow: hidden;
         }
-        
+
         .neon-btn:hover {
             box-shadow: 0 0 20px rgba(59, 130, 246, 0.6), 0 0 40px rgba(29, 78, 216, 0.4);
             transform: translateY(-2px);
         }
-        
+
         .btn-orange {
             background: linear-gradient(90deg, #f97316, #ea580c);
             color: #ffffff;
@@ -105,12 +105,12 @@
             border-radius: 12px;
             transition: all 0.3s ease-in-out;
         }
-        
+
         .btn-orange:hover {
             box-shadow: 0 0 15px #f97316, 0 0 30px #ea580c;
             transform: translateY(-2px);
         }
-        
+
         .btn-green {
             background: linear-gradient(90deg, #22c55e, #16a34a);
             color: #ffffff;
@@ -118,12 +118,12 @@
             border-radius: 12px;
             transition: all 0.3s ease-in-out;
         }
-        
+
         .btn-green:hover {
             box-shadow: 0 0 15px #22c55e, 0 0 30px #16a34a;
             transform: translateY(-2px);
         }
-        
+
         .btn-gray {
             background: linear-gradient(90deg, #6b7280, #4b5563);
             color: #ffffff;
@@ -131,12 +131,12 @@
             border-radius: 12px;
             transition: all 0.3s ease-in-out;
         }
-        
+
         .btn-gray:hover {
             box-shadow: 0 0 15px #6b7280, 0 0 30px #4b5563;
             transform: translateY(-2px);
         }
-        
+
         .stats-card {
             background: linear-gradient(135deg, #1e293b, #334155);
             border-radius: 16px;
@@ -145,17 +145,17 @@
             transition: all 0.3s ease;
             border: 1px solid rgba(59, 130, 246, 0.2);
         }
-        
+
         .stats-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
             border-color: #3b82f6;
         }
-        
+
         .floating-animation {
             animation: float 3s ease-in-out infinite;
         }
-        
+
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-10px); }
@@ -211,12 +211,12 @@
     </style>
 </head>
 <body class="text-white flex">
-    <!-- Background Animation -->
-    <div class="fixed inset-0 z-0">
-        <div class="absolute top-20 left-20 w-32 h-32 bg-blue-500/10 rounded-full blur-xl floating-animation"></div>
-        <div class="absolute bottom-20 right-20 w-40 h-40 bg-purple-500/10 rounded-full blur-xl floating-animation" style="animation-delay: 1s;"></div>
-        <div class="absolute top-1/2 left-1/4 w-24 h-24 bg-green-500/10 rounded-full blur-xl floating-animation" style="animation-delay: 2s;"></div>
-    </div>
+<!-- Background Animation -->
+<div class="fixed inset-0 z-0">
+    <div class="absolute top-20 left-20 w-32 h-32 bg-blue-500/10 rounded-full blur-xl floating-animation"></div>
+    <div class="absolute bottom-20 right-20 w-40 h-40 bg-purple-500/10 rounded-full blur-xl floating-animation" style="animation-delay: 1s;"></div>
+    <div class="absolute top-1/2 left-1/4 w-24 h-24 bg-green-500/10 rounded-full blur-xl floating-animation" style="animation-delay: 2s;"></div>
+</div>
 
 <!-- Sidebar -->
 <aside class="w-72 h-screen glass flex flex-col fixed z-10">
@@ -367,21 +367,16 @@
                                 <span class="text-gray-400">Booking ID:</span>
                                 <span th:text="${booking.id}">ID</span>
                             </div>
-
-                            <!-- Location -->
                             <div>
                                 <span class="text-gray-400">Location:</span>
                                 <span th:text="${#strings.abbreviate(booking.parkingSlot.parkingLot.location + ', ' + booking.parkingSlot.parkingLot.city, 30)}">
-                                    Location
-                                </span>
+                                        Location
+                                    </span>
                             </div>
-
-                            <!-- Slot ID -->
                             <div>
                                 <span class="text-gray-400">Slot ID:</span>
                                 <span th:text="${booking.parkingSlot.id}">Slot</span>
                             </div>
-
                             <div>
                                 <span class="text-gray-400">Start Time:</span>
                                 <span th:text="${#temporals.format(booking.startTime, 'dd/MM/yyyy HH:mm')}">Start</span>
@@ -389,16 +384,16 @@
                             <div>
                                 <span class="text-gray-400">In Time:</span>
                                 <span class="entry-time text-yellow-400" th:data-booking-id="${booking.id}">
-                                    <span th:if="${booking.paymentStatus.name() == 'Completed'}">Completed Session</span>
-                                    <span th:unless="${booking.paymentStatus.name() == 'Completed'}">Not Entered</span>
-                                </span>
+                                        <span th:if="${booking.paymentStatus.name() == 'Completed'}">Completed Session</span>
+                                        <span th:unless="${booking.paymentStatus.name() == 'Completed'}">Not Entered</span>
+                                    </span>
                             </div>
                             <div>
                                 <span class="text-gray-400">End Time:</span>
                                 <span class="exit-time text-yellow-400" th:data-booking-id="${booking.id}">
-                                    <span th:if="${booking.paymentStatus.name() == 'Completed'}">Completed Session</span>
-                                    <span th:unless="${booking.paymentStatus.name() == 'Completed'}">Pending</span>
-                                </span>
+                                        <span th:if="${booking.paymentStatus.name() == 'Completed'}">Completed Session</span>
+                                        <span th:unless="${booking.paymentStatus.name() == 'Completed'}">Pending</span>
+                                    </span>
                             </div>
                             <div>
                                 <span class="text-gray-400">Duration:</span>
@@ -410,7 +405,6 @@
                     </div>
 
                     <div class="flex flex-wrap gap-2 button-group">
-                        <!-- Entry/Exit Logging Buttons - Only for Pending bookings -->
                         <button th:if="${booking.paymentStatus.name() == 'Pending'}"
                                 class="px-4 py-2 neon-btn log-in-btn"
                                 th:data-booking-id="${booking.id}"
@@ -423,22 +417,16 @@
                                 th:data-vehicle-id="${booking.vehicle.id}">
                             <i class="fas fa-sign-out-alt mr-1"></i> Out
                         </button>
-
-                        <!-- Payment Button - Only for Pending bookings -->
                         <button th:if="${booking.paymentStatus.name() == 'Pending'}"
                                 class="px-4 py-2 btn-green pay-now-btn"
                                 th:data-booking-id="${booking.id}">
                             <i class="fas fa-credit-card mr-1"></i> Pay Now
                         </button>
-
-                        <!-- Completed Booking Actions -->
                         <button th:if="${booking.paymentStatus.name() == 'Completed'}"
                                 class="px-4 py-2 neon-btn view-receipt-btn"
                                 th:data-booking-id="${booking.id}">
                             <i class="fas fa-receipt mr-1"></i> View Receipt
                         </button>
-
-                        <!-- Details Button -->
                         <button class="px-4 py-2 btn-gray view-details-btn"
                                 th:data-booking-id="${booking.id}">
                             <i class="fas fa-info-circle mr-1"></i> Details
@@ -469,22 +457,20 @@
         if (type === 'warning') bgColor = 'bg-yellow-500';
 
         modalContent.innerHTML = `
-            <div class="${bgColor} text-white p-4 rounded-t-lg">
-                <h3 class="text-lg font-semibold">${type.charAt(0).toUpperCase() + type.slice(1)}</h3>
-            </div>
-            <div class="p-4">${content}</div>
-            <div class="p-4 border-t border-gray-700 flex justify-end">
-                <button class="py-2 px-4 bg-gray-600 rounded-lg text-white hover:bg-gray-700" onclick="closeModal()">Close</button>
-            </div>
-        `;
+                <div class="${bgColor} text-white p-4 rounded-t-lg">
+                    <h3 class="text-lg font-semibold">${type.charAt(0).toUpperCase() + type.slice(1)}</h3>
+                </div>
+                <div class="p-4">${content}</div>
+                <div class="p-4 border-t border-gray-700 flex justify-end">
+                    <button class="py-2 px-4 bg-gray-600 rounded-lg text-white hover:bg-gray-700" onclick="closeModal()">Close</button>
+                </div>
+            `;
         modal.style.display = 'flex';
 
-        // Close modal on click outside
         modal.addEventListener('click', (e) => {
             if (e.target === modal) closeModal();
         });
 
-        // Close modal on ESC key
         document.addEventListener('keydown', function closeOnEsc(e) {
             if (e.key === 'Escape') {
                 closeModal();
@@ -545,7 +531,6 @@
             const startTime = card.dataset.startTime || 'N/A';
             const duration = card.dataset.duration || 'Completed';
 
-            // Get entry/exit times from displayed elements
             const entryTimeElement = card.querySelector('.entry-time');
             const inTime = entryTimeElement ? entryTimeElement.textContent.trim() : 'Completed Session';
 
@@ -553,88 +538,87 @@
             const endTime = exitTimeElement ? exitTimeElement.textContent.trim() : 'Completed Session';
 
             showModal(`
-                <div class="text-center mb-6">
-                    <i class="fas fa-receipt text-green-400 text-4xl mb-3"></i>
-                    <h3 class="text-2xl font-bold text-green-400">Payment Receipt</h3>
-                    <p class="text-gray-400">Booking #${bookingId}</p>
-                </div>
-                <div class="bg-white text-black p-6 rounded-lg mx-4">
-                    <div class="text-center border-b pb-4 mb-4">
-                        <h2 class="text-xl font-bold text-blue-600">ParQHub</h2>
-                        <p class="text-sm text-gray-600">Parking Receipt</p>
+                    <div class="text-center mb-6">
+                        <i class="fas fa-receipt text-green-400 text-4xl mb-3"></i>
+                        <h3 class="text-2xl font-bold text-green-400">Payment Receipt</h3>
+                        <p class="text-gray-400">Booking #${bookingId}</p>
                     </div>
-                    <div class="space-y-2 text-sm">
-                        <div class="flex justify-between">
-                            <span class="font-medium">Receipt #:</span>
-                            <span>PQH-${bookingId}</span>
+                    <div class="bg-white text-black p-6 rounded-lg mx-4">
+                        <div class="text-center border-b pb-4 mb-4">
+                            <h2 class="text-xl font-bold text-blue-600">ParQHub</h2>
+                            <p class="text-sm text-gray-600">Parking Receipt</p>
                         </div>
-                        <div class="flex justify-between">
-                            <span class="font-medium">Customer:</span>
-                            <span>${userName}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="font-medium">Vehicle:</span>
-                            <span>${vehicle}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="font-medium">Location:</span>
-                            <span>${location}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="font-medium">Slot:</span>
-                            <span>${slotId}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="font-medium">Start Time:</span>
-                            <span>${startTime}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="font-medium">Entry Time:</span>
-                            <span>${inTime}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="font-medium">Exit Time:</span>
-                            <span>${endTime}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="font-medium">Duration:</span>
-                            <span>${duration}</span>
-                        </div>
-                        <div class="border-t pt-2 mt-4">
-                            <div class="flex justify-between font-bold text-lg">
-                                <span>Total Paid:</span>
-                                <span class="text-green-600">Payment Completed</span>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="font-medium">Receipt #:</span>
+                                <span>PQH-${bookingId}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="font-medium">Customer:</span>
+                                <span>${userName}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="font-medium">Vehicle:</span>
+                                <span>${vehicle}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="font-medium">Location:</span>
+                                <span>${location}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="font-medium">Slot:</span>
+                                <span>${slotId}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="font-medium">Start Time:</span>
+                                <span>${startTime}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="font-medium">Entry Time:</span>
+                                <span>${inTime}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="font-medium">Exit Time:</span>
+                                <span>${endTime}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="font-medium">Duration:</span>
+                                <span>${duration}</span>
+                            </div>
+                            <div class="border-t pt-2 mt-4">
+                                <div class="flex justify-between font-bold text-lg">
+                                    <span>Total Paid:</span>
+                                    <span class="text-green-600">Payment Completed</span>
+                                </div>
+                            </div>
+                            <div class="text-center mt-4 text-xs text-gray-500">
+                                <p>Thank you for using ParQHub!</p>
+                                <p>Generated on ${new Date().toLocaleString()}</p>
                             </div>
                         </div>
-                        <div class="text-center mt-4 text-xs text-gray-500">
-                            <p>Thank you for using ParQHub!</p>
-                            <p>Generated on ${new Date().toLocaleString()}</p>
-                        </div>
                     </div>
-                </div>
-                <div class="flex justify-center gap-4 mt-6">
-                    <button onclick="downloadReceipt('${bookingId}')" class="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
-                        <i class="fas fa-download mr-2"></i>Download PDF
-                    </button>
-                    <button onclick="closeModal()" class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
-                        Close
-                    </button>
-                </div>
-            `, 'success');
+                    <div class="flex justify-center gap-4 mt-6">
+                        <button onclick="downloadReceipt('${bookingId}')" class="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+                            <i class="fas fa-download mr-2"></i>Download PDF
+                        </button>
+                        <button onclick="closeModal()" class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
+                            Close
+                        </button>
+                    </div>
+                `, 'success');
         }
     });
 
     // Download Receipt Function
     function downloadReceipt(bookingId) {
         console.log(`Downloading receipt for booking ${bookingId}`);
-        // Create a download link
         const link = document.createElement('a');
         link.href = `/user/receipt/download/${bookingId}`;
         link.download = `parqhub-receipt-${bookingId}.pdf`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
+
         showModal('Receipt download started successfully!', 'success');
         setTimeout(closeModal, 2000);
     }
@@ -646,7 +630,6 @@
             const btn = e.target.closest('.view-details-btn');
             const card = btn.closest('.booking-card');
 
-            // Extract all data from data attributes
             const bookingId = card.dataset.bookingId;
             const userName = document.getElementById('user-name').textContent;
             const vehicle = card.dataset.vehicle;
@@ -656,66 +639,64 @@
             const startTime = card.dataset.startTime || 'N/A';
             const duration = card.dataset.duration || 'Ongoing';
 
-            // Get current entry/exit times from elements
             const entryTimeElement = card.querySelector('.entry-time');
             const inTime = entryTimeElement ? entryTimeElement.textContent.trim() : 'Not Entered';
 
             const exitTimeElement = card.querySelector('.exit-time');
             const endTime = exitTimeElement ? exitTimeElement.textContent.trim() : 'Pending';
 
-            // Status styling
             const statusBgClass = status === 'Pending' ? 'bg-yellow-500 text-yellow-900' :
                 status === 'Completed' ? 'bg-green-500 text-green-900' :
                     'bg-red-500 text-red-900';
 
             showModal(`
-                <div class="text-center mb-4">
-                    <i class="fas fa-info-circle text-blue-400 text-3xl"></i>
-                    <h4 class="text-xl font-bold text-blue-400 mt-2">Booking Details</h4>
-                </div>
-                <div class="space-y-3">
-                    <div class="flex justify-between p-3 bg-gray-800/50 rounded-lg">
-                        <span class="text-gray-400">Booking ID:</span>
-                        <span class="font-semibold text-white">${bookingId}</span>
+                    <div class="text-center mb-4">
+                        <i class="fas fa-info-circle text-blue-400 text-3xl"></i>
+                        <h4 class="text-xl font-bold text-blue-400 mt-2">Booking Details</h4>
                     </div>
-                    <div class="flex justify-between p-3 bg-gray-800/50 rounded-lg">
-                        <span class="text-gray-400">Customer Name:</span>
-                        <span class="font-semibold text-white">${userName}</span>
+                    <div class="space-y-3">
+                        <div class="flex justify-between p-3 bg-gray-800/50 rounded-lg">
+                            <span class="text-gray-400">Booking ID:</span>
+                            <span class="font-semibold text-white">${bookingId}</span>
+                        </div>
+                        <div class="flex justify-between p-3 bg-gray-800/50 rounded-lg">
+                            <span class="text-gray-400">Customer Name:</span>
+                            <span class="font-semibold text-white">${userName}</span>
+                        </div>
+                        <div class="flex justify-between p-3 bg-gray-800/50 rounded-lg">
+                            <span class="text-gray-400">Vehicle:</span>
+                            <span class="font-semibold text-white">${vehicle}</span>
+                        </div>
+                        <div class="flex justify-between p-3 bg-gray-800/50 rounded-lg">
+                            <span class="text-gray-400">Location:</span>
+                            <span class="font-semibold text-white">${location}</span>
+                        </div>
+                        <div class="flex justify-between p-3 bg-gray-800/50 rounded-lg">
+                            <span class="text-gray-400">Slot ID:</span>
+                            <span class="font-semibold text-white">${slotId}</span>
+                        </div>
+                        <div class="flex justify-between p-3 bg-gray-800/50 rounded-lg">
+                            <span class="text-gray-400">Start Time:</span>
+                            <span class="font-semibold text-white">${startTime}</span>
+                        </div>
+                        <div class="flex justify-between p-3 bg-gray-800/50 rounded-lg">
+                            <span class="text-gray-400">In Time:</span>
+                            <span class="font-semibold ${inTime === 'Not Entered' ? 'text-yellow-400' : 'text-green-400'}">${inTime}</span>
+                        </div>
+                        <div class="flex justify-between p-3 bg-gray-800/50 rounded-lg">
+                            <span class="text-gray-400">End Time:</span>
+                            <span class="font-semibold ${endTime === 'Pending' ? 'text-yellow-400' : 'text-green-400'}">${endTime}</span>
+                        </div>
+                        <div class="flex justify-between p-3 bg-gray-800/50 rounded-lg">
+                            <span class="text-gray-400">Duration:</span>
+                            <span class="font-semibold ${duration === 'Ongoing' ? 'text-yellow-400' : 'text-white'}">${duration}</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-gray-800/50 rounded-lg">
+                            <span class="text-gray-400">Payment Status:</span>
+                            <span class="px-3 py-1 rounded-full text-xs font-medium ${statusBgClass}">${status}</span>
+                        </div>
                     </div>
-                    <div class="flex justify-between p-3 bg-gray-800/50 rounded-lg">
-                        <span class="text-gray-400">Vehicle:</span>
-                        <span class="font-semibold text-white">${vehicle}</span>
-                    </div>
-                    <div class="flex justify-between p-3 bg-gray-800/50 rounded-lg">
-                        <span class="text-gray-400">Location:</span>
-                        <span class="font-semibold text-white">${location}</span>
-                    </div>
-                    <div class="flex justify-between p-3 bg-gray-800/50 rounded-lg">
-                        <span class="text-gray-400">Slot ID:</span>
-                        <span class="font-semibold text-white">${slotId}</span>
-                    </div>
-                    <div class="flex justify-between p-3 bg-gray-800/50 rounded-lg">
-                        <span class="text-gray-400">Start Time:</span>
-                        <span class="font-semibold text-white">${startTime}</span>
-                    </div>
-                    <div class="flex justify-between p-3 bg-gray-800/50 rounded-lg">
-                        <span class="text-gray-400">In Time:</span>
-                        <span class="font-semibold ${inTime === 'Not Entered' ? 'text-yellow-400' : 'text-green-400'}">${inTime}</span>
-                    </div>
-                    <div class="flex justify-between p-3 bg-gray-800/50 rounded-lg">
-                        <span class="text-gray-400">End Time:</span>
-                        <span class="font-semibold ${endTime === 'Pending' ? 'text-yellow-400' : 'text-green-400'}">${endTime}</span>
-                    </div>
-                    <div class="flex justify-between p-3 bg-gray-800/50 rounded-lg">
-                        <span class="text-gray-400">Duration:</span>
-                        <span class="font-semibold ${duration === 'Ongoing' ? 'text-yellow-400' : 'text-white'}">${duration}</span>
-                    </div>
-                    <div class="flex justify-between items-center p-3 bg-gray-800/50 rounded-lg">
-                        <span class="text-gray-400">Payment Status:</span>
-                        <span class="px-3 py-1 rounded-full text-xs font-medium ${statusBgClass}">${status}</span>
-                    </div>
-                </div>
-            `, 'info');
+                `, 'info');
         }
     });
 
@@ -734,8 +715,7 @@
             if (result.status === 'success') {
                 entryTimeElement.innerHTML = result.entryTime;
                 entryTimeElement.className = 'entry-time text-green-400';
-                
-                // Update the parking slot status display in the UI
+
                 const card = entryTimeElement.closest('.booking-card');
                 const statusElement = card.querySelector('.status-pending');
                 if (statusElement) {
@@ -743,7 +723,6 @@
                     statusElement.className = 'status-completed px-3 py-1 rounded-full text-xs font-medium';
                 }
             } else {
-                // Check if this is a completed booking
                 const card = entryTimeElement.closest('.booking-card');
                 const status = card.dataset.status;
                 if (status === 'Completed') {
@@ -784,7 +763,6 @@
                 exitTimeElement.innerHTML = result.exitTime;
                 exitTimeElement.className = 'exit-time text-green-400';
             } else {
-                // Check if this is a completed booking
                 const card = exitTimeElement.closest('.booking-card');
                 const status = card.dataset.status;
                 if (status === 'Completed') {
@@ -827,40 +805,34 @@
                 showModal(`${action.charAt(0).toUpperCase() + action.slice(1)} logged successfully!`, 'success');
 
                 if (action === 'entry') {
-                    // Fetch entry time to update UI
                     const card = document.querySelector(`[data-booking-id="${bookingId}"]`);
                     const entryTimeElement = card.querySelector('.entry-time');
-                    fetchEntryTime(bookingId, entryTimeElement);
-                    
-                    // Update the parking slot status display in the UI
+                    await fetchEntryTime(bookingId, entryTimeElement);
+
                     const statusElement = card.querySelector('.status-pending');
                     if (statusElement) {
                         statusElement.textContent = 'Vehicle Entered';
                         statusElement.className = 'status-completed px-3 py-1 rounded-full text-xs font-medium';
                     }
                 } else if (action === 'exit') {
-                    // Fetch exit time to update UI
                     const card = document.querySelector(`[data-booking-id="${bookingId}"]`);
                     const exitTimeElement = card.querySelector('.exit-time');
-                    fetchExitTime(bookingId, exitTimeElement);
+                    await fetchExitTime(bookingId, exitTimeElement);
 
-                    // Also update entry time for completed logs - use the previous entry time
                     const entryTimeElement = card.querySelector('.entry-time');
-                    // Keep the entry time that was already displayed, don't refetch it
                     if (entryTimeElement.innerHTML === 'Not Entered' || entryTimeElement.innerHTML === 'Completed Session') {
-                        fetchEntryTime(bookingId, entryTimeElement);
+                        await fetchEntryTime(bookingId, entryTimeElement);
                     }
-                    
-                    // Show redirect to payment message
+
                     setTimeout(() => {
                         showModal(
                             `Vehicle exit logged successfully!<br><br>
-                            <div class="text-center mt-4">
-                                <button onclick="window.location.href='/user/payment-gateway?bookingId=${bookingId}'" 
-                                        class="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">
-                                    <i class="fas fa-credit-card mr-2"></i>Proceed to Payment
-                                </button>
-                            </div>`, 
+                                <div class="text-center mt-4">
+                                    <button onclick="window.location.href='/user/payment-gateway?bookingId=${bookingId}'"
+                                            class="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">
+                                        <i class="fas fa-credit-card mr-2"></i>Proceed to Payment
+                                    </button>
+                                </div>`,
                             'success'
                         );
                     }, 1500);
@@ -878,40 +850,38 @@
     function showConfirmationModal(title, message, onConfirm, onCancel = null) {
         const modal = document.getElementById('modal');
         const modalContent = document.getElementById('modal-content-inner');
-        
+
         modalContent.innerHTML = `
-            <div class="bg-blue-500 text-white p-4 rounded-t-lg">
-                <h3 class="text-lg font-semibold flex items-center">
-                    <i class="fas fa-question-circle mr-2"></i>${title}
-                </h3>
-            </div>
-            <div class="p-6">
-                <p class="text-gray-300 mb-6">${message}</p>
-                <div class="flex justify-end gap-4">
-                    <button id="modal-cancel" class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition">
-                        <i class="fas fa-times mr-2"></i>Cancel
-                    </button>
-                    <button id="modal-confirm" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
-                        <i class="fas fa-check mr-2"></i>Confirm
-                    </button>
+                <div class="bg-blue-500 text-white p-4 rounded-t-lg">
+                    <h3 class="text-lg font-semibold flex items-center">
+                        <i class="fas fa-question-circle mr-2"></i>${title}
+                    </h3>
                 </div>
-            </div>
-        `;
-        
+                <div class="p-6">
+                    <p class="text-gray-300 mb-6">${message}</p>
+                    <div class="flex justify-end gap-4">
+                        <button id="modal-cancel" class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition">
+                            <i class="fas fa-times mr-2"></i>Cancel
+                        </button>
+                        <button id="modal-confirm" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                            <i class="fas fa-check mr-2"></i>Confirm
+                        </button>
+                    </div>
+                </div>
+            `;
+
         modal.style.display = 'flex';
-        
-        // Add event listeners
+
         document.getElementById('modal-confirm').addEventListener('click', () => {
             closeModal();
             if (onConfirm) onConfirm();
         });
-        
+
         document.getElementById('modal-cancel').addEventListener('click', () => {
             closeModal();
             if (onCancel) onCancel();
         });
-        
-        // Close on escape key
+
         const escapeHandler = (e) => {
             if (e.key === 'Escape') {
                 closeModal();
@@ -920,8 +890,7 @@
             }
         };
         document.addEventListener('keydown', escapeHandler);
-        
-        // Close on click outside
+
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
                 closeModal();
@@ -938,9 +907,9 @@
             const bookingId = btn.dataset.bookingId;
             const card = btn.closest('.booking-card');
             const vehicle = card.dataset.vehicle;
-            
+
             console.log(`In button clicked for booking ${bookingId}`);
-            
+
             showConfirmationModal(
                 'Confirm Vehicle Entry',
                 `Are you sure you want to log entry for <strong>${vehicle}</strong>?<br><br>This will record the current time as your parking entry time.`,
@@ -960,9 +929,9 @@
             const bookingId = btn.dataset.bookingId;
             const card = btn.closest('.booking-card');
             const vehicle = card.dataset.vehicle;
-            
+
             console.log(`Out button clicked for booking ${bookingId}`);
-            
+
             showConfirmationModal(
                 'Confirm Vehicle Exit',
                 `Are you sure you want to log exit for <strong>${vehicle}</strong>?<br><br>This will record the current time as your parking exit time and prepare the booking for payment.`,
@@ -990,25 +959,21 @@
         console.log('Checking vehicle log status for all bookings');
         const bookingCards = document.querySelectorAll('.booking-card');
 
-        // Use Promise.all to handle all async operations
         const promises = Array.from(bookingCards).map(async (card) => {
             const bookingId = card.dataset.bookingId;
             const entryTimeElement = card.querySelector('.entry-time');
             const exitTimeElement = card.querySelector('.exit-time');
             const status = card.dataset.status;
 
-            // Only fetch entry and exit times for Pending bookings
             if (status === 'Pending') {
+                await fetchEntryTime(bookingId, entryTimeElement);
+                exitTimeElement.innerHTML = 'Pending';
+                exitTimeElement.className = 'exit-time text-yellow-400';
+            } else if (status === 'Completed') {
                 await Promise.all([
                     fetchEntryTime(bookingId, entryTimeElement),
                     fetchExitTime(bookingId, exitTimeElement)
                 ]);
-            } else if (status === 'Completed') {
-                // For completed bookings, show as completed session
-                entryTimeElement.innerHTML = 'Completed Session';
-                entryTimeElement.className = 'entry-time text-blue-400';
-                exitTimeElement.innerHTML = 'Completed Session';
-                exitTimeElement.className = 'exit-time text-blue-400';
             } else {
                 entryTimeElement.innerHTML = 'Not Entered';
                 entryTimeElement.className = 'entry-time text-yellow-400';
@@ -1026,7 +991,7 @@
         checkVehicleLogStatus();
     });
 
-    // Debug: Log all fetch requests to detect unintended calls
+    // Debug: Log all fetch requests
     const originalFetch = window.fetch;
     window.fetch = async function(...args) {
         console.log('Fetch called with:', args[0]);
