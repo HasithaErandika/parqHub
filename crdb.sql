@@ -1,8 +1,12 @@
 USE parqhub_db;
+
 SET FOREIGN_KEY_CHECKS = 0;
 
-DROP TABLE IF EXISTS parkinglot;
+-- Drop tables if they exist
+DROP TABLE IF EXISTS ParkingSlot;
+DROP TABLE IF EXISTS ParkingLot;
 
+-- Create ParkingLot table
 CREATE TABLE ParkingLot (
                             lot_id INT PRIMARY KEY AUTO_INCREMENT,
                             city VARCHAR(100) NOT NULL,
@@ -11,6 +15,13 @@ CREATE TABLE ParkingLot (
                             price_hr DECIMAL(10,2) NOT NULL DEFAULT 0.00
 );
 
+-- ParkingSlot Table
+CREATE TABLE ParkingSlot (
+                             slot_id INT PRIMARY KEY AUTO_INCREMENT,
+                             lot_id INT NOT NULL,
+                             status ENUM('Available', 'Booked', 'Occupied') DEFAULT 'Available',
+                             FOREIGN KEY (lot_id) REFERENCES ParkingLot(lot_id)
+);
 
 -- Adding Colombo parking lots
 INSERT INTO ParkingLot (city, location, total_slots, price_hr) VALUES
@@ -34,25 +45,24 @@ INSERT INTO ParkingLot (city, location, total_slots, price_hr) VALUES
                                                                    ('Kandy', 'Raja Veediya', 35, 200.00),
                                                                    ('Kandy', 'Old Royal Palace', 24, 140.00),
                                                                    ('Kandy', 'Lakeside', 30, 180.00);
+
 SET FOREIGN_KEY_CHECKS = 1;
 
-
-    USE parqhub_db;
 
 DELIMITER $$
 
 DROP PROCEDURE IF EXISTS populate_random_parking_slots$$
+
 CREATE PROCEDURE populate_random_parking_slots()
 BEGIN
     DECLARE done INT DEFAULT FALSE;
     DECLARE v_lot_id INT;
     DECLARE v_total_slots INT;
     DECLARE v_counter INT;
-    DECLARE v_rand INT;
-    DECLARE v_status ENUM('Available','Booked','Occupied');
 
     DECLARE lot_cursor CURSOR FOR
 SELECT lot_id, total_slots FROM ParkingLot;
+
 DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
 OPEN lot_cursor;
@@ -65,18 +75,8 @@ END IF;
 
         SET v_counter = 1;
         WHILE v_counter <= v_total_slots DO
-            -- Randomly assign status
-            SET v_rand = FLOOR(1 + (RAND() * 3)); -- 1,2,3
-            IF v_rand = 1 THEN
-                SET v_status = 'Available';
-            ELSEIF v_rand = 2 THEN
-                SET v_status = 'Booked';
-ELSE
-                SET v_status = 'Occupied';
-END IF;
-
-INSERT INTO ParkingSlot (lot_id, status) VALUES (v_lot_id, v_status);
-SET v_counter = v_counter + 1;
+            INSERT INTO ParkingSlot (lot_id, status) VALUES (v_lot_id, 'Available');
+            SET v_counter = v_counter + 1;
 END WHILE;
 END LOOP;
 
@@ -85,8 +85,12 @@ END$$
 
 DELIMITER ;
 
--- Execute the procedure to populate parking slots
+
+-- ✅ Now CALL the procedure to populate slots
 CALL populate_random_parking_slots();
 
--- Optional: drop the procedure after use
-DROP PROCEDURE populate_random_parking_slots;
+-- Optional: drop the procedure after use (use correct name!)
+DROP PROCEDURE IF EXISTS populate_random_parking_slots;
+
+-- View results
+SELECT * FROM ParkingSlot;
