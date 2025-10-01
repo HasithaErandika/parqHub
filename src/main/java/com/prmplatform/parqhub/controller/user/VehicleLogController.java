@@ -5,8 +5,10 @@ import com.prmplatform.parqhub.model.User;
 import com.prmplatform.parqhub.model.Vehicle;
 import com.prmplatform.parqhub.model.ParkingLot;
 import com.prmplatform.parqhub.model.VehicleLog;
+import com.prmplatform.parqhub.model.ParkingSlot;
 import com.prmplatform.parqhub.repository.BookingRepository;
 import com.prmplatform.parqhub.repository.VehicleLogRepository;
+import com.prmplatform.parqhub.repository.ParkingSlotRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -27,6 +29,9 @@ public class VehicleLogController {
 
     @Autowired
     private BookingRepository bookingRepository;
+
+    @Autowired
+    private ParkingSlotRepository parkingSlotRepository;
 
     @PostMapping("/log-entry")
     @ResponseBody
@@ -95,6 +100,11 @@ public class VehicleLogController {
                 response.put("message", "Vehicle already has an active log entry");
                 return response;
             }
+
+            // Update parking slot status to OCCUPIED
+            ParkingSlot parkingSlot = booking.getParkingSlot();
+            parkingSlot.setStatus(ParkingSlot.SlotStatus.OCCUPIED);
+            parkingSlotRepository.save(parkingSlot);
 
             // Create VehicleLog with proper entity relationships
             VehicleLog log = new VehicleLog();

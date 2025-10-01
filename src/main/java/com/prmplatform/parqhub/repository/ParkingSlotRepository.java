@@ -16,6 +16,9 @@ public interface ParkingSlotRepository extends JpaRepository<ParkingSlot, Long> 
     List<ParkingSlot> findByParkingLotIdAndStatus(Long lotId, SlotStatus status);
     long countByParkingLotIdAndStatus(Long lotId, SlotStatus status);
     long countByStatus(SlotStatus status);
+    
+    // Add this method to find parking slots with their associated parking lot
+    List<ParkingSlot> findByParkingLotIdOrderByStatusAsc(Long parkingLotId);
 
     @Query("SELECT p.parkingLot.city, COUNT(p) FROM ParkingSlot p WHERE p.status = :status GROUP BY p.parkingLot.city")
     List<Object[]> countByCityAndStatus(@org.springframework.data.repository.query.Param("status") SlotStatus status);

@@ -16,6 +16,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findByVehicleId(Long vehicleId);
     long countByPaymentStatus(Booking.PaymentStatus paymentStatus);
     
+    // Add this method to find bookings by parking slot ID
+    List<Booking> findByParkingSlotId(Long parkingSlotId);
+    
     @Query("SELECT b FROM Booking b " +
            "LEFT JOIN FETCH b.parkingSlot ps " +
            "LEFT JOIN FETCH ps.parkingLot pl " +

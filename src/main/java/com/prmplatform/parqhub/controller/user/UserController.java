@@ -18,6 +18,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -86,7 +87,7 @@ public class UserController {
         long activeBookings = userBookings.stream()
                 .filter(booking -> booking.getPaymentStatus() == Booking.PaymentStatus.Pending)
                 .count();
-        
+
         long completedBookings = userBookings.stream()
                 .filter(booking -> booking.getPaymentStatus() == Booking.PaymentStatus.Completed)
                 .count();
@@ -261,6 +262,33 @@ public class UserController {
         model.addAttribute("notifications", userNotifications);
 
         return "user/notifications";
+    }
+
+    @PostMapping("/notifications/delete")
+    @ResponseBody
+    public ResponseEntity<String> deleteNotification(@RequestParam Long notificationId, HttpSession session) {
+        User user = (User) session.getAttribute("loggedInUser");
+        if (user == null) {
+            return ResponseEntity.status(401).body("error:User not logged in");
+        }
+
+        try {
+            Optional<Notification> notificationOpt = notificationRepository.findById(notificationId);
+            if (!notificationOpt.isPresent()) {
+                return ResponseEntity.badRequest().body("error:Notification not found");
+            }
+
+            Notification notification = notificationOpt.get();
+            if (!notification.getUser().getId().equals(user.getId())) {
+                return ResponseEntity.status(403).body("error:Unauthorized to delete this notification");
+            }
+
+            notificationRepository.delete(notification);
+            return ResponseEntity.ok("success:Notification deleted successfully");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("error:Failed to delete notification: " + e.getMessage());
+        }
     }
 
     @GetMapping("/settings")
