@@ -248,9 +248,12 @@ public class UserController {
 
         try {
             List<Notification> userNotifications = notificationRepository.findByUserIdOrderByTimestampDesc(user.getId());
+            if (userNotifications == null) {
+                userNotifications = new ArrayList<>();
+            }
             model.addAttribute("userId", user.getId());
             model.addAttribute("userName", user.getName());
-            model.addAttribute("notifications", userNotifications != null ? userNotifications : new ArrayList<Notification>());
+            model.addAttribute("notifications", userNotifications);
         } catch (Exception e) {
             model.addAttribute("userId", user.getId());
             model.addAttribute("userName", user.getName());

@@ -221,7 +221,7 @@
         </div>
         <div class="stats-card">
             <i class="fas fa-envelope text-yellow-400 text-2xl mb-2"></i>
-            <h3 class="font-semibold text-gray-300">Recent</h3>
+            <h3 class="font-semibold text-gray-300">Recent (7 days)</h3>
             <p class="text-2xl font-bold text-yellow-400" th:text="${notifications != null ? #lists.size(notifications.?[timestamp != null and timestamp.isAfter(#temporals.createNow().minusDays(7))]) : 0}">0</p>
         </div>
         <div class="stats-card">
@@ -298,26 +298,29 @@
             <!-- Notification Card -->
             <div th:each="notification : ${notifications}"
                  th:data-notification-id="${notification.id}"
-                 th:data-type="${notification.type.name()}"
-                 th:data-date="${#temporals.format(notification.timestamp, 'yyyy-MM-dd')}"
+                 th:data-type="${notification.type != null ? notification.type.name() : 'NONE'}"
+                 th:data-date="${notification.timestamp != null ? #temporals.format(notification.timestamp, 'yyyy-MM-dd') : 'N/A'}"
                  class="notification-card p-6">
 
                 <div class="flex justify-between items-start gap-6">
                     <div class="flex-1">
                         <div class="flex items-center gap-4 mb-4">
                             <div class="p-3 rounded-xl"
-                                 th:classappend="${notification.type != null and notification.type.name() == 'FULL_SLOT'} ? 'bg-yellow-500/20' : 
-                                                ${notification.type != null and notification.type.name() == 'OVERSTAY'} ? 'bg-red-500/20' : 'bg-purple-500/20'">
+                                 th:classappend="${notification.type != null and (notification.type.name() == 'FULL_SLOT')} ? 'bg-yellow-500/20' : 
+                                                ${notification.type != null and (notification.type.name() == 'OVERSTAY')} ? 'bg-red-500/20' : 
+                                                ${notification.type != null and (notification.type.name() == 'SECURITY_INCIDENT')} ? 'bg-purple-500/20' : 'bg-blue-500/20'">
                                 <i th:if="${notification.type != null and notification.type.name() == 'FULL_SLOT'}"
                                    class="fas fa-parking type-full-slot text-2xl"></i>
                                 <i th:if="${notification.type != null and notification.type.name() == 'OVERSTAY'}"
                                    class="fas fa-clock type-overstay text-2xl"></i>
                                 <i th:if="${notification.type != null and notification.type.name() == 'SECURITY_INCIDENT'}"
                                    class="fas fa-shield-alt type-security text-2xl"></i>
+                                <i th:if="${notification.type == null or (notification.type.name() != 'FULL_SLOT' and notification.type.name() != 'OVERSTAY' and notification.type.name() != 'SECURITY_INCIDENT')}"
+                                   class="fas fa-bell text-blue-400 text-2xl"></i>
                             </div>
 
                             <div class="flex-1">
-                                <h3 class="font-bold text-xl text-white" th:text="${notification.type != null ? notification.type.name().replace('_', ' ') : 'Unknown'}">Type</h3>
+                                <h3 class="font-bold text-xl text-white" th:text="${notification.type != null ? notification.type.name().replace('_', ' ') : 'Notification'}">Type</h3>
                                 <p class="text-sm text-gray-400 flex items-center gap-2">
                                     <i class="fas fa-clock"></i>
                                     <span th:text="${notification.timestamp != null ? #temporals.format(notification.timestamp, 'dd MMM yyyy, HH:mm') : 'Unknown time'}">Timestamp</span>
@@ -333,21 +336,21 @@
                         </div>
 
                         <div class="mb-6">
-                            <p class="text-gray-300 text-lg leading-relaxed" th:text="${notification.description ?: 'No description available'}">Description</p>
+                            <p class="text-gray-300 text-lg leading-relaxed" th:text="${notification.description != null and !notification.description.empty ? notification.description : 'No description available'}">Description</p>
                         </div>
 
                         <div class="flex items-center gap-6 text-sm text-gray-400">
                             <span th:if="${notification.admin != null}" class="flex items-center gap-2">
                                 <i class="fas fa-user-shield text-blue-400"></i>
-                                <span>Admin: <span class="text-white font-medium" th:text="${notification.admin?.name ?: 'N/A'}">Admin</span></span>
+                                <span>Admin: <span class="text-white font-medium" th:text="${notification.admin.name != null ? notification.admin.name : 'N/A'}">Admin</span></span>
                             </span>
-                            <span class="flex items-center gap-2">
+                            <span th:if="${notification.timestamp != null}" class="flex items-center gap-2">
                                 <i class="fas fa-calendar text-green-400"></i>
-                                <span th:text="${notification.timestamp != null ? #temporals.format(notification.timestamp, 'dd/MM/yyyy') : 'Unknown date'}">Date</span>
+                                <span th:text="${#temporals.format(notification.timestamp, 'dd/MM/yyyy')}">Date</span>
                             </span>
-                            <span class="flex items-center gap-2">
+                            <span th:if="${notification.type != null}" class="flex items-center gap-2">
                                 <i class="fas fa-tag text-purple-400"></i>
-                                <span th:text="${notification.type != null ? notification.type.name().replace('_', ' ') : 'Unknown'}">Type</span>
+                                <span th:text="${notification.type.name().replace('_', ' ')}">Type</span>
                             </span>
                         </div>
                     </div>
@@ -505,9 +508,18 @@
     // Initialize page
     document.addEventListener('DOMContentLoaded', function() {
         // Add entrance animation to notification cards
+        const notificationCards = document.querySelectorAll('.notification-card');
         notificationCards.forEach((card, index) => {
-            card.style.animation = `slideIn 0.3s ease-out ${index * 0.1}s both`;
+            if (card) {
+                card.style.animation = `slideIn 0.3s ease-out ${index * 0.1}s both`;
+            }
         });
+        
+        // Update total notifications count display
+        const totalElement = document.querySelector('.text-2xl.font-bold.text-white + span');
+        if (totalElement && notificationCards) {
+            totalElement.textContent = `${notificationCards.length} total`;
+        }
     });
 </script>
 </body>
