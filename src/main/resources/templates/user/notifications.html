@@ -217,22 +217,22 @@
         <div class="stats-card">
             <i class="fas fa-bell text-blue-400 text-2xl mb-2"></i>
             <h3 class="font-semibold text-gray-300">Total Notifications</h3>
-            <p class="text-2xl font-bold text-blue-400" th:text="${#lists.size(notifications)}">0</p>
+            <p class="text-2xl font-bold text-blue-400" th:text="${notifications != null ? #lists.size(notifications) : 0}">0</p>
         </div>
         <div class="stats-card">
             <i class="fas fa-envelope text-yellow-400 text-2xl mb-2"></i>
             <h3 class="font-semibold text-gray-300">Recent</h3>
-            <p class="text-2xl font-bold text-yellow-400" th:text="${#lists.size(notifications.?[timestamp.isAfter(#temporals.createNow().minusDays(7))])}">0</p>
+            <p class="text-2xl font-bold text-yellow-400" th:text="${notifications != null ? #lists.size(notifications.?[timestamp != null and timestamp.isAfter(#temporals.createNow().minusDays(7))]) : 0}">0</p>
         </div>
         <div class="stats-card">
             <i class="fas fa-exclamation-triangle text-orange-400 text-2xl mb-2"></i>
             <h3 class="font-semibold text-gray-300">Important</h3>
-            <p class="text-2xl font-bold text-orange-400" th:text="${#lists.size(notifications.?[type.name() == 'SECURITY_INCIDENT'])}">0</p>
+            <p class="text-2xl font-bold text-orange-400" th:text="${notifications != null ? #lists.size(notifications.?[type != null and type.name() == 'SECURITY_INCIDENT']) : 0}">0</p>
         </div>
         <div class="stats-card">
             <i class="fas fa-clock text-purple-400 text-2xl mb-2"></i>
             <h3 class="font-semibold text-gray-300">Today</h3>
-            <p class="text-2xl font-bold text-purple-400" th:text="${#lists.size(notifications.?[#temporals.format(timestamp, 'yyyy-MM-dd') == #temporals.format(#temporals.createNow(), 'yyyy-MM-dd')])}">0</p>
+            <p class="text-2xl font-bold text-purple-400" th:text="${notifications != null ? #lists.size(notifications.?[timestamp != null and #temporals.format(timestamp, 'yyyy-MM-dd') == #temporals.format(#temporals.createNow(), 'yyyy-MM-dd')]) : 0}">0</p>
         </div>
     </div>
 
@@ -306,48 +306,48 @@
                     <div class="flex-1">
                         <div class="flex items-center gap-4 mb-4">
                             <div class="p-3 rounded-xl"
-                                 th:classappend="${notification.type.name() == 'FULL_SLOT'} ? 'bg-yellow-500/20' : 
-                                                ${notification.type.name() == 'OVERSTAY'} ? 'bg-red-500/20' : 'bg-purple-500/20'">
-                                <i th:if="${notification.type.name() == 'FULL_SLOT'}"
+                                 th:classappend="${notification.type != null and notification.type.name() == 'FULL_SLOT'} ? 'bg-yellow-500/20' : 
+                                                ${notification.type != null and notification.type.name() == 'OVERSTAY'} ? 'bg-red-500/20' : 'bg-purple-500/20'">
+                                <i th:if="${notification.type != null and notification.type.name() == 'FULL_SLOT'}"
                                    class="fas fa-parking type-full-slot text-2xl"></i>
-                                <i th:if="${notification.type.name() == 'OVERSTAY'}"
+                                <i th:if="${notification.type != null and notification.type.name() == 'OVERSTAY'}"
                                    class="fas fa-clock type-overstay text-2xl"></i>
-                                <i th:if="${notification.type.name() == 'SECURITY_INCIDENT'}"
+                                <i th:if="${notification.type != null and notification.type.name() == 'SECURITY_INCIDENT'}"
                                    class="fas fa-shield-alt type-security text-2xl"></i>
                             </div>
 
                             <div class="flex-1">
-                                <h3 class="font-bold text-xl text-white" th:text="${notification.type.name().replace('_', ' ')}">Type</h3>
+                                <h3 class="font-bold text-xl text-white" th:text="${notification.type != null ? notification.type.name().replace('_', ' ') : 'Unknown'}">Type</h3>
                                 <p class="text-sm text-gray-400 flex items-center gap-2">
                                     <i class="fas fa-clock"></i>
-                                    <span th:text="${#temporals.format(notification.timestamp, 'dd MMM yyyy, HH:mm')}">Timestamp</span>
+                                    <span th:text="${notification.timestamp != null ? #temporals.format(notification.timestamp, 'dd MMM yyyy, HH:mm') : 'Unknown time'}">Timestamp</span>
                                 </p>
                             </div>
 
                             <div class="flex flex-col gap-2">
-                                <span th:if="${notification.timestamp.isAfter(#temporals.createNow().minusDays(1))}"
+                                <span th:if="${notification.timestamp != null and notification.timestamp.isAfter(#temporals.createNow().minusDays(1))}"
                                       class="bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-medium pulse-animation">New</span>
-                                <span th:if="${notification.type.name() == 'SECURITY_INCIDENT'}"
+                                <span th:if="${notification.type != null and notification.type.name() == 'SECURITY_INCIDENT'}"
                                       class="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-medium">Important</span>
                             </div>
                         </div>
 
                         <div class="mb-6">
-                            <p class="text-gray-300 text-lg leading-relaxed" th:text="${notification.description}">Description</p>
+                            <p class="text-gray-300 text-lg leading-relaxed" th:text="${notification.description ?: 'No description available'}">Description</p>
                         </div>
 
                         <div class="flex items-center gap-6 text-sm text-gray-400">
                             <span th:if="${notification.admin != null}" class="flex items-center gap-2">
                                 <i class="fas fa-user-shield text-blue-400"></i>
-                                <span>Admin: <span class="text-white font-medium" th:text="${notification.admin.name}">Admin</span></span>
+                                <span>Admin: <span class="text-white font-medium" th:text="${notification.admin?.name ?: 'N/A'}">Admin</span></span>
                             </span>
                             <span class="flex items-center gap-2">
                                 <i class="fas fa-calendar text-green-400"></i>
-                                <span th:text="${#temporals.format(notification.timestamp, 'dd/MM/yyyy')}">Date</span>
+                                <span th:text="${notification.timestamp != null ? #temporals.format(notification.timestamp, 'dd/MM/yyyy') : 'Unknown date'}">Date</span>
                             </span>
                             <span class="flex items-center gap-2">
                                 <i class="fas fa-tag text-purple-400"></i>
-                                <span th:text="${notification.type.name().replace('_', ' ')}">Type</span>
+                                <span th:text="${notification.type != null ? notification.type.name().replace('_', ' ') : 'Unknown'}">Type</span>
                             </span>
                         </div>
                     </div>

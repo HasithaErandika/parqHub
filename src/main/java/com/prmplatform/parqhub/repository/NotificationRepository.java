@@ -16,6 +16,11 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     @Query("SELECT n FROM Notification n WHERE LOWER(n.description) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(n.type) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<Notification> findByDescriptionContainingIgnoreCaseOrTypeContainingIgnoreCase(@Param("search") String search, @Param("search") String search2, Pageable pageable);
+
+
+
+    long countByType(Notification.NotificationType type);
+    
 }
 
 

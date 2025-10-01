@@ -1,29 +1,20 @@
 package com.prmplatform.parqhub.controller.user;
 
-import com.prmplatform.parqhub.model.User;
-import com.prmplatform.parqhub.model.Vehicle;
-import com.prmplatform.parqhub.model.ParkingSlot;
-import com.prmplatform.parqhub.model.Booking;
-import com.prmplatform.parqhub.model.Notification;
-import com.prmplatform.parqhub.model.VehicleDTO;
-import com.prmplatform.parqhub.model.ParkingSlotDTO;
-import com.prmplatform.parqhub.repository.UserRepository;
-import com.prmplatform.parqhub.repository.VehicleRepository;
-import com.prmplatform.parqhub.repository.ParkingSlotRepository;
-import com.prmplatform.parqhub.repository.BookingRepository;
-import com.prmplatform.parqhub.repository.NotificationRepository;
-import com.prmplatform.parqhub.repository.PaymentRepository;
-import jakarta.servlet.http.HttpSession;
+import com.prmplatform.parqhub.model.*;
+import com.prmplatform.parqhub.repository.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 
+import jakarta.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
@@ -255,11 +246,18 @@ public class UserController {
             return "redirect:/user/login";
         }
 
-        List<Notification> userNotifications = notificationRepository.findByUserIdOrderByTimestampDesc(user.getId());
-
-        model.addAttribute("userId", user.getId());
-        model.addAttribute("userName", user.getName());
-        model.addAttribute("notifications", userNotifications);
+        try {
+            List<Notification> userNotifications = notificationRepository.findByUserIdOrderByTimestampDesc(user.getId());
+            model.addAttribute("userId", user.getId());
+            model.addAttribute("userName", user.getName());
+            model.addAttribute("notifications", userNotifications != null ? userNotifications : new ArrayList<Notification>());
+        } catch (Exception e) {
+            model.addAttribute("userId", user.getId());
+            model.addAttribute("userName", user.getName());
+            model.addAttribute("notifications", new ArrayList<Notification>());
+            // Log the error for debugging
+            e.printStackTrace();
+        }
 
         return "user/notifications";
     }
