@@ -26,10 +26,15 @@
         }
         
         .login-card {
-            background: rgba(30, 41, 59, 0.8);
+            background: rgba(30, 41, 59, 0.85);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(59, 130, 246, 0.2);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(59, 130, 246, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .login-card:hover {
+            transform: translateY(-4px);
         }
         
         .form-input {
@@ -50,6 +55,11 @@
             color: #64748b;
         }
         
+        .form-input:invalid:focus {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+        }
+        
         .btn-primary {
             background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
             color: white;
@@ -58,10 +68,15 @@
             box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
         }
         
-        .btn-primary:hover {
+        .btn-primary:hover:enabled {
             background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
         
         .text-link {
@@ -114,6 +129,35 @@
         
         .logo-glow {
             box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+            transition: transform 0.3s ease;
+        }
+        
+        .logo-glow:hover {
+            transform: scale(1.1);
+        }
+
+        /* Accessibility Improvements */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 640px) {
+            .login-card {
+                padding: 1.5rem;
+            }
+            .floating-shapes::before,
+            .floating-shapes::after {
+                width: 150px;
+                height: 150px;
+            }
         }
     </style>
 </head>
@@ -121,8 +165,8 @@
 <div class="floating-shapes"></div>
 
 <!-- Back to Home Link -->
-<a th:href="@{/}" class="fixed top-6 left-6 flex items-center gap-2 text-slate-300 hover:text-blue-400 transition-all duration-300 z-10">
-    <i class="fas fa-arrow-left"></i>
+<a th:href="@{/}" class="fixed top-6 left-6 flex items-center gap-2 text-slate-300 hover:text-blue-400 transition-all duration-300 z-10" aria-label="Back to Home">
+    <i class="fas fa-arrow-left" aria-hidden="true"></i>
     <span>Back to Home</span>
 </a>
 
@@ -131,53 +175,55 @@
     <!-- Logo and Header -->
     <div class="text-center">
         <div class="flex justify-center mb-6">
-            <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center logo-glow">
-                <i class="fas fa-parking text-white text-2xl"></i>
+            <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center logo-glow" role="img" aria-label="ParQHub Logo">
+                <i class="fas fa-parking text-white text-2xl" aria-hidden="true"></i>
             </div>
         </div>
-        <h2 class="text-3xl font-bold text-white mb-2">Welcome Back</h2>
+        <h1 class="text-3xl font-bold text-black mb-2">Welcome Back</h1>
         <p class="text-slate-300">Sign in to your ParQHub account</p>
     </div>
 
     <!-- Login Form -->
     <div class="login-card rounded-lg p-8">
         <!-- Error Message -->
-        <div th:if="${error}" class="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg backdrop-blur-sm">
+        <div th:if="${error}" class="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg backdrop-blur-sm" role="alert">
             <div class="flex items-center">
-                <i class="fas fa-exclamation-circle text-red-400 mr-3"></i>
+                <i class="fas fa-exclamation-circle text-red-400 mr-3" aria-hidden="true"></i>
                 <span class="text-red-300 text-sm" th:text="${error}"></span>
             </div>
         </div>
 
-        <form th:action="@{/user/login}" method="post" class="space-y-6">
+        <form th:action="@{/user/login}" method="post" class="space-y-6" id="loginForm">
             <!-- Email Field -->
             <div>
                 <label for="userEmail" class="block text-sm font-medium text-slate-200 mb-2">
-                    <i class="fas fa-envelope mr-2 text-blue-400"></i>Email Address
+                    <i class="fas fa-envelope mr-2 text-blue-400" aria-hidden="true"></i>Email Address
                 </label>
                 <input type="email" id="userEmail" name="email" placeholder="Enter your email address"
                        class="form-input w-full px-3 py-3 border rounded-lg" 
-                       required autocomplete="email">
+                       required autocomplete="email" aria-describedby="emailError">
+                <span id="emailError" class="sr-only"></span>
             </div>
 
             <!-- Password Field -->
             <div>
                 <label for="userPassword" class="block text-sm font-medium text-slate-200 mb-2">
-                    <i class="fas fa-lock mr-2 text-blue-400"></i>Password
+                    <i class="fas fa-lock mr-2 text-blue-400" aria-hidden="true"></i>Password
                 </label>
                 <div class="relative">
                     <input type="password" id="userPassword" name="password" placeholder="Enter your password"
                            class="form-input w-full px-3 py-3 pr-10 border rounded-lg" 
-                           required autocomplete="current-password">
+                           required autocomplete="current-password" aria-describedby="passwordError">
                     <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-blue-400 transition-colors"
-                            onclick="togglePassword()">
-                        <i class="fas fa-eye" id="toggleIcon"></i>
+                            onclick="togglePassword()" aria-label="Toggle password visibility">
+                        <i class="fas fa-eye" id="toggleIcon" aria-hidden="true"></i>
                     </button>
                 </div>
+                <span id="passwordError" class="sr-only"></span>
             </div>
 
             <!-- Remember Me & Forgot Password -->
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
                 <div class="flex items-center">
                     <input type="checkbox" id="remember" name="remember" 
                            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-500 rounded bg-slate-700">
@@ -185,12 +231,13 @@
                         Remember me
                     </label>
                 </div>
-                <a href="#" class="text-link text-sm">Forgot your password?</a>
+                <a th:href="@{/forgot-password}" class="text-link text-sm">Forgot your password?</a>
             </div>
 
             <!-- Login Button -->
-            <button type="submit" class="btn-primary w-full py-3 px-4 rounded-lg font-medium">
-                <i class="fas fa-sign-in-alt mr-2"></i>Sign in
+            <button type="submit" class="btn-primary w-full py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2" id="submitBtn">
+                <i class="fas fa-sign-in-alt" aria-hidden="true"></i>
+                <span>Sign in</span>
             </button>
         </form>
 
@@ -221,21 +268,78 @@
             passwordInput.type = 'text';
             toggleIcon.classList.remove('fa-eye');
             toggleIcon.classList.add('fa-eye-slash');
+            passwordInput.setAttribute('aria-label', 'Hide password');
         } else {
             passwordInput.type = 'password';
             toggleIcon.classList.remove('fa-eye-slash');
             toggleIcon.classList.add('fa-eye');
+            passwordInput.setAttribute('aria-label', 'Show password');
         }
     }
     
-    // Form validation
+    // Form validation and feedback
     document.addEventListener('DOMContentLoaded', function() {
-        const form = document.querySelector('form');
-        const submitBtn = form.querySelector('button[type="submit"]');
-        
-        form.addEventListener('submit', function() {
-            submitBtn.innerHTML = 'Signing in...';
-            submitBtn.disabled = true;
+        const form = document.getElementById('loginForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const emailInput = document.getElementById('userEmail');
+        const passwordInput = document.getElementById('userPassword');
+        const emailError = document.getElementById('emailError');
+        const passwordError = document.getElementById('passwordError');
+
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+
+            // Email validation
+            if (!emailInput.value.includes('@') || !emailInput.value.includes('.')) {
+                isValid = false;
+                emailError.textContent = 'Please enter a valid email address';
+                emailError.classList.remove('sr-only');
+                emailError.classList.add('text-red-300', 'text-sm', 'mt-2');
+                emailInput.classList.add('border-red-500');
+            } else {
+                emailError.textContent = '';
+                emailError.classList.add('sr-only');
+                emailInput.classList.remove('border-red-500');
+            }
+
+            // Password validation
+            if (passwordInput.value.length < 6) {
+                isValid = false;
+                passwordError.textContent = 'Password must be at least 6 characters long';
+                passwordError.classList.remove('sr-only');
+                passwordError.classList.add('text-red-300', 'text-sm', 'mt-2');
+                passwordInput.classList.add('border-red-500');
+            } else {
+                passwordError.textContent = '';
+                passwordError.classList.add('sr-only');
+                passwordInput.classList.remove('border-red-500');
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-sign-in-alt" aria-hidden="true"></i><span>Sign in</span>';
+            } else {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i><span>Signing in...</span>';
+                submitBtn.disabled = true;
+            }
+        });
+
+        // Real-time validation
+        emailInput.addEventListener('input', function() {
+            if (emailInput.value.includes('@') && emailInput.value.includes('.')) {
+                emailError.textContent = '';
+                emailError.classList.add('sr-only');
+                emailInput.classList.remove('border-red-500');
+            }
+        });
+
+        passwordInput.addEventListener('input', function() {
+            if (passwordInput.value.length >= 6) {
+                passwordError.textContent = '';
+                passwordError.classList.add('sr-only');
+                passwordInput.classList.remove('border-red-500');
+            }
         });
     });
 </script>
