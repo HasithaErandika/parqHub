@@ -57,7 +57,7 @@ ParQHub is a comprehensive parking management system that revolutionizes how use
 - **UI Components**: Custom glass morphism and gradient designs
 
 #### Database Design
-```sql
+```
 -- Core entities
 ├── users (user management)
 ├── vehicles (vehicle registration)
@@ -330,6 +330,66 @@ mvn test jacoco:report
 - **Unit Tests**: Controller and service layer testing
 - **Integration Tests**: Database and API endpoint testing
 - **UI Tests**: Frontend functionality validation
+
+## 🎨 Design Patterns
+
+### Design Pattern(s) Used
+
+ParQHub implements several well-established design patterns to ensure a robust, maintainable, and scalable architecture:
+
+#### 1. Model-View-Controller (MVC) Pattern
+- **Implementation**: The application follows Spring Boot's MVC architecture with clear separation between controllers, models, and views.
+- **Components**:
+  - **Model**: Entity classes in the `model` package (e.g., [User](file:///c:/Users/hasit/OneDrive/Documents/SLIIT/Work/Y2S1/SE2030%20-%20Software%20Engineering/parqHub/src/main/java/com/prmplatform/parqhub/model/User.java), [Booking](file:///c:/Users/hasit/OneDrive/Documents/SLIIT/Work/Y2S1/SE2030%20-%20Software%20Engineering/parqHub/src/main/java/com/prmplatform/parqhub/model/Booking.java), [ParkingLot](file:///c:/Users/hasit/OneDrive/Documents/SLIIT/Work/Y2S1/SE2030%20-%20Software%20Engineering/parqHub/src/main/java/com/prmplatform/parqhub/model/ParkingLot.java))
+  - **View**: Thymeleaf templates in the `resources/templates` directory
+  - **Controller**: Classes in the `controller` package (e.g., [UserController](file:///c:/Users/hasit/OneDrive/Documents/SLIIT/Work/Y2S1/SE2030%20-%20Software%20Engineering/parqHub/src/main/java/com/prmplatform/parqhub/controller/user/UserController.java), [AdminController](file:///c:/Users/hasit/OneDrive/Documents/SLIIT/Work/Y2S1/SE2030%20-%20Software%20Engineering/parqHub/src/main/java/com/prmplatform/parqhub/controller/admin/AdminController.java))
+
+#### 2. Repository Pattern
+- **Implementation**: Data access is handled through repository interfaces that extend Spring Data JPA's JpaRepository.
+- **Components**: Classes in the `repository` package (e.g., [UserRepository](file:///c:/Users/hasit/OneDrive/Documents/SLIIT/Work/Y2S1/SE2030%20-%20Software%20Engineering/parqHub/src/main/java/com/prmplatform/parqhub/repository/UserRepository.java), [BookingRepository](file:///c:/Users/hasit/OneDrive/Documents/SLIIT/Work/Y2S1/SE2030%20-%20Software%20Engineering/parqHub/src/main/java/com/prmplatform/parqhub/repository/BookingRepository.java))
+- **Benefits**: Abstracts data access logic, provides consistent data access interface, and enables easy testing with mock repositories.
+
+#### 3. Service Layer Pattern
+- **Implementation**: Business logic is encapsulated in service classes annotated with `@Service`.
+- **Components**: Classes in the `service` package (e.g., [ParkingLotService](file:///c:/Users/hasit/OneDrive/Documents/SLIIT/Work/Y2S1/SE2030%20-%20Software%20Engineering/parqHub/src/main/java/com/prmplatform/parqhub/service/ParkingLotService.java), [ParkingViewerService](file:///c:/Users/hasit/OneDrive/Documents/SLIIT/Work/Y2S1/SE2030%20-%20Software%20Engineering/parqHub/src/main/java/com/prmplatform/parqhub/service/ParkingViewerService.java))
+- **Benefits**: Separates business logic from presentation logic, promotes reusability, and improves testability.
+
+#### 4. Dependency Injection (DI) Pattern
+- **Implementation**: Spring's built-in DI container manages object dependencies through constructor injection.
+- **Example**: [UserController](file:///c:/Users/hasit/OneDrive/Documents/SLIIT/Work/Y2S1/SE2030%20-%20Software%20Engineering/parqHub/src/main/java/com/prmplatform/parqhub/controller/user/UserController.java) constructor injection of repositories
+- **Benefits**: Loose coupling between components, easier testing through mock injection, and improved code maintainability.
+
+### Justification for Each Pattern
+
+#### MVC Pattern Justification
+The MVC pattern is ideal for web applications like ParQHub because it:
+- Separates concerns clearly, making the codebase more maintainable
+- Allows parallel development of frontend and backend components
+- Facilitates easier testing of individual components
+- Provides a familiar structure for developers working with Spring Boot
+
+#### Repository Pattern Justification
+The Repository pattern is suitable for ParQHub because it:
+- Abstracts the underlying database operations, making it easier to switch databases if needed
+- Centralizes data access logic, reducing code duplication
+- Simplifies testing by allowing mock repositories to be injected
+- Provides a consistent interface for data operations across the application
+
+#### Service Layer Pattern Justification
+The Service Layer pattern benefits ParQHub by:
+- Encapsulating business logic separately from presentation concerns
+- Promoting reusability of business logic across different controllers
+- Making unit testing easier by isolating business logic from web framework dependencies
+- Improving maintainability by centralizing business rules in one place
+
+#### Dependency Injection Pattern Justification
+Dependency Injection is appropriate for ParQHub because it:
+- Reduces coupling between components, making the system more modular
+- Simplifies configuration and management of dependencies
+- Enables easier unit testing through mock object injection
+- Leverages Spring's powerful DI container for automatic bean management
+
+These design patterns work together to create a robust, maintainable, and scalable architecture that follows industry best practices for enterprise Java applications.
 
 ## 🤝 Contributing
 
