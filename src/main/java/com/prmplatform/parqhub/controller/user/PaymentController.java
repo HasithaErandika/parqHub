@@ -11,6 +11,7 @@ import com.prmplatform.parqhub.repository.ParkingLotRepository;
 import com.prmplatform.parqhub.repository.ParkingSlotRepository;
 import com.prmplatform.parqhub.repository.PaymentRepository;
 import com.prmplatform.parqhub.repository.VehicleLogRepository;
+import com.prmplatform.parqhub.service.PaymentProcessingService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,6 +46,7 @@ public class PaymentController {
     private final ParkingLotRepository parkingLotRepository;
     private final ParkingSlotRepository parkingSlotRepository;
     private final JavaMailSender mailSender;
+    private final PaymentProcessingService paymentProcessingService;
 
     @Value("${spring.mail.from:parqhub.system@gmail.com}")
     private String fromEmail;
@@ -55,13 +57,15 @@ public class PaymentController {
                              VehicleLogRepository vehicleLogRepository,
                              ParkingLotRepository parkingLotRepository,
                              ParkingSlotRepository parkingSlotRepository,
-                             JavaMailSender mailSender) {
+                             JavaMailSender mailSender,
+                             PaymentProcessingService paymentProcessingService) {
         this.bookingRepository = bookingRepository;
         this.paymentRepository = paymentRepository;
         this.vehicleLogRepository = vehicleLogRepository;
         this.parkingLotRepository = parkingLotRepository;
         this.parkingSlotRepository = parkingSlotRepository;
         this.mailSender = mailSender;
+        this.paymentProcessingService = paymentProcessingService;
     }
 
     @GetMapping("/payment-gateway")
@@ -197,13 +201,13 @@ public class PaymentController {
             BigDecimal hoursBigDecimal = new BigDecimal(hours);
             BigDecimal amount = hoursBigDecimal.multiply(parkingLot.getPriceHr());
 
-            // Simulate payment processing
-            Payment payment = new Payment();
-            payment.setBooking(booking);
-            payment.setAmount(amount);
-            payment.setMethod(Payment.PaymentMethod.valueOf(paymentMethod));
-            payment.setStatus(Payment.PaymentStatus.Completed);
-            payment.setTimestamp(LocalDateTime.now());
+            // Process payment using strategy pattern
+            if (!paymentProcessingService.isValidPaymentMethod(paymentMethod)) {
+                model.addAttribute("error", "Invalid payment method: " + paymentMethod);
+                return "user/payment-gateway";
+            }
+            
+            Payment payment = paymentProcessingService.processPayment(booking, amount, paymentMethod);
 
             // Update booking with end time and payment status
             booking.setEndTime(vehicleLog.getExitTime());

@@ -4,7 +4,9 @@ import com.prmplatform.parqhub.model.Admin;
 import com.prmplatform.parqhub.model.Booking;
 import com.prmplatform.parqhub.model.ParkingSlot.SlotStatus;
 import com.prmplatform.parqhub.repository.*;
+import com.prmplatform.parqhub.service.AdminAuthenticationService;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,11 +29,13 @@ public class AdminController {
     private final NotificationRepository notificationRepository;
     private final VehicleLogRepository vehicleLogRepository;
     private final UserRepository userRepository;
+    private final AdminAuthenticationService adminAuthenticationService;
 
+    @Autowired
     public AdminController(AdminRepository adminRepository, ParkingSlotRepository parkingSlotRepository,
                            PaymentRepository paymentRepository, BookingRepository bookingRepository,
                            NotificationRepository notificationRepository, VehicleLogRepository vehicleLogRepository,
-                           UserRepository userRepository) {
+                           UserRepository userRepository, AdminAuthenticationService adminAuthenticationService) {
         this.adminRepository = adminRepository;
         this.parkingSlotRepository = parkingSlotRepository;
         this.paymentRepository = paymentRepository;
@@ -39,6 +43,7 @@ public class AdminController {
         this.notificationRepository = notificationRepository;
         this.vehicleLogRepository = vehicleLogRepository;
         this.userRepository = userRepository;
+        this.adminAuthenticationService = adminAuthenticationService;
     }
 
     @GetMapping("/login")
@@ -74,11 +79,18 @@ public class AdminController {
             return "redirect:/admin/login";
         }
 
+        // Authenticate admin using strategy pattern
+        if (!adminAuthenticationService.authenticateAdmin(admin)) {
+            session.invalidate();
+            model.addAttribute("error", "Unauthorized access");
+            return "admin-login";
+        }
+
         model.addAttribute("adminName", admin.getName());
         model.addAttribute("adminRole", admin.getRole());
 
         try {
-            if (admin.getRole().name().equals("OPERATIONS_MANAGER") || admin.getRole().name().equals("SUPER_ADMIN")) {
+            if (adminAuthenticationService.hasAccessToSection(admin, "operations")) {
                 List<Object[]> slotSummaries = parkingSlotRepository.countByCityAndStatus(SlotStatus.AVAILABLE);
                 Map<String, Long> availableSlotsByCity = new HashMap<>();
                 for (Object[] result : slotSummaries) {
@@ -88,24 +100,24 @@ public class AdminController {
                 model.addAttribute("totalActiveSlots", parkingSlotRepository.countByStatus(SlotStatus.OCCUPIED));
             }
 
-            if (admin.getRole().name().equals("FINANCE_OFFICER") || admin.getRole().name().equals("SUPER_ADMIN")) {
+            if (adminAuthenticationService.hasAccessToSection(admin, "finance")) {
                 LocalDateTime startOfDay = LocalDateTime.now().with(LocalTime.MIN);
                 Double todayRevenue = paymentRepository.sumAmountByCompletedAndTimestampAfter(startOfDay);
                 model.addAttribute("todayRevenue", todayRevenue != null ? todayRevenue : 0.0);
                 model.addAttribute("pendingPayments", bookingRepository.countByPaymentStatus(Booking.PaymentStatus.Pending));
             }
 
-            if (admin.getRole().name().equals("CUSTOMER_SERVICE_OFFICER") || admin.getRole().name().equals("SUPER_ADMIN")) {
+            if (adminAuthenticationService.hasAccessToSection(admin, "customer")) {
                 model.addAttribute("totalUsers", userRepository.count());
                 model.addAttribute("pendingBookings", bookingRepository.countByPaymentStatus(Booking.PaymentStatus.Pending));
             }
 
-            if (admin.getRole().name().equals("SECURITY_SUPERVISOR") || admin.getRole().name().equals("SUPER_ADMIN")) {
+            if (adminAuthenticationService.hasAccessToSection(admin, "security")) {
                 model.addAttribute("activeVehicles", vehicleLogRepository.countByExitTimeIsNull());
                 model.addAttribute("securityIncidents", notificationRepository.countByType("SECURITY_INCIDENT"));
             }
 
-            if (admin.getRole().name().equals("IT_SUPPORT") || admin.getRole().name().equals("SUPER_ADMIN")) {
+            if (adminAuthenticationService.hasAccessToSection(admin, "it")) {
                 model.addAttribute("systemUptime", "99.9%"); // Placeholder
                 model.addAttribute("errorLogs", notificationRepository.countByType("NONE"));
             }
@@ -133,6 +145,11 @@ public class AdminController {
             return ResponseEntity.status(401).body(Map.of("error", "Admin not logged in"));
         }
 
+        // Authenticate admin using strategy pattern
+        if (!adminAuthenticationService.authenticateAdmin(admin)) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized access"));
+        }
+
         Map<String, Object> stats = new HashMap<>();
         
         try {
@@ -141,8 +158,8 @@ public class AdminController {
             stats.put("adminRole", admin.getRole().name());
             stats.put("timestamp", LocalDateTime.now());
             
-            // Role-specific stats
-            if (admin.getRole().name().equals("OPERATIONS_MANAGER") || admin.getRole().name().equals("SUPER_ADMIN")) {
+            // Role-specific stats using strategy pattern
+            if (adminAuthenticationService.hasAccessToSection(admin, "operations")) {
                 List<Object[]> slotSummaries = parkingSlotRepository.countByCityAndStatus(SlotStatus.AVAILABLE);
                 Map<String, Long> availableSlotsByCity = new HashMap<>();
                 for (Object[] result : slotSummaries) {
@@ -154,7 +171,7 @@ public class AdminController {
                 stats.put("totalSlots", parkingSlotRepository.count());
             }
 
-            if (admin.getRole().name().equals("FINANCE_OFFICER") || admin.getRole().name().equals("SUPER_ADMIN")) {
+            if (adminAuthenticationService.hasAccessToSection(admin, "finance")) {
                 LocalDateTime startOfDay = LocalDateTime.now().with(LocalTime.MIN);
                 Double todayRevenue = paymentRepository.sumAmountByCompletedAndTimestampAfter(startOfDay);
                 stats.put("todayRevenue", todayRevenue != null ? todayRevenue : 0.0);
@@ -162,19 +179,19 @@ public class AdminController {
                 stats.put("pendingPayments", bookingRepository.countByPaymentStatus(Booking.PaymentStatus.Pending));
             }
 
-            if (admin.getRole().name().equals("CUSTOMER_SERVICE_OFFICER") || admin.getRole().name().equals("SUPER_ADMIN")) {
+            if (adminAuthenticationService.hasAccessToSection(admin, "customer")) {
                 stats.put("totalUsers", userRepository.count());
                 stats.put("pendingBookings", bookingRepository.countByPaymentStatus(Booking.PaymentStatus.Pending));
                 stats.put("completedBookings", bookingRepository.countByPaymentStatus(Booking.PaymentStatus.Completed));
             }
 
-            if (admin.getRole().name().equals("SECURITY_SUPERVISOR") || admin.getRole().name().equals("SUPER_ADMIN")) {
+            if (adminAuthenticationService.hasAccessToSection(admin, "security")) {
                 stats.put("activeVehicles", vehicleLogRepository.countByExitTimeIsNull());
                 stats.put("securityIncidents", notificationRepository.countByType("SECURITY_INCIDENT"));
                 stats.put("totalVehicleLogs", vehicleLogRepository.count());
             }
 
-            if (admin.getRole().name().equals("IT_SUPPORT") || admin.getRole().name().equals("SUPER_ADMIN")) {
+            if (adminAuthenticationService.hasAccessToSection(admin, "it")) {
                 stats.put("systemUptime", "99.9%");
                 stats.put("errorLogs", notificationRepository.countByType("ERROR"));
                 stats.put("totalNotifications", notificationRepository.count());
